@@ -33,16 +33,29 @@ namespace Overdrive.Weapons
         public float NoiseRadius { get; private set; }
         public float Shake { get; private set; }
 
+        /// <summary>Segundos entre ataques cuando la usa un enemigo (más lento que el jugador, por justicia).</summary>
+        public float EnemyAttackInterval { get; private set; }
+
+        /// <summary>Distancia desde la que un enemigo ataca con esta arma.</summary>
+        public float EnemyAttackRange { get; private set; }
+
+        /// <summary>Puños de un enemigo desarmado.</summary>
+        public const float UnarmedRange = 1.3f;
+        public const float UnarmedHalfAngle = 60f;
+        public const float UnarmedEnemyInterval = 0.9f;
+
         public static readonly WeaponDefinition Bat = new WeaponDefinition
         {
             Type = WeaponType.Bat, DisplayName = "Bate", IsMelee = true,
             UseInterval = 0.45f, MeleeRange = 1.9f, MeleeHalfAngle = 70f, Shake = 0.3f,
+            EnemyAttackInterval = 0.9f, EnemyAttackRange = 1.5f,
         };
 
         public static readonly WeaponDefinition Knife = new WeaponDefinition
         {
             Type = WeaponType.Knife, DisplayName = "Cuchillo", IsMelee = true,
             UseInterval = 0.3f, MeleeRange = 1.6f, MeleeHalfAngle = 55f, Shake = 0.25f,
+            EnemyAttackInterval = 0.7f, EnemyAttackRange = 1.3f,
         };
 
         public static readonly WeaponDefinition Shotgun = new WeaponDefinition
@@ -50,6 +63,7 @@ namespace Overdrive.Weapons
             Type = WeaponType.Shotgun, DisplayName = "Escopeta", IsMelee = false,
             UseInterval = 0.6f, MaxAmmo = 6, Pellets = 6, SpreadAngle = 30f, Automatic = false,
             ProjectileSpeed = 40f, NoiseRadius = 18f, Shake = 0.4f,
+            EnemyAttackInterval = 1.2f, EnemyAttackRange = 8f,
         };
 
         public static readonly WeaponDefinition Smg = new WeaponDefinition
@@ -57,6 +71,7 @@ namespace Overdrive.Weapons
             Type = WeaponType.Smg, DisplayName = "Subfusil", IsMelee = false,
             UseInterval = 0.08f, MaxAmmo = 30, Pellets = 1, SpreadAngle = 6f, Automatic = true,
             ProjectileSpeed = 45f, NoiseRadius = 15f, Shake = 0.12f,
+            EnemyAttackInterval = 0.3f, EnemyAttackRange = 11f,
         };
 
         public static WeaponDefinition Get(WeaponType type)

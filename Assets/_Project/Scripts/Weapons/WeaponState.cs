@@ -28,11 +28,14 @@ namespace Overdrive.Weapons
             cooldownLeft = Mathf.Max(0f, cooldownLeft - deltaTime);
         }
 
-        /// <summary>Intenta golpear o disparar: respeta el enfriamiento y gasta un cartucho/bala.</summary>
-        public bool TryUse()
+        /// <summary>
+        /// Intenta golpear o disparar: respeta el enfriamiento y gasta un cartucho/bala.
+        /// Los enemigos disparan sin gastar munición (<paramref name="consumeAmmo"/> = false).
+        /// </summary>
+        public bool TryUse(bool consumeAmmo = true)
         {
-            if (!Ready || IsEmpty) return false;
-            if (!IsMelee) Ammo--;
+            if (!Ready || (consumeAmmo && IsEmpty)) return false;
+            if (!IsMelee && consumeAmmo) Ammo--;
             cooldownLeft = Definition.UseInterval;
             return true;
         }

@@ -104,11 +104,12 @@ namespace Overdrive.Weapons
         /// Dispara si es arma de fuego, tiene munición y no está en enfriamiento.
         /// Devuelve cuántos proyectiles salieron (0 si no disparó).
         /// </summary>
-        public int TryFire(Vector3 origin, Vector3 direction, Faction owner, List<Projectile> spawned = null)
+        public int TryFire(Vector3 origin, Vector3 direction, Faction owner, List<Projectile> spawned = null,
+            bool consumeAmmo = true)
         {
             WeaponDefinition def = Definition;
             if (def.IsMelee || projectilePrefab == null) return 0;
-            if (!State.TryUse()) return 0;
+            if (!State.TryUse(consumeAmmo)) return 0;
 
             float[] angles = ShotPattern.PelletAngles(def.Pellets, def.SpreadAngle, Random.Range(-1f, 1f));
             foreach (float angle in angles)
