@@ -104,6 +104,8 @@ GameObject:
   - component: {fileID: 7982732997962180055}
   - component: {fileID: 3479341078645059018}
   - component: {fileID: 8763644904668813282}
+  - component: {fileID: 5781536501737919570}
+  - component: {fileID: 3209719595741885290}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -196,6 +198,42 @@ MonoBehaviour:
   aimCamera: {fileID: 0}
   life: {fileID: 7982732997962180055}
   groundY: 0
+--- !u!114 &5781536501737919570
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1292686525374302431}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9e2840d2fb03c134faded8654668f299, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Overdrive.Combat.PlayerFinisher
+  controller: {fileID: 3479341078645059018}
+  life: {fileID: 7982732997962180055}
+  radius: 1.6
+  duration: 0.6
+  hits: 3
+--- !u!114 &3209719595741885290
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1292686525374302431}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6ea5f5ef3c292bd46bc560de797ac12a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Overdrive.Combat.PlayerMelee
+  life: {fileID: 7982732997962180055}
+  finisher: {fileID: 5781536501737919570}
+  fist: {fileID: 8143571992580343514}
+  range: 1.6
+  halfAngle: 60
+  cooldown: 0.35
+  punchVisualTime: 0.12
 --- !u!1 &1885037976511885489
 GameObject:
   m_ObjectHideFlags: 0
