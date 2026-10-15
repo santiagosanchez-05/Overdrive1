@@ -26,6 +26,7 @@ namespace Overdrive.EditorTools
 
             AssetFactory.EnsureMaterials();
             AssetFactory.EnsurePlayerPrefab();
+            AssetFactory.EnsureEnemyPrefab();
             SceneFactory.Build(map);
             AssetDatabase.SaveAssets();
 

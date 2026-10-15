@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using Overdrive.CameraRig;
 using Overdrive.Core;
+using Overdrive.Enemies;
 using Overdrive.Level;
 using Overdrive.Player;
 using UnityEditor;
@@ -25,6 +26,7 @@ namespace Overdrive.EditorTools
         public const string WallsName = "Walls";
         public const string ExitName = "Exit";
         public const string PlayerName = "Player";
+        public const string EnemiesName = "Enemies";
         public const string CameraRigName = "CameraRig";
         public const string ShakeName = "Shake";
         public const string CameraName = "Main Camera";
@@ -52,6 +54,7 @@ namespace Overdrive.EditorTools
             BuildExit(level.transform, map);
 
             GameObject player = EnsurePlayer(scene, map);
+            EnsureEnemies(scene, map);
             EnsureCamera(scene, player);
 
             GameObject systems = BuilderUtil.EnsureRoot(scene, SystemsName);
@@ -140,6 +143,36 @@ namespace Overdrive.EditorTools
             var (col, row) = map.FindAll(LevelMap.PlayerSpawn)[0];
             player.transform.SetPositionAndRotation(map.CellToWorld(col, row), Quaternion.identity);
             return player;
+        }
+
+        public static string EnemyName(char code, int col, int row) => $"Enemy_{code}_c{col}_r{row}";
+
+        private static void EnsureEnemies(Scene scene, LevelMap map)
+        {
+            Transform container = BuilderUtil.EnsureRoot(scene, EnemiesName).transform;
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(AssetFactory.EnemyPrefabPath);
+            var expected = new HashSet<string>();
+
+            foreach (var (col, row, c) in map.Cells())
+            {
+                if (!LevelMap.IsEnemy(c)) continue;
+                string name = EnemyName(c, col, row);
+                expected.Add(name);
+                Transform existing = container.Find(name);
+                GameObject enemy = existing != null
+                    ? existing.gameObject
+                    : (GameObject)PrefabUtility.InstantiatePrefab(prefab, container);
+                enemy.name = name;
+                // Al empezar miran hacia el sur (hacia abajo en pantalla).
+                enemy.transform.SetPositionAndRotation(map.CellToWorld(col, row), Quaternion.Euler(0f, 180f, 0f));
+            }
+
+            // Borra solo enemigos generados que ya no están en el mapa.
+            for (int i = container.childCount - 1; i >= 0; i--)
+            {
+                GameObject child = container.GetChild(i).gameObject;
+                if (!expected.Contains(child.name) || child.GetComponent<Enemy>() == null) Object.DestroyImmediate(child);
+            }
         }
 
         private static void EnsureCamera(Scene scene, GameObject player)
