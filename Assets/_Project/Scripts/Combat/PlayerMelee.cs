@@ -1,0 +1,75 @@
+using System.Collections.Generic;
+using Overdrive.CameraRig;
+using Overdrive.Core;
+using Overdrive.Enemies;
+using Overdrive.Player;
+using UnityEngine;
+
+namespace Overdrive.Combat
+{
+    /// <summary>Puñetazo con clic izquierdo: derriba al enemigo de pie más cercano frente al jugador.</summary>
+    public class PlayerMelee : MonoBehaviour
+    {
+        [SerializeField] private PlayerLife life;
+        [SerializeField] private PlayerFinisher finisher;
+        [SerializeField] private Transform fist;
+        [SerializeField] private float range = 1.6f;
+        [SerializeField] private float halfAngle = 60f;
+        [SerializeField] private float cooldown = 0.35f;
+        [SerializeField] private float punchVisualTime = 0.12f;
+
+        private readonly List<MeleeTargeting.Target> targets = new List<MeleeTargeting.Target>();
+        private float cooldownLeft;
+        private float punchVisualLeft;
+        private Vector3 fistRestPosition;
+        private bool fistRestCaptured;
+
+        public PlayerLife Life => life;
+        public PlayerFinisher Finisher => finisher;
+        public Transform Fist => fist;
+        public bool CanPunch => cooldownLeft <= 0f;
+
+        private void Update()
+        {
+            Tick(Time.deltaTime);
+            UpdateFistVisual(Time.deltaTime);
+            if (life != null && life.IsDead) return;
+            if (finisher != null && finisher.IsFinishing) return;
+            if (GameInput.AttackPressed) TryPunch(Enemy.All);
+        }
+
+        /// <summary>Avanza el enfriamiento. Público para simularlo en el editor.</summary>
+        public void Tick(float deltaTime)
+        {
+            cooldownLeft = Mathf.Max(0f, cooldownLeft - deltaTime);
+        }
+
+        /// <summary>Lanza un puñetazo. Devuelve el enemigo derribado o null si no golpeó a nadie.</summary>
+        public Enemy TryPunch(IReadOnlyList<Enemy> candidates)
+        {
+            if (!CanPunch) return null;
+            cooldownLeft = cooldown;
+            punchVisualLeft = punchVisualTime;
+            CameraShake.Shake(0.1f);
+
+            Enemy.CollectTargets(candidates, targets);
+            int index = MeleeTargeting.FindPunchTarget(transform.position, transform.forward, targets, range, halfAngle);
+            if (index < 0) return null;
+            Enemy enemy = candidates[index];
+            return enemy.ReceiveKnockdown() ? enemy : null;
+        }
+
+        private void UpdateFistVisual(float deltaTime)
+        {
+            if (fist == null) return;
+            if (!fistRestCaptured)
+            {
+                fistRestPosition = fist.localPosition;
+                fistRestCaptured = true;
+            }
+            punchVisualLeft = Mathf.Max(0f, punchVisualLeft - deltaTime);
+            float push = punchVisualLeft > 0f ? 0.6f : 0f;
+            fist.localPosition = fistRestPosition + new Vector3(0f, 0f, push);
+        }
+    }
+}

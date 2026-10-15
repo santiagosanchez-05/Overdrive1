@@ -20,7 +20,11 @@ namespace Overdrive.Player
         public bool Kill()
         {
             if (!health.Kill()) return false;
-            if (body != null) body.localRotation = Quaternion.Euler(90f, 0f, 0f);
+            if (body != null)
+            {
+                body.localRotation = Quaternion.Euler(90f, 0f, 0f);
+                body.localPosition = new Vector3(0f, 0.4f, 0f);
+            }
             Died?.Invoke();
             return true;
         }
