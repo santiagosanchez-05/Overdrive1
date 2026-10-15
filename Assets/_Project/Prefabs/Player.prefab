@@ -106,6 +106,7 @@ GameObject:
   - component: {fileID: 8763644904668813282}
   - component: {fileID: 5781536501737919570}
   - component: {fileID: 3209719595741885290}
+  - component: {fileID: 7869165369523923364}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -127,6 +128,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 5219047759903607777}
+  - {fileID: 9111371978253685929}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!143 &650247359578819848
@@ -227,13 +229,29 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6ea5f5ef3c292bd46bc560de797ac12a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Overdrive.Combat.PlayerMelee
-  life: {fileID: 7982732997962180055}
-  finisher: {fileID: 5781536501737919570}
   fist: {fileID: 8143571992580343514}
   range: 1.6
   halfAngle: 60
   cooldown: 0.35
   punchVisualTime: 0.12
+--- !u!114 &7869165369523923364
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1292686525374302431}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f167782df3a98e746b21d20a092e6a10, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Overdrive.Weapons.PlayerWeapons
+  hand: {fileID: 9111371978253685929}
+  life: {fileID: 7982732997962180055}
+  finisher: {fileID: 5781536501737919570}
+  melee: {fileID: 3209719595741885290}
+  pickupRadius: 1.6
+  swingTime: 0.15
 --- !u!1 &1885037976511885489
 GameObject:
   m_ObjectHideFlags: 0
@@ -324,3 +342,34 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &7289334922033844093
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 9111371978253685929}
+  m_Layer: 0
+  m_Name: Hand
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &9111371978253685929
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7289334922033844093}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.38, y: 1, z: 0.35}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7329890989990959176}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
