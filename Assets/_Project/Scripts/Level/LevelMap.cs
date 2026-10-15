@@ -141,6 +141,32 @@ namespace Overdrive.Level
             return blocks;
         }
 
+        /// <summary>
+        /// Ruta de patrulla de ida y vuelta: el tramo recto más largo (hasta <paramref name="maxCells"/>)
+        /// en las cuatro direcciones desde la celda. Vacía si no hay sitio para moverse al menos 2 celdas.
+        /// </summary>
+        public Vector3[] PatrolRoute(int col, int row, int maxCells)
+        {
+            int bestLength = 0;
+            (int dc, int dr) best = (0, 0);
+            foreach (var (dc, dr) in new[] { (1, 0), (-1, 0), (0, 1), (0, -1) })
+            {
+                int length = 0;
+                // Deja una celda de margen con la pared para que el agente no roce.
+                while (length < maxCells
+                       && !IsWall(col + dc * (length + 1), row + dr * (length + 1))
+                       && !IsWall(col + dc * (length + 2), row + dr * (length + 2)))
+                    length++;
+                if (length > bestLength)
+                {
+                    bestLength = length;
+                    best = (dc, dr);
+                }
+            }
+            if (bestLength < 2) return new Vector3[0];
+            return new[] { CellToWorld(col, row), CellToWorld(col + best.dc * bestLength, row + best.dr * bestLength) };
+        }
+
         /// <summary>Celdas transitables alcanzables desde (col, row) moviéndose en 4 direcciones.</summary>
         public HashSet<(int, int)> FloodFill(int col, int row)
         {
