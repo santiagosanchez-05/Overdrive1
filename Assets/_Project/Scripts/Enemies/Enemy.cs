@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Overdrive.CameraRig;
 using Overdrive.Combat;
+using Overdrive.Weapons;
 using UnityEngine;
 
 namespace Overdrive.Enemies
@@ -20,6 +21,8 @@ namespace Overdrive.Enemies
         [SerializeField] private Renderer bodyRenderer;
         [SerializeField] private Material deadMaterial;
         [SerializeField] private float knockdownDuration = 3f;
+        [SerializeField] private Transform hand;
+        [SerializeField] private WeaponItem weapon;
 
         private readonly CombatState state = new CombatState();
 
@@ -37,6 +40,8 @@ namespace Overdrive.Enemies
         public Collider BodyCollider => bodyCollider;
         public Renderer BodyRenderer => bodyRenderer;
         public Material DeadMaterial => deadMaterial;
+        public Transform Hand => hand;
+        public WeaponItem Weapon => weapon;
 
         private void OnEnable() => all.Add(this);
         private void OnDisable() => all.Remove(this);
@@ -53,6 +58,7 @@ namespace Overdrive.Enemies
         public bool ReceiveKnockdown()
         {
             if (!state.KnockDown(knockdownDuration)) return false;
+            DropWeapon();
             ApplyPosture();
             CameraShake.Shake(0.25f);
             return true;
@@ -77,6 +83,22 @@ namespace Overdrive.Enemies
             return true;
         }
 
+        public void Equip(WeaponItem item)
+        {
+            weapon = item;
+            if (item != null) item.AttachTo(hand);
+        }
+
+        /// <summary>Suelta el arma delante de sus pies. Devuelve el arma soltada o null.</summary>
+        public WeaponItem DropWeapon()
+        {
+            if (weapon == null) return null;
+            WeaponItem dropped = weapon;
+            weapon = null;
+            dropped.DropAt(transform.position + transform.forward * 0.7f, transform.eulerAngles.y + 90f);
+            return dropped;
+        }
+
         public MeleeTargeting.Target AsTarget() => new MeleeTargeting.Target(transform.position, state.Posture);
 
         public static void CollectTargets(IReadOnlyList<Enemy> enemies, List<MeleeTargeting.Target> buffer)
@@ -87,6 +109,7 @@ namespace Overdrive.Enemies
 
         private void OnKilled()
         {
+            DropWeapon();
             ApplyPosture();
             CameraShake.Shake(0.35f);
             AnyDied?.Invoke(this);

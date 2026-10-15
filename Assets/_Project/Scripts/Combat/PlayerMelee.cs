@@ -1,17 +1,16 @@
 using System.Collections.Generic;
 using Overdrive.CameraRig;
-using Overdrive.Core;
 using Overdrive.Enemies;
-using Overdrive.Player;
 using UnityEngine;
 
 namespace Overdrive.Combat
 {
-    /// <summary>Puñetazo con clic izquierdo: derriba al enemigo de pie más cercano frente al jugador.</summary>
+    /// <summary>
+    /// Puñetazo: derriba al enemigo de pie más cercano frente al jugador.
+    /// La entrada la decide PlayerWeapons (solo se pega puñetazos sin arma).
+    /// </summary>
     public class PlayerMelee : MonoBehaviour
     {
-        [SerializeField] private PlayerLife life;
-        [SerializeField] private PlayerFinisher finisher;
         [SerializeField] private Transform fist;
         [SerializeField] private float range = 1.6f;
         [SerializeField] private float halfAngle = 60f;
@@ -24,8 +23,6 @@ namespace Overdrive.Combat
         private Vector3 fistRestPosition;
         private bool fistRestCaptured;
 
-        public PlayerLife Life => life;
-        public PlayerFinisher Finisher => finisher;
         public Transform Fist => fist;
         public bool CanPunch => cooldownLeft <= 0f;
 
@@ -33,9 +30,6 @@ namespace Overdrive.Combat
         {
             Tick(Time.deltaTime);
             UpdateFistVisual(Time.deltaTime);
-            if (life != null && life.IsDead) return;
-            if (finisher != null && finisher.IsFinishing) return;
-            if (GameInput.AttackPressed) TryPunch(Enemy.All);
         }
 
         /// <summary>Avanza el enfriamiento. Público para simularlo en el editor.</summary>

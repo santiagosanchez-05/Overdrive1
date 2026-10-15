@@ -37,16 +37,20 @@ namespace Overdrive.Combat
             return Vector3.Angle(forward, toTarget) <= halfAngle;
         }
 
-        /// <summary>Índice del enemigo de pie más cercano dentro del abanico, o -1.</summary>
+        /// <summary>
+        /// Índice del enemigo más cercano dentro del abanico, o -1. Por defecto solo los que están de pie;
+        /// las armas cuerpo a cuerpo también alcanzan a los derribados (<paramref name="includeDown"/>).
+        /// </summary>
         public static int FindPunchTarget(Vector3 origin, Vector3 forward, IReadOnlyList<Target> candidates,
-            float range, float halfAngle)
+            float range, float halfAngle, bool includeDown = false)
         {
             int best = -1;
             float bestDistance = float.MaxValue;
             for (int i = 0; i < candidates.Count; i++)
             {
                 Target t = candidates[i];
-                if (t.Posture != Posture.Standing) continue;
+                bool valid = t.Posture == Posture.Standing || (includeDown && t.Posture == Posture.Down);
+                if (!valid) continue;
                 if (!InArc(origin, forward, t.Position, range, halfAngle)) continue;
                 float distance = FlatDistance(origin, t.Position);
                 if (distance < bestDistance)
