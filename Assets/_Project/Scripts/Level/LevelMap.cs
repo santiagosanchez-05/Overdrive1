@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Overdrive.Weapons;
 using UnityEngine;
 
 namespace Overdrive.Level
@@ -9,6 +10,7 @@ namespace Overdrive.Level
     /// Leyenda:
     ///   # pared   . suelo   P inicio del jugador   X zona de salida
     ///   b enemigo con bate   k con cuchillo   s con escopeta   m con subfusil
+    ///   B K S M: la misma arma tirada en el suelo, sin enemigo
     /// </summary>
     public sealed class LevelMap
     {
@@ -17,6 +19,7 @@ namespace Overdrive.Level
         public const char PlayerSpawn = 'P';
         public const char Exit = 'X';
         public const string EnemyChars = "bksm";
+        public const string FloorWeaponChars = "BKSM";
 
         public readonly struct Block
         {
@@ -58,6 +61,20 @@ namespace Overdrive.Level
 
         public bool IsWall(int col, int row) => At(col, row) == Wall;
         public static bool IsEnemy(char c) => EnemyChars.IndexOf(c) >= 0;
+        public static bool IsFloorWeapon(char c) => FloorWeaponChars.IndexOf(c) >= 0;
+
+        /// <summary>Arma asociada a una letra de enemigo o de arma en el suelo.</summary>
+        public static WeaponType WeaponFor(char c)
+        {
+            switch (char.ToLowerInvariant(c))
+            {
+                case 'b': return WeaponType.Bat;
+                case 'k': return WeaponType.Knife;
+                case 's': return WeaponType.Shotgun;
+                case 'm': return WeaponType.Smg;
+                default: throw new ArgumentException($"'{c}' no es una letra de arma.");
+            }
+        }
 
         /// <summary>Centro de la celda en el mundo, a la altura del suelo (y = 0).</summary>
         public Vector3 CellToWorld(int col, int row) => new Vector3(col * CellSize, 0f, -row * CellSize);
