@@ -5,6 +5,7 @@ using Overdrive.Player;
 using Overdrive.Weapons;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.AI;
 
 namespace Overdrive.EditorTools
 {
@@ -241,6 +242,20 @@ namespace Overdrive.EditorTools
                 BuilderUtil.SetRef(enemy, "bodyRenderer", body.GetComponent<Renderer>());
                 BuilderUtil.SetRef(enemy, "deadMaterial", Mat(MatEnemyDead));
                 BuilderUtil.SetRef(enemy, "hand", EnsureHand(root).transform);
+
+                var agent = BuilderUtil.EnsureComponent<NavMeshAgent>(root);
+                agent.radius = 0.4f;
+                agent.height = 1.8f;
+                agent.baseOffset = 0f;
+                agent.speed = 5f;
+                agent.angularSpeed = 720f;
+                agent.acceleration = 30f;
+                agent.stoppingDistance = 0f;
+                agent.autoBraking = true;
+
+                var ai = BuilderUtil.EnsureComponent<EnemyAI>(root);
+                BuilderUtil.SetRef(ai, "enemy", enemy);
+                BuilderUtil.SetRef(ai, "agent", agent);
             });
         }
 

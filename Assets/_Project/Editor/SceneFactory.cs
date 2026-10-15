@@ -7,9 +7,11 @@ using Overdrive.Enemies;
 using Overdrive.Level;
 using Overdrive.Player;
 using Overdrive.Weapons;
+using Unity.AI.Navigation;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.AI;
 using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
 
@@ -34,6 +36,8 @@ namespace Overdrive.EditorTools
         public const string CameraName = "Main Camera";
         public const string SystemsName = "Systems";
         public const string LightName = "Directional Light";
+        public const string NavMeshPath = ScenesPath + "/Level01_NavMesh.asset";
+        public const int PatrolCells = 4;
 
         public static Scene EnsureScene()
         {
@@ -54,9 +58,10 @@ namespace Overdrive.EditorTools
             BuildFloor(level.transform, map);
             BuildWalls(level.transform, map);
             BuildExit(level.transform, map);
+            BakeNavMesh(level);
 
             GameObject player = EnsurePlayer(scene, map);
-            EnsureEnemies(scene, map);
+            EnsureEnemies(scene, map, player.GetComponent<PlayerLife>());
             EnsureFloorWeapons(scene, map);
             EnsureCamera(scene, player);
 
@@ -150,11 +155,41 @@ namespace Overdrive.EditorTools
 
         public static string EnemyName(char code, int col, int row) => $"Enemy_{code}_c{col}_r{row}";
 
-        private static void EnsureEnemies(Scene scene, LevelMap map)
+        /// <summary>
+        /// Hornea el NavMesh con las paredes y el suelo (hijos de Level) y lo guarda como asset.
+        /// Si el asset ya existe se sobrescribe su contenido para conservar la misma referencia.
+        /// </summary>
+        private static void BakeNavMesh(GameObject level)
+        {
+            var surface = BuilderUtil.EnsureComponent<NavMeshSurface>(level);
+            surface.collectObjects = CollectObjects.Children;
+            surface.useGeometry = NavMeshCollectGeometry.PhysicsColliders;
+            surface.layerMask = ~0;
+            Physics.SyncTransforms();
+            surface.BuildNavMesh();
+
+            NavMeshData built = surface.navMeshData;
+            var stored = AssetDatabase.LoadAssetAtPath<NavMeshData>(NavMeshPath);
+            if (stored == null)
+            {
+                AssetDatabase.CreateAsset(built, NavMeshPath);
+                return;
+            }
+            if (stored == built) return;
+            EditorUtility.CopySerialized(built, stored);
+            surface.RemoveData();
+            surface.navMeshData = stored;
+            surface.AddData();
+            Object.DestroyImmediate(built);
+            EditorUtility.SetDirty(stored);
+        }
+
+        private static void EnsureEnemies(Scene scene, LevelMap map, PlayerLife player)
         {
             Transform container = BuilderUtil.EnsureRoot(scene, EnemiesName).transform;
             var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(AssetFactory.EnemyPrefabPath);
             var expected = new HashSet<string>();
+            int index = 0;
 
             foreach (var (col, row, c) in map.Cells())
             {
@@ -169,6 +204,17 @@ namespace Overdrive.EditorTools
                 // Al empezar miran hacia el sur (hacia abajo en pantalla).
                 enemy.transform.SetPositionAndRotation(map.CellToWorld(col, row), Quaternion.Euler(0f, 180f, 0f));
                 EnsureEnemyWeapon(enemy.GetComponent<Enemy>(), LevelMap.WeaponFor(c));
+
+                // La mitad de los enemigos patrulla; la otra mitad espera quieta en su puesto.
+                Vector3[] route = index % 2 == 0 ? map.PatrolRoute(col, row, PatrolCells) : new Vector3[0];
+                index++;
+                var ai = enemy.GetComponent<EnemyAI>();
+                BuilderUtil.SetRef(ai, "player", player);
+                var so = new SerializedObject(ai);
+                SerializedProperty points = so.FindProperty("patrolPoints");
+                points.arraySize = route.Length;
+                for (int i = 0; i < route.Length; i++) points.GetArrayElementAtIndex(i).vector3Value = route[i];
+                so.ApplyModifiedPropertiesWithoutUndo();
             }
 
             // Borra solo enemigos generados que ya no están en el mapa.

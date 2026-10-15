@@ -35,6 +35,10 @@ namespace Overdrive.EditorTools
             VerifyCombatSimulation(c);
             VerifyWeaponLogic(c);
             VerifyWeaponSimulation(c);
+            VerifyAIAssets(c);
+            VerifyAIScene(c, map);
+            VerifyAILogic(c, map);
+            VerifyAISimulation(c);
             return c;
         }
 
