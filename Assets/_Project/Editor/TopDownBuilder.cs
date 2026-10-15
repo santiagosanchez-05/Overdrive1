@@ -25,6 +25,8 @@ namespace Overdrive.EditorTools
             LevelMap map = Level01Map.Create();
 
             AssetFactory.EnsureMaterials();
+            AssetFactory.EnsureBulletPrefab();
+            AssetFactory.EnsureWeaponPrefabs();
             AssetFactory.EnsurePlayerPrefab();
             AssetFactory.EnsureEnemyPrefab();
             SceneFactory.Build(map);

@@ -6,6 +6,7 @@ using Overdrive.Core;
 using Overdrive.Enemies;
 using Overdrive.Level;
 using Overdrive.Player;
+using Overdrive.Weapons;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -27,6 +28,7 @@ namespace Overdrive.EditorTools
         public const string ExitName = "Exit";
         public const string PlayerName = "Player";
         public const string EnemiesName = "Enemies";
+        public const string WeaponsName = "Weapons";
         public const string CameraRigName = "CameraRig";
         public const string ShakeName = "Shake";
         public const string CameraName = "Main Camera";
@@ -55,6 +57,7 @@ namespace Overdrive.EditorTools
 
             GameObject player = EnsurePlayer(scene, map);
             EnsureEnemies(scene, map);
+            EnsureFloorWeapons(scene, map);
             EnsureCamera(scene, player);
 
             GameObject systems = BuilderUtil.EnsureRoot(scene, SystemsName);
@@ -165,6 +168,7 @@ namespace Overdrive.EditorTools
                 enemy.name = name;
                 // Al empezar miran hacia el sur (hacia abajo en pantalla).
                 enemy.transform.SetPositionAndRotation(map.CellToWorld(col, row), Quaternion.Euler(0f, 180f, 0f));
+                EnsureEnemyWeapon(enemy.GetComponent<Enemy>(), LevelMap.WeaponFor(c));
             }
 
             // Borra solo enemigos generados que ya no están en el mapa.
@@ -172,6 +176,61 @@ namespace Overdrive.EditorTools
             {
                 GameObject child = container.GetChild(i).gameObject;
                 if (!expected.Contains(child.name) || child.GetComponent<Enemy>() == null) Object.DestroyImmediate(child);
+            }
+        }
+
+        private static void EnsureEnemyWeapon(Enemy enemy, WeaponType type)
+        {
+            Transform hand = enemy.Hand;
+            WeaponItem item = hand.GetComponentInChildren<WeaponItem>(true);
+            if (item != null && item.Type != type)
+            {
+                Object.DestroyImmediate(item.gameObject);
+                item = null;
+            }
+            if (item == null)
+            {
+                var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(AssetFactory.WeaponPrefabPath(type));
+                var go = (GameObject)PrefabUtility.InstantiatePrefab(prefab, hand);
+                item = go.GetComponent<WeaponItem>();
+            }
+            item.gameObject.name = $"Weapon_{type}";
+            item.transform.localPosition = Vector3.zero;
+            item.transform.localRotation = Quaternion.identity;
+
+            var so = new SerializedObject(item);
+            so.FindProperty("mode").enumValueIndex = (int)WeaponItem.Mode.Held;
+            so.ApplyModifiedPropertiesWithoutUndo();
+            BuilderUtil.SetRef(enemy, "weapon", item);
+        }
+
+        public static string FloorWeaponName(char code, int col, int row) => $"Pickup_{code}_c{col}_r{row}";
+
+        private static void EnsureFloorWeapons(Scene scene, LevelMap map)
+        {
+            Transform container = BuilderUtil.EnsureRoot(scene, WeaponsName).transform;
+            var expected = new HashSet<string>();
+
+            foreach (var (col, row, c) in map.Cells())
+            {
+                if (!LevelMap.IsFloorWeapon(c)) continue;
+                WeaponType type = LevelMap.WeaponFor(c);
+                string name = FloorWeaponName(c, col, row);
+                expected.Add(name);
+                Transform existing = container.Find(name);
+                GameObject go = existing != null
+                    ? existing.gameObject
+                    : (GameObject)PrefabUtility.InstantiatePrefab(
+                        AssetDatabase.LoadAssetAtPath<GameObject>(AssetFactory.WeaponPrefabPath(type)), container);
+                go.name = name;
+                go.transform.SetPositionAndRotation(map.CellToWorld(col, row) + new Vector3(0f, 0.08f, 0f),
+                    Quaternion.Euler(0f, 30f, 0f));
+            }
+
+            for (int i = container.childCount - 1; i >= 0; i--)
+            {
+                GameObject child = container.GetChild(i).gameObject;
+                if (!expected.Contains(child.name) || child.GetComponent<WeaponItem>() == null) Object.DestroyImmediate(child);
             }
         }
 

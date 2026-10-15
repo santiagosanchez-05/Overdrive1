@@ -5,6 +5,7 @@ using Overdrive.Core;
 using Overdrive.Enemies;
 using Overdrive.Level;
 using Overdrive.Player;
+using Overdrive.Weapons;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -16,7 +17,7 @@ namespace Overdrive.EditorTools
     /// Verificación automática: referencias de assets y escena, y simulación de la lógica
     /// llamando a los métodos en modo editor, sin entrar en Play.
     /// </summary>
-    internal static class Verifier
+    internal static partial class Verifier
     {
         public static Checker Run(LevelMap map)
         {
@@ -32,6 +33,8 @@ namespace Overdrive.EditorTools
             VerifyTargetingLogic(c);
             VerifyFinisherSequenceLogic(c);
             VerifyCombatSimulation(c);
+            VerifyWeaponLogic(c);
+            VerifyWeaponSimulation(c);
             return c;
         }
 
@@ -49,6 +52,26 @@ namespace Overdrive.EditorTools
             var enemyPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(AssetFactory.EnemyPrefabPath);
             c.NotNull(enemyPrefab, "Falta el prefab Enemy");
             if (enemyPrefab != null) VerifyEnemyComponents(c, enemyPrefab, "Prefab Enemy");
+
+            var bullet = AssetDatabase.LoadAssetAtPath<GameObject>(AssetFactory.BulletPrefabPath);
+            c.Check(bullet != null && bullet.GetComponent<Projectile>() != null, "Falta el prefab Bullet con Projectile");
+            if (bullet != null)
+                c.Check(bullet.GetComponentsInChildren<Collider>(true).Length == 0, "La bala no debe tener colliders");
+
+            foreach (WeaponType type in AssetFactory.AllWeaponTypes)
+            {
+                var weaponPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(AssetFactory.WeaponPrefabPath(type));
+                WeaponItem item = weaponPrefab != null ? weaponPrefab.GetComponent<WeaponItem>() : null;
+                c.NotNull(item, $"Falta el prefab Weapon_{type} con WeaponItem");
+                if (item == null) continue;
+                c.Check(item.Type == type, $"Weapon_{type}: tipo incorrecto");
+                c.Check(item.CurrentMode == WeaponItem.Mode.Ground, $"Weapon_{type}: debe empezar en el suelo");
+                bool isMelee = WeaponDefinition.Get(type).IsMelee;
+                c.Check(isMelee ? item.ProjectilePrefab == null : item.ProjectilePrefab != null,
+                    $"Weapon_{type}: {(isMelee ? "no debe tener" : "debe tener")} proyectil");
+                c.Check(weaponPrefab.GetComponentsInChildren<Collider>(true).Length == 0, $"Weapon_{type}: no debe tener colliders");
+                c.Check(weaponPrefab.GetComponentsInChildren<Renderer>(true).Length >= 2, $"Weapon_{type}: le falta el modelo");
+            }
         }
 
         private static void VerifyEnemyComponents(Checker c, GameObject go, string label)
@@ -61,6 +84,7 @@ namespace Overdrive.EditorTools
             c.NotNull(enemy.BodyRenderer, $"{label}: Enemy.bodyRenderer sin asignar");
             c.Check(enemy.DeadMaterial == AssetFactory.Mat(AssetFactory.MatEnemyDead), $"{label}: Enemy.deadMaterial debe ser M_EnemyDead");
             c.Check(enemy.KnockdownDuration > 2f && enemy.KnockdownDuration < 4f, $"{label}: el derribo debe durar unos 3 s");
+            c.Check(enemy.Hand != null && enemy.Hand == go.transform.Find(AssetFactory.HandName), $"{label}: Enemy.hand debe ser el hijo Hand");
         }
 
         private static void VerifyPlayerComponents(Checker c, GameObject player, string label)
@@ -88,9 +112,18 @@ namespace Overdrive.EditorTools
             c.NotNull(finisher, $"{label}: falta PlayerFinisher");
             if (melee != null)
             {
-                c.Check(melee.Life == life, $"{label}: PlayerMelee.life sin asignar");
-                c.Check(melee.Finisher == finisher, $"{label}: PlayerMelee.finisher sin asignar");
                 c.Check(melee.Fist == player.transform.Find("Body/Nose"), $"{label}: PlayerMelee.fist debe ser Body/Nose");
+            }
+
+            var weapons = player.GetComponent<PlayerWeapons>();
+            c.NotNull(weapons, $"{label}: falta PlayerWeapons");
+            if (weapons != null)
+            {
+                c.Check(weapons.Hand != null && weapons.Hand == player.transform.Find(AssetFactory.HandName),
+                    $"{label}: PlayerWeapons.hand debe ser el hijo Hand");
+                c.Check(weapons.Life == life, $"{label}: PlayerWeapons.life sin asignar");
+                c.Check(weapons.Finisher == finisher, $"{label}: PlayerWeapons.finisher sin asignar");
+                c.Check(weapons.Melee == melee, $"{label}: PlayerWeapons.melee sin asignar");
             }
             if (finisher != null)
             {
@@ -108,7 +141,7 @@ namespace Overdrive.EditorTools
             c.Check(buildScenes.Length > 0 && buildScenes[0].path == SceneFactory.ScenePath && buildScenes[0].enabled,
                 "Level01 debe ser la primera escena habilitada en Build Settings");
 
-            foreach (string root in new[] { SceneFactory.LevelRoot, SceneFactory.PlayerName, SceneFactory.EnemiesName,
+            foreach (string root in new[] { SceneFactory.LevelRoot, SceneFactory.PlayerName, SceneFactory.EnemiesName, SceneFactory.WeaponsName,
                          SceneFactory.CameraRigName, SceneFactory.SystemsName, SceneFactory.LightName })
             {
                 int count = scene.GetRootGameObjects().Count(g => g.name == root);
@@ -155,6 +188,32 @@ namespace Overdrive.EditorTools
                     c.Check(PrefabUtility.IsPartOfPrefabInstance(t.gameObject), $"{name} debe ser instancia del prefab Enemy");
                     c.Near(t.position, map.CellToWorld(col, row), $"{name} en su celda del mapa");
                     VerifyEnemyComponents(c, t.gameObject, name);
+
+                    Enemy enemy = t.GetComponent<Enemy>();
+                    WeaponItem weapon = enemy != null ? enemy.Weapon : null;
+                    c.NotNull(weapon, $"{name}: debe llevar un arma");
+                    if (weapon == null) continue;
+                    c.Check(weapon.Type == LevelMap.WeaponFor(ch), $"{name}: debe llevar {LevelMap.WeaponFor(ch)} (lleva {weapon.Type})");
+                    c.Check(weapon.CurrentMode == WeaponItem.Mode.Held, $"{name}: su arma debe estar en modo Held");
+                    c.Check(weapon.transform.parent == enemy.Hand, $"{name}: su arma debe estar en la mano");
+                    c.Check(enemy.Hand.GetComponentsInChildren<WeaponItem>(true).Length == 1, $"{name}: solo debe tener un arma");
+                }
+            }
+
+            GameObject weaponsRoot = BuilderUtil.FindRoot(scene, SceneFactory.WeaponsName);
+            if (weaponsRoot != null)
+            {
+                int expected = map.Cells().Count(cell => LevelMap.IsFloorWeapon(cell.c));
+                c.Check(weaponsRoot.transform.childCount == expected,
+                    $"Debe haber {expected} armas en el suelo (hay {weaponsRoot.transform.childCount})");
+                foreach (var (col, row, ch) in map.Cells())
+                {
+                    if (!LevelMap.IsFloorWeapon(ch)) continue;
+                    string name = SceneFactory.FloorWeaponName(ch, col, row);
+                    WeaponItem item = weaponsRoot.transform.Find(name)?.GetComponent<WeaponItem>();
+                    c.NotNull(item, $"Falta el arma del suelo {name}");
+                    if (item == null) continue;
+                    c.Check(item.Type == LevelMap.WeaponFor(ch) && item.IsOnGround, $"{name}: tipo o modo incorrecto");
                 }
             }
 

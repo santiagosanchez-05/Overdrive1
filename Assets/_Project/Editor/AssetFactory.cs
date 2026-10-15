@@ -2,6 +2,7 @@ using System;
 using Overdrive.Combat;
 using Overdrive.Enemies;
 using Overdrive.Player;
+using Overdrive.Weapons;
 using UnityEditor;
 using UnityEngine;
 
@@ -15,6 +16,10 @@ namespace Overdrive.EditorTools
         public const string PrefabsPath = Root + "/Prefabs";
         public const string PlayerPrefabPath = PrefabsPath + "/Player.prefab";
         public const string EnemyPrefabPath = PrefabsPath + "/Enemy.prefab";
+        public const string BulletPrefabPath = PrefabsPath + "/Bullet.prefab";
+        public const string HandName = "Hand";
+
+        public static string WeaponPrefabPath(WeaponType type) => $"{PrefabsPath}/Weapon_{type}.prefab";
 
         public const string MatFloor = "Floor";
         public const string MatWall = "Wall";
@@ -24,6 +29,11 @@ namespace Overdrive.EditorTools
         public const string MatEnemy = "Enemy";
         public const string MatEnemyDetail = "EnemyDetail";
         public const string MatEnemyDead = "EnemyDead";
+        public const string MatWeaponMelee = "WeaponMelee";
+        public const string MatWeaponGun = "WeaponGun";
+        public const string MatWeaponDark = "WeaponDark";
+        public const string MatBlade = "Blade";
+        public const string MatBullet = "Bullet";
 
         /// <summary>Nombre, color base e intensidad de emisión (0 = sin emisión).</summary>
         public static readonly (string name, Color color, float emission)[] MaterialDefs =
@@ -36,7 +46,104 @@ namespace Overdrive.EditorTools
             (MatEnemy, new Color(1.00f, 0.15f, 0.25f), 0.4f),
             (MatEnemyDetail, new Color(0.15f, 0.05f, 0.05f), 0f),
             (MatEnemyDead, new Color(0.35f, 0.02f, 0.05f), 0f),
+            (MatWeaponMelee, new Color(1.00f, 0.50f, 0.10f), 0.8f),
+            (MatWeaponGun, new Color(0.55f, 0.80f, 1.00f), 0.8f),
+            (MatWeaponDark, new Color(0.12f, 0.12f, 0.15f), 0f),
+            (MatBlade, new Color(0.85f, 0.90f, 1.00f), 0.6f),
+            (MatBullet, new Color(1.00f, 0.90f, 0.30f), 4f),
         };
+
+        /// <summary>Pieza visual de un arma: forma, posición, escala, rotación y material.</summary>
+        private readonly struct Part
+        {
+            public readonly string Name;
+            public readonly PrimitiveType Shape;
+            public readonly Vector3 Position, Scale, Euler;
+            public readonly string Material;
+
+            public Part(string name, PrimitiveType shape, Vector3 position, Vector3 scale, Vector3 euler, string material)
+            {
+                Name = name; Shape = shape; Position = position; Scale = scale; Euler = euler; Material = material;
+            }
+        }
+
+        // Todas las armas apuntan hacia +Z local. Los cilindros se tumban 90° en X.
+        private static Part[] WeaponParts(WeaponType type)
+        {
+            Vector3 lie = new Vector3(90f, 0f, 0f);
+            switch (type)
+            {
+                case WeaponType.Bat:
+                    return new[]
+                    {
+                        new Part("Handle", PrimitiveType.Cylinder, new Vector3(0f, 0f, 0.15f), new Vector3(0.07f, 0.18f, 0.07f), lie, MatWeaponDark),
+                        new Part("Barrel", PrimitiveType.Cylinder, new Vector3(0f, 0f, 0.6f), new Vector3(0.13f, 0.28f, 0.13f), lie, MatWeaponMelee),
+                    };
+                case WeaponType.Knife:
+                    return new[]
+                    {
+                        new Part("Handle", PrimitiveType.Cube, new Vector3(0f, 0f, 0.05f), new Vector3(0.06f, 0.06f, 0.16f), Vector3.zero, MatWeaponMelee),
+                        new Part("Blade", PrimitiveType.Cube, new Vector3(0f, 0f, 0.27f), new Vector3(0.05f, 0.03f, 0.3f), Vector3.zero, MatBlade),
+                    };
+                case WeaponType.Shotgun:
+                    return new[]
+                    {
+                        new Part("Stock", PrimitiveType.Cube, new Vector3(0f, 0f, 0f), new Vector3(0.11f, 0.13f, 0.32f), Vector3.zero, MatWeaponDark),
+                        new Part("Barrel", PrimitiveType.Cube, new Vector3(0f, 0.02f, 0.45f), new Vector3(0.09f, 0.09f, 0.6f), Vector3.zero, MatWeaponGun),
+                    };
+                case WeaponType.Smg:
+                    return new[]
+                    {
+                        new Part("Body", PrimitiveType.Cube, new Vector3(0f, 0f, 0.1f), new Vector3(0.1f, 0.16f, 0.36f), Vector3.zero, MatWeaponGun),
+                        new Part("Mag", PrimitiveType.Cube, new Vector3(0f, -0.13f, 0.12f), new Vector3(0.06f, 0.16f, 0.08f), Vector3.zero, MatWeaponDark),
+                        new Part("Barrel", PrimitiveType.Cube, new Vector3(0f, 0.03f, 0.37f), new Vector3(0.05f, 0.05f, 0.2f), Vector3.zero, MatWeaponDark),
+                    };
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(type), type, null);
+            }
+        }
+
+        public static WeaponType[] AllWeaponTypes => (WeaponType[])Enum.GetValues(typeof(WeaponType));
+
+        public static GameObject EnsureBulletPrefab()
+        {
+            BuilderUtil.EnsureFolder(PrefabsPath);
+            return BuilderUtil.EditPrefab(BulletPrefabPath, "Bullet", root =>
+            {
+                BuilderUtil.EnsureComponent<Projectile>(root);
+                GameObject model = BuilderUtil.EnsurePrimitiveChild(root.transform, "Model", PrimitiveType.Cube, false);
+                BuilderUtil.SetLocal(model, Vector3.zero, new Vector3(0.1f, 0.1f, 0.45f), Quaternion.identity);
+                BuilderUtil.SetMaterial(model, Mat(MatBullet));
+                model.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            });
+        }
+
+        public static void EnsureWeaponPrefabs()
+        {
+            BuilderUtil.EnsureFolder(PrefabsPath);
+            var bullet = AssetDatabase.LoadAssetAtPath<GameObject>(BulletPrefabPath).GetComponent<Projectile>();
+            foreach (WeaponType type in AllWeaponTypes)
+            {
+                BuilderUtil.EditPrefab(WeaponPrefabPath(type), $"Weapon_{type}", root =>
+                {
+                    var item = BuilderUtil.EnsureComponent<WeaponItem>(root);
+                    var so = new SerializedObject(item);
+                    so.FindProperty("type").enumValueIndex = (int)type;
+                    so.FindProperty("mode").enumValueIndex = (int)WeaponItem.Mode.Ground;
+                    so.FindProperty("projectilePrefab").objectReferenceValue =
+                        WeaponDefinition.Get(type).IsMelee ? null : bullet;
+                    so.ApplyModifiedPropertiesWithoutUndo();
+
+                    GameObject model = BuilderUtil.EnsureChild(root.transform, "Model");
+                    foreach (Part part in WeaponParts(type))
+                    {
+                        GameObject go = BuilderUtil.EnsurePrimitiveChild(model.transform, part.Name, part.Shape, false);
+                        BuilderUtil.SetLocal(go, part.Position, part.Scale, Quaternion.Euler(part.Euler));
+                        BuilderUtil.SetMaterial(go, Mat(part.Material));
+                    }
+                });
+            }
+        }
 
         public static string MaterialPath(string name) => $"{MaterialsPath}/M_{name}.mat";
 
@@ -105,9 +212,14 @@ namespace Overdrive.EditorTools
                 BuilderUtil.SetRef(finisher, "life", life);
 
                 var melee = BuilderUtil.EnsureComponent<PlayerMelee>(root);
-                BuilderUtil.SetRef(melee, "life", life);
-                BuilderUtil.SetRef(melee, "finisher", finisher);
                 BuilderUtil.SetRef(melee, "fist", nose.transform);
+
+                GameObject hand = EnsureHand(root);
+                var weapons = BuilderUtil.EnsureComponent<PlayerWeapons>(root);
+                BuilderUtil.SetRef(weapons, "hand", hand.transform);
+                BuilderUtil.SetRef(weapons, "life", life);
+                BuilderUtil.SetRef(weapons, "finisher", finisher);
+                BuilderUtil.SetRef(weapons, "melee", melee);
             });
         }
 
@@ -128,7 +240,16 @@ namespace Overdrive.EditorTools
                 BuilderUtil.SetRef(enemy, "bodyCollider", collider);
                 BuilderUtil.SetRef(enemy, "bodyRenderer", body.GetComponent<Renderer>());
                 BuilderUtil.SetRef(enemy, "deadMaterial", Mat(MatEnemyDead));
+                BuilderUtil.SetRef(enemy, "hand", EnsureHand(root).transform);
             });
+        }
+
+        /// <summary>Punto donde se sostiene el arma: a la derecha y delante del cuerpo.</summary>
+        private static GameObject EnsureHand(GameObject root)
+        {
+            GameObject hand = BuilderUtil.EnsureChild(root.transform, HandName);
+            BuilderUtil.SetLocal(hand, new Vector3(0.38f, 1.0f, 0.35f), Vector3.one, Quaternion.identity);
+            return hand;
         }
 
         /// <summary>
