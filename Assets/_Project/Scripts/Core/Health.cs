@@ -20,5 +20,8 @@ namespace Overdrive.Core
             Died?.Invoke();
             return true;
         }
+
+        /// <summary>Rebobinar: vuelve a un estado anterior sin disparar eventos.</summary>
+        public void Restore(bool dead) => IsDead = dead;
     }
 }

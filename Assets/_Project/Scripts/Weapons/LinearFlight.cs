@@ -40,5 +40,30 @@ namespace Overdrive.Weapons
         {
             Active = false;
         }
+
+        public readonly struct Snapshot
+        {
+            public readonly Vector3 Position, Direction;
+            public readonly float Speed, MaxDistance, Travelled;
+            public readonly bool Active;
+
+            public Snapshot(LinearFlight f)
+            {
+                Position = f.Position; Direction = f.Direction; Speed = f.Speed;
+                MaxDistance = f.MaxDistance; Travelled = f.Travelled; Active = f.Active;
+            }
+        }
+
+        public Snapshot Capture() => new Snapshot(this);
+
+        public void Restore(Snapshot s)
+        {
+            Position = s.Position;
+            Direction = s.Direction;
+            Speed = s.Speed;
+            MaxDistance = s.MaxDistance;
+            Travelled = s.Travelled;
+            Active = s.Active;
+        }
     }
 }

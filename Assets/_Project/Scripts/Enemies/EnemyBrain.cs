@@ -175,6 +175,40 @@ namespace Overdrive.Enemies
 
         public void SetHunting(bool hunting) => Hunting = hunting;
 
+        /// <summary>Estado interno completo, para rebobinar.</summary>
+        public readonly struct Snapshot
+        {
+            public readonly AIState State;
+            public readonly float Suspicion, Timer, SinceSeen, ReactionLeft;
+            public readonly bool Hunting;
+            public readonly int PatrolIndex;
+            public readonly Vector3 LastKnown;
+
+            public Snapshot(EnemyBrain b)
+            {
+                State = b.State; Suspicion = b.Suspicion; Timer = b.timer; SinceSeen = b.sinceSeen;
+                ReactionLeft = b.reactionLeft; Hunting = b.Hunting; PatrolIndex = b.patrolIndex;
+                LastKnown = b.LastKnownPlayerPosition;
+            }
+        }
+
+        public Snapshot Capture() => new Snapshot(this);
+
+        public void Restore(Snapshot s)
+        {
+            State = s.State;
+            Suspicion = s.Suspicion;
+            timer = s.Timer;
+            sinceSeen = s.SinceSeen;
+            reactionLeft = s.ReactionLeft;
+            Hunting = s.Hunting;
+            patrolIndex = s.PatrolIndex;
+            LastKnownPlayerPosition = s.LastKnown;
+            HasMoveTarget = false;
+            HasLookTarget = false;
+            WantsAttack = false;
+        }
+
         /// <summary>Segundos que tarda en llenarse la sospecha viendo al jugador a esa distancia.</summary>
         public float DetectionTime(float distance)
         {

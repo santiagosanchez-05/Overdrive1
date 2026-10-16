@@ -68,6 +68,29 @@ namespace Overdrive.Combat
             return Kill();
         }
 
+        public readonly struct Snapshot
+        {
+            public readonly Posture Posture;
+            public readonly float DownTimer;
+
+            public Snapshot(Posture posture, float downTimer)
+            {
+                Posture = posture;
+                DownTimer = downTimer;
+            }
+        }
+
+        public Snapshot Capture() => new Snapshot(Posture, downTimer);
+
+        /// <summary>Rebobinar: vuelve al estado guardado. Un remate a medias se cancela.</summary>
+        public void Restore(Snapshot snapshot)
+        {
+            Posture = snapshot.Posture;
+            downTimer = snapshot.DownTimer;
+            IsBeingFinished = false;
+            health.Restore(snapshot.Posture == Posture.Dead);
+        }
+
         /// <summary>Golpe letal (arma o remate).</summary>
         public bool Kill()
         {

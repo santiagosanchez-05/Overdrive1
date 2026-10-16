@@ -23,6 +23,15 @@ namespace Overdrive.Weapons
         public bool IsEmpty => !IsMelee && Ammo <= 0;
         public bool Ready => cooldownLeft <= 0f;
 
+        public float CooldownLeft => cooldownLeft;
+
+        /// <summary>Rebobinar: vuelve a la munición y el enfriamiento guardados.</summary>
+        public void Restore(int ammo, float cooldown)
+        {
+            Ammo = ammo;
+            cooldownLeft = cooldown;
+        }
+
         public void Tick(float deltaTime)
         {
             cooldownLeft = Mathf.Max(0f, cooldownLeft - deltaTime);

@@ -23,6 +23,9 @@ namespace Overdrive.Core
         public int Remaining { get; private set; }
         public bool HasObjective { get; private set; } = true;
 
+        /// <summary>Rebobinar: vuelve al estado guardado (por ejemplo, de Failed a Playing).</summary>
+        public void Restore(LevelState state) => State = state;
+
         public LevelState Evaluate(int total, int dead, bool playerDead, bool playerInExit, bool hasObjective = true)
         {
             Total = total;
