@@ -4685,6 +4685,7 @@ GameObject:
   - component: {fileID: 997003031}
   - component: {fileID: 997003030}
   - component: {fileID: 997003032}
+  - component: {fileID: 997003033}
   m_Layer: 0
   m_Name: Systems
   m_TagString: Untagged
@@ -4734,6 +4735,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Overdrive.UI.GameHUD
   weapons: {fileID: 1095807300}
   level: {fileID: 997003031}
+  rewinder: {fileID: 997003033}
 --- !u!114 &997003031
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4778,6 +4780,24 @@ MonoBehaviour:
   - {fileID: 1526263284}
   briefcase: {fileID: 1539485728}
   refreshInterval: 0.1
+--- !u!114 &997003033
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 997003027}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: acc8452c9a410bb4d85d815a3d71d506, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Overdrive.Level.TimeRewinder
+  player: {fileID: 1095807299}
+  level: {fileID: 997003031}
+  cameraRig: {fileID: 594823640}
+  interval: 0.1
+  window: 5
+  maxUses: 3
 --- !u!1001 &1011921181
 PrefabInstance:
   m_ObjectHideFlags: 0

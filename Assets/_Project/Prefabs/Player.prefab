@@ -109,6 +109,7 @@ GameObject:
   - component: {fileID: 7869165369523923364}
   - component: {fileID: 5646136542784917167}
   - component: {fileID: 774987484534567719}
+  - component: {fileID: 5239579672825699301}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -286,6 +287,24 @@ MonoBehaviour:
   stepLength: 1.4
   noiseRadius: 5
   maxStepJump: 3
+--- !u!114 &5239579672825699301
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1292686525374302431}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4256365ce68f55c478d10fbca44efb10, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Overdrive.Player.PlayerRewind
+  life: {fileID: 7982732997962180055}
+  controller: {fileID: 3479341078645059018}
+  weapons: {fileID: 7869165369523923364}
+  finisher: {fileID: 5781536501737919570}
+  melee: {fileID: 3209719595741885290}
+  footsteps: {fileID: 774987484534567719}
 --- !u!1 &1885037976511885489
 GameObject:
   m_ObjectHideFlags: 0
