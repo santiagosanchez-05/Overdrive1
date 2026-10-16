@@ -11,6 +11,8 @@ namespace Overdrive.Player
         [SerializeField] private CharacterController controller;
         [SerializeField] private PlayerLife life;
         [SerializeField] private float moveSpeed = 7f;
+        [Tooltip("Velocidad agachado (Ctrl), en silencio.")]
+        [SerializeField] private float sneakSpeed = 3.2f;
         [SerializeField] private float gravity = 25f;
         [Tooltip("Velocidad hacia abajo en el suelo, para pegarse a la rampa al bajar.")]
         [SerializeField] private float groundStick = 6f;
@@ -25,6 +27,10 @@ namespace Overdrive.Player
         public CharacterController Controller => controller;
         public PlayerLife Life => life;
         public float MoveSpeed => moveSpeed;
+        public float SneakSpeed => sneakSpeed;
+
+        /// <summary>Camina agachado (Ctrl): más lento y sin ruido de pasos.</summary>
+        public bool IsSneaking { get; private set; }
 
         /// <summary>Aterrizaje tras una caída; el parámetro es la altura caída.</summary>
         public event Action<float> Landed;
@@ -33,9 +39,10 @@ namespace Overdrive.Player
         {
             if (life != null && life.IsDead) return;
 
+            IsSneaking = GameInput.Sneak;
             Vector3 velocity = MovementLocked
                 ? Vector3.zero
-                : PlayerMovementLogic.WorldVelocity(GameInput.Move, moveSpeed);
+                : PlayerMovementLogic.WorldVelocity(GameInput.Move, IsSneaking ? sneakSpeed : moveSpeed);
 
             verticalSpeed = controller.isGrounded ? -groundStick : verticalSpeed - gravity * Time.deltaTime;
             velocity.y = verticalSpeed;

@@ -27,6 +27,9 @@ namespace Overdrive.Core
         /// <summary>Shift: la cámara se adelanta más para mirar lejos.</summary>
         public static bool LookFar => Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
 
+        /// <summary>Ctrl: caminar agachado, más lento y sin hacer ruido.</summary>
+        public static bool Sneak => Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
+
         public static bool RestartPressed => Input.GetKeyDown(KeyCode.R);
         public static bool AttackPressed => Input.GetMouseButtonDown(0);
         public static bool AttackHeld => Input.GetMouseButton(0);
