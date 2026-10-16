@@ -19,11 +19,12 @@ namespace Overdrive.EditorTools
     /// </summary>
     internal static partial class Verifier
     {
-        public static Checker Run(LevelMap map)
+        public static Checker Run(LevelLayout layout)
         {
             var c = new Checker();
+            LevelMap map = layout.Ground;
             VerifyAssets(c);
-            VerifyScene(c, map);
+            VerifyScene(c, layout);
             VerifyMap(c, map);
             VerifyMovementLogic(c);
             VerifyAimLogic(c);
@@ -36,12 +37,16 @@ namespace Overdrive.EditorTools
             VerifyWeaponLogic(c);
             VerifyWeaponSimulation(c);
             VerifyAIAssets(c);
-            VerifyAIScene(c, map);
-            VerifyAILogic(c, map);
+            VerifyAIScene(c, layout);
+            VerifyAILogic(c, layout);
             VerifyAISimulation(c);
-            VerifyLevelScene(c, map);
+            VerifyLevelScene(c, layout);
             VerifyLevelLogic(c);
             VerifyLevelSimulation(c);
+            VerifyFloorsMap(c, layout);
+            VerifyFloorsScene(c, layout);
+            VerifyFloorsLogic(c);
+            VerifyFloorsSimulation(c, layout);
             return c;
         }
 
@@ -139,8 +144,9 @@ namespace Overdrive.EditorTools
             }
         }
 
-        private static void VerifyScene(Checker c, LevelMap map)
+        private static void VerifyScene(Checker c, LevelLayout layout)
         {
+            LevelMap map = layout.Ground;
             Scene scene = SceneManager.GetActiveScene();
             c.Check(scene.path == SceneFactory.ScenePath, $"La escena activa debería ser {SceneFactory.ScenePath} (es '{scene.path}')");
 
@@ -182,18 +188,18 @@ namespace Overdrive.EditorTools
             if (enemiesRoot != null)
             {
                 Enemy[] enemies = enemiesRoot.GetComponentsInChildren<Enemy>(true);
-                int expected = map.Cells().Count(cell => LevelMap.IsEnemy(cell.c));
+                int expected = layout.EnemyCount;
                 c.Check(enemies.Length == expected, $"Debe haber {expected} enemigos en la escena (hay {enemies.Length})");
                 c.Check(enemiesRoot.transform.childCount == enemies.Length, "Enemies solo debe contener enemigos");
-                foreach (var (col, row, ch) in map.Cells())
+                foreach (var (floorMap, col, row, ch) in layout.AllCells())
                 {
                     if (!LevelMap.IsEnemy(ch)) continue;
-                    string name = SceneFactory.EnemyName(ch, col, row);
+                    string name = SceneFactory.EnemyName(ch, col, row, floorMap.FloorIndex);
                     Transform t = enemiesRoot.transform.Find(name);
                     c.NotNull(t, $"Falta el enemigo {name}");
                     if (t == null) continue;
                     c.Check(PrefabUtility.IsPartOfPrefabInstance(t.gameObject), $"{name} debe ser instancia del prefab Enemy");
-                    c.Near(t.position, map.CellToWorld(col, row), $"{name} en su celda del mapa");
+                    c.Near(t.position, floorMap.CellToWorld(col, row), $"{name} en su celda del mapa");
                     VerifyEnemyComponents(c, t.gameObject, name);
 
                     Enemy enemy = t.GetComponent<Enemy>();
@@ -210,13 +216,13 @@ namespace Overdrive.EditorTools
             GameObject weaponsRoot = BuilderUtil.FindRoot(scene, SceneFactory.WeaponsName);
             if (weaponsRoot != null)
             {
-                int expected = map.Cells().Count(cell => LevelMap.IsFloorWeapon(cell.c));
+                int expected = layout.AllCells().Count(cell => LevelMap.IsFloorWeapon(cell.c));
                 c.Check(weaponsRoot.transform.childCount == expected,
                     $"Debe haber {expected} armas en el suelo (hay {weaponsRoot.transform.childCount})");
-                foreach (var (col, row, ch) in map.Cells())
+                foreach (var (floorMap, col, row, ch) in layout.AllCells())
                 {
                     if (!LevelMap.IsFloorWeapon(ch)) continue;
-                    string name = SceneFactory.FloorWeaponName(ch, col, row);
+                    string name = SceneFactory.FloorWeaponName(ch, col, row, floorMap.FloorIndex);
                     WeaponItem item = weaponsRoot.transform.Find(name)?.GetComponent<WeaponItem>();
                     c.NotNull(item, $"Falta el arma del suelo {name}");
                     if (item == null) continue;
@@ -260,8 +266,6 @@ namespace Overdrive.EditorTools
         {
             c.Check(map.FindAll(LevelMap.PlayerSpawn).Count == 1, "El mapa debe tener exactamente un 'P'");
             c.Check(map.FindAll(LevelMap.Exit).Count > 0, "El mapa debe tener zona de salida 'X'");
-            int enemies = map.Cells().Count(cell => LevelMap.IsEnemy(cell.c));
-            c.Check(enemies == 10, $"El mapa debe tener 10 enemigos (tiene {enemies})");
 
             bool closed = true;
             for (int col = 0; col < map.Width; col++)
@@ -272,7 +276,7 @@ namespace Overdrive.EditorTools
 
             var (pc, pr) = map.FindAll(LevelMap.PlayerSpawn)[0];
             var reachable = map.FloodFill(pc, pr);
-            int walkable = map.Cells().Count(cell => cell.c != LevelMap.Wall);
+            int walkable = map.Cells().Count(cell => map.IsWalkable(cell.col, cell.row));
             c.Check(reachable.Count == walkable,
                 $"Todas las celdas transitables deben ser alcanzables desde P ({reachable.Count}/{walkable})");
 

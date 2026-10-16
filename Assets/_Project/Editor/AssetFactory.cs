@@ -1,6 +1,7 @@
 using System;
 using Overdrive.Combat;
 using Overdrive.Enemies;
+using Overdrive.Level;
 using Overdrive.Player;
 using Overdrive.Weapons;
 using UnityEditor;
@@ -19,6 +20,7 @@ namespace Overdrive.EditorTools
         public const string EnemyPrefabPath = PrefabsPath + "/Enemy.prefab";
         public const string BulletPrefabPath = PrefabsPath + "/Bullet.prefab";
         public const string BloodPrefabPath = PrefabsPath + "/Blood.prefab";
+        public const string BriefcasePrefabPath = PrefabsPath + "/Briefcase.prefab";
         public const string HandName = "Hand";
 
         public static string WeaponPrefabPath(WeaponType type) => $"{PrefabsPath}/Weapon_{type}.prefab";
@@ -38,6 +40,10 @@ namespace Overdrive.EditorTools
         public const string MatBullet = "Bullet";
         public const string MatBlood = "Blood";
         public const string MatExitLocked = "ExitLocked";
+        public const string MatFloorUpper = "FloorUpper";
+        public const string MatStairs = "Stairs";
+        public const string MatDoor = "Door";
+        public const string MatBriefcase = "Briefcase";
 
         /// <summary>Nombre, color base e intensidad de emisión (0 = sin emisión).</summary>
         public static readonly (string name, Color color, float emission)[] MaterialDefs =
@@ -57,7 +63,26 @@ namespace Overdrive.EditorTools
             (MatBullet, new Color(1.00f, 0.90f, 0.30f), 4f),
             (MatBlood, new Color(0.65f, 0.00f, 0.03f), 0.25f),
             (MatExitLocked, new Color(0.10f, 0.30f, 0.15f), 0.2f),
+            (MatFloorUpper, new Color(0.08f, 0.30f, 0.55f), 0f),
+            (MatStairs, new Color(0.95f, 0.65f, 0.10f), 0.3f),
+            (MatDoor, new Color(1.00f, 0.35f, 0.05f), 0.7f),
+            (MatBriefcase, new Color(1.00f, 0.80f, 0.15f), 1.5f),
         };
+
+        public static GameObject EnsureBriefcasePrefab()
+        {
+            BuilderUtil.EnsureFolder(PrefabsPath);
+            return BuilderUtil.EditPrefab(BriefcasePrefabPath, "Briefcase", root =>
+            {
+                BuilderUtil.EnsureComponent<BriefcasePickup>(root);
+                GameObject body = BuilderUtil.EnsurePrimitiveChild(root.transform, "Body", PrimitiveType.Cube, false);
+                BuilderUtil.SetLocal(body, new Vector3(0f, 0.09f, 0f), new Vector3(0.6f, 0.18f, 0.42f), Quaternion.identity);
+                BuilderUtil.SetMaterial(body, Mat(MatBriefcase));
+                GameObject handle = BuilderUtil.EnsurePrimitiveChild(root.transform, "Handle", PrimitiveType.Cube, false);
+                BuilderUtil.SetLocal(handle, new Vector3(0f, 0.09f, 0.24f), new Vector3(0.22f, 0.06f, 0.06f), Quaternion.identity);
+                BuilderUtil.SetMaterial(handle, Mat(MatWeaponDark));
+            });
+        }
 
         public static GameObject EnsureBloodPrefab()
         {
@@ -241,6 +266,9 @@ namespace Overdrive.EditorTools
                 BuilderUtil.SetRef(weapons, "life", life);
                 BuilderUtil.SetRef(weapons, "finisher", finisher);
                 BuilderUtil.SetRef(weapons, "melee", melee);
+
+                var stomp = BuilderUtil.EnsureComponent<PlayerStomp>(root);
+                BuilderUtil.SetRef(stomp, "controller", playerController);
             });
         }
 

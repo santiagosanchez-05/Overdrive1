@@ -16,8 +16,9 @@ namespace Overdrive.EditorTools
     /// <summary>Verificación del nivel completo: salida, victoria, HUD y sangre.</summary>
     internal static partial class Verifier
     {
-        private static void VerifyLevelScene(Checker c, LevelMap map)
+        private static void VerifyLevelScene(Checker c, LevelLayout layout)
         {
+            LevelMap map = layout.Ground;
             Scene scene = SceneManager.GetActiveScene();
 
             var bloodPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(AssetFactory.BloodPrefabPath);
@@ -80,7 +81,7 @@ namespace Overdrive.EditorTools
             if (spawner != null) c.Check(spawner.BloodPrefab == bloodPrefab, "BloodSpawner.bloodPrefab sin asignar");
 
             // --- Variedad de armas entre los enemigos ---
-            var types = new HashSet<WeaponType>(map.Cells().Where(x => LevelMap.IsEnemy(x.c)).Select(x => LevelMap.WeaponFor(x.c)));
+            var types = new HashSet<WeaponType>(layout.AllCells().Where(x => LevelMap.IsEnemy(x.c)).Select(x => LevelMap.WeaponFor(x.c)));
             c.Check(types.Count == 4, "Hay enemigos con bate, cuchillo, escopeta y subfusil");
         }
 

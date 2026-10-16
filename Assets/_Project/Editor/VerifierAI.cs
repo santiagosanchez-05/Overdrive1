@@ -34,8 +34,9 @@ namespace Overdrive.EditorTools
             }
         }
 
-        private static void VerifyAIScene(Checker c, LevelMap map)
+        private static void VerifyAIScene(Checker c, LevelLayout layout)
         {
+            LevelMap map = layout.Ground;
             Scene scene = SceneManager.GetActiveScene();
             GameObject level = BuilderUtil.FindRoot(scene, SceneFactory.LevelRoot);
             var surface = level != null ? level.GetComponent<NavMeshSurface>() : null;
@@ -49,12 +50,26 @@ namespace Overdrive.EditorTools
             c.Check(NavMesh.SamplePosition(spawn, out _, 0.5f, NavMesh.AllAreas), "El punto de inicio está sobre el NavMesh");
 
             var path = new NavMeshPath();
-            foreach (var (col, row, ch) in map.Cells())
+            // Los enemigos, armas, maletín y salida de todos los pisos deben estar conectados.
+            foreach (var (floorMap, col, row, ch) in layout.AllCells())
             {
-                if (!LevelMap.IsEnemy(ch) && !LevelMap.IsFloorWeapon(ch) && ch != LevelMap.Exit) continue;
-                Vector3 target = map.CellToWorld(col, row);
+                if (!LevelMap.IsEnemy(ch) && !LevelMap.IsFloorWeapon(ch) && ch != LevelMap.Exit && ch != LevelMap.Briefcase) continue;
+                Vector3 target = floorMap.CellToWorld(col, row);
                 bool found = NavMesh.CalculatePath(spawn, target, NavMesh.AllAreas, path) && path.status == NavMeshPathStatus.PathComplete;
-                c.Check(found, $"Hay camino por el NavMesh desde el inicio hasta '{ch}' en ({col},{row})");
+                c.Check(found, $"Hay camino por el NavMesh desde el inicio hasta '{ch}' en ({col},{row}) del piso {floorMap.FloorIndex}");
+            }
+
+            // Los refuerzos están tras la puerta: su NavMeshObstacle corta el paso mientras está cerrada,
+            // así que se comprueba que su zona está horneada y que se llega hasta justo delante de la puerta.
+            foreach (var (col, row) in map.FindAll(LevelMap.Reinforcement))
+                c.Check(NavMesh.SamplePosition(map.CellToWorld(col, row), out _, 0.5f, NavMesh.AllAreas),
+                    $"La entrada de refuerzos ({col},{row}) está sobre el NavMesh");
+            LevelMap.Block? doorBounds = map.BoundsOf(LevelMap.Door);
+            if (doorBounds != null)
+            {
+                Vector3 inFront = map.CellToWorld(doorBounds.Value.Col - 1, doorBounds.Value.Row);
+                bool reach = NavMesh.CalculatePath(spawn, inFront, NavMesh.AllAreas, path) && path.status == NavMeshPathStatus.PathComplete;
+                c.Check(reach, "Hay camino por el NavMesh hasta delante de la puerta de los refuerzos");
             }
 
             GameObject player = BuilderUtil.FindRoot(scene, SceneFactory.PlayerName);
@@ -78,7 +93,7 @@ namespace Overdrive.EditorTools
             c.Check(patrollers >= 3 && patrollers < ais.Length, $"Unos enemigos patrullan y otros esperan quietos ({patrollers}/{ais.Length})");
         }
 
-        private static void VerifyAILogic(Checker c, LevelMap map)
+        private static void VerifyAILogic(Checker c, LevelLayout layout)
         {
             // --- Cono de visión ---
             c.Check(VisionLogic.InCone(Vector3.zero, Vector3.forward, new Vector3(0f, 0f, 8f), 14f, 55f, 1.5f), "Ve lo que tiene delante");
@@ -88,11 +103,13 @@ namespace Overdrive.EditorTools
             c.Check(VisionLogic.InCone(Vector3.zero, Vector3.forward, new Vector3(0f, 0f, -1f), 14f, 55f, 1.5f), "Nota a alguien pegado a su espalda");
 
             // --- Rutas de patrulla del mapa ---
-            foreach (var (col, row, ch) in map.Cells())
+            foreach (var (map, col, row, ch) in layout.AllCells())
             {
                 if (!LevelMap.IsEnemy(ch)) continue;
                 Vector3[] route = map.PatrolRoute(col, row, SceneFactory.PatrolCells);
-                c.Check(route.Length == 0 || route.Length == 2, $"Ruta de patrulla válida en ({col},{row})");
+                c.Check(route.Length == 0 || route.Length == 2, $"Ruta de patrulla válida en ({col},{row}) del piso {map.FloorIndex}");
+                foreach (Vector3 point in route)
+                    c.Check(Mathf.Approximately(point.y, map.BaseY), $"La patrulla de ({col},{row}) va por su propio piso");
             }
 
             BrainSettings s = BrainSettings.Default;

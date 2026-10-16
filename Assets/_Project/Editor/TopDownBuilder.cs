@@ -22,11 +22,12 @@ namespace Overdrive.EditorTools
 
         public static void BuildAndVerify()
         {
-            LevelMap map = Level01Map.Create();
+            LevelLayout map = Level01Map.Create();
 
             AssetFactory.EnsureMaterials();
             AssetFactory.EnsureBulletPrefab();
             AssetFactory.EnsureBloodPrefab();
+            AssetFactory.EnsureBriefcasePrefab();
             AssetFactory.EnsureWeaponPrefabs();
             AssetFactory.EnsurePlayerPrefab();
             AssetFactory.EnsureEnemyPrefab();
