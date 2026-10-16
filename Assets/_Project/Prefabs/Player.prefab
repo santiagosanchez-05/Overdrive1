@@ -108,6 +108,7 @@ GameObject:
   - component: {fileID: 3209719595741885290}
   - component: {fileID: 7869165369523923364}
   - component: {fileID: 5646136542784917167}
+  - component: {fileID: 774987484534567719}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -185,6 +186,7 @@ MonoBehaviour:
   controller: {fileID: 650247359578819848}
   life: {fileID: 7982732997962180055}
   moveSpeed: 7
+  sneakSpeed: 3.2
   gravity: 25
   groundStick: 6
 --- !u!114 &8763644904668813282
@@ -268,6 +270,22 @@ MonoBehaviour:
   controller: {fileID: 3479341078645059018}
   minDrop: 1.5
   radius: 1.4
+--- !u!114 &774987484534567719
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1292686525374302431}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b2303a6a0faa9b34dbecb87627e306f4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Overdrive.Player.PlayerFootsteps
+  controller: {fileID: 3479341078645059018}
+  stepLength: 1.4
+  noiseRadius: 5
+  maxStepJump: 3
 --- !u!1 &1885037976511885489
 GameObject:
   m_ObjectHideFlags: 0

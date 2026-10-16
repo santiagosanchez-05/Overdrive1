@@ -135,6 +135,9 @@ MonoBehaviour:
     reactionTime: 0.35
     arriveDistance: 0.6
     patrolWaitTime: 1
+  detectNearTime: 0.3
+  detectFarTime: 1.8
+  suspicionDecay: 0.3
 --- !u!1 &5816418404952695389
 GameObject:
   m_ObjectHideFlags: 0
