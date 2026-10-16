@@ -355,6 +355,10 @@ PrefabInstance:
       propertyPath: player
       value: 
       objectReference: {fileID: 1095807299}
+    - target: {fileID: 1443848730335901471, guid: f82f86b42450a854d811df649c192a28, type: 3}
+      propertyPath: walkSpeed
+      value: 4.4
+      objectReference: {fileID: 0}
     - target: {fileID: 5133599919269517682, guid: f82f86b42450a854d811df649c192a28, type: 3}
       propertyPath: m_Name
       value: Enemy_s_c25_r3
@@ -421,6 +425,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 3820092911776237237, guid: f82f86b42450a854d811df649c192a28, type: 3}
   m_PrefabInstance: {fileID: 130287060}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &130287063 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7308410548147510958, guid: f82f86b42450a854d811df649c192a28, type: 3}
+  m_PrefabInstance: {fileID: 130287060}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 70f17867f91d9ab4286b7bf334c95a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Overdrive.Enemies.Enemy
 --- !u!1 &149900143
 GameObject:
   m_ObjectHideFlags: 0
@@ -657,6 +672,10 @@ PrefabInstance:
       propertyPath: player
       value: 
       objectReference: {fileID: 1095807299}
+    - target: {fileID: 1443848730335901471, guid: f82f86b42450a854d811df649c192a28, type: 3}
+      propertyPath: walkSpeed
+      value: 4.4
+      objectReference: {fileID: 0}
     - target: {fileID: 5133599919269517682, guid: f82f86b42450a854d811df649c192a28, type: 3}
       propertyPath: m_Name
       value: Enemy_s_c4_r16
@@ -723,6 +742,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 3820092911776237237, guid: f82f86b42450a854d811df649c192a28, type: 3}
   m_PrefabInstance: {fileID: 217860615}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &217860618 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7308410548147510958, guid: f82f86b42450a854d811df649c192a28, type: 3}
+  m_PrefabInstance: {fileID: 217860615}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 70f17867f91d9ab4286b7bf334c95a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Overdrive.Enemies.Enemy
 --- !u!1 &287503441
 GameObject:
   m_ObjectHideFlags: 0
@@ -733,6 +763,7 @@ GameObject:
   m_Component:
   - component: {fileID: 287503443}
   - component: {fileID: 287503442}
+  - component: {fileID: 287503444}
   m_Layer: 0
   m_Name: Directional Light
   m_TagString: Untagged
@@ -820,6 +851,35 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &287503444
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 287503441}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalLightData
+  m_UsePipelineSettings: 1
+  m_AdditionalLightsShadowResolutionTier: 2
+  m_CustomShadowLayers: 0
+  m_LightCookieSize: {x: 1, y: 1}
+  m_LightCookieOffset: {x: 0, y: 0}
+  m_SoftShadowQuality: 0
+  m_RenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_ShadowRenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_Version: 4
+  m_LightLayerMask: 1
+  m_ShadowLayerMask: 1
+  m_RenderingLayers: 1
+  m_ShadowRenderingLayers: 1
 --- !u!1 &288363316
 GameObject:
   m_ObjectHideFlags: 0
@@ -945,6 +1005,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1095807299}
     - target: {fileID: 1443848730335901471, guid: f82f86b42450a854d811df649c192a28, type: 3}
+      propertyPath: walkSpeed
+      value: 4.4
+      objectReference: {fileID: 0}
+    - target: {fileID: 1443848730335901471, guid: f82f86b42450a854d811df649c192a28, type: 3}
       propertyPath: patrolPoints.Array.size
       value: 2
       objectReference: {fileID: 0}
@@ -1030,6 +1094,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 3820092911776237237, guid: f82f86b42450a854d811df649c192a28, type: 3}
   m_PrefabInstance: {fileID: 292894100}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &292894103 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7308410548147510958, guid: f82f86b42450a854d811df649c192a28, type: 3}
+  m_PrefabInstance: {fileID: 292894100}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 70f17867f91d9ab4286b7bf334c95a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Overdrive.Enemies.Enemy
 --- !u!1 &317468725
 GameObject:
   m_ObjectHideFlags: 0
@@ -1267,6 +1342,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1095807299}
     - target: {fileID: 1443848730335901471, guid: f82f86b42450a854d811df649c192a28, type: 3}
+      propertyPath: walkSpeed
+      value: 4.4
+      objectReference: {fileID: 0}
+    - target: {fileID: 1443848730335901471, guid: f82f86b42450a854d811df649c192a28, type: 3}
       propertyPath: patrolPoints.Array.size
       value: 2
       objectReference: {fileID: 0}
@@ -1352,6 +1431,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 3820092911776237237, guid: f82f86b42450a854d811df649c192a28, type: 3}
   m_PrefabInstance: {fileID: 360225805}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &360225808 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7308410548147510958, guid: f82f86b42450a854d811df649c192a28, type: 3}
+  m_PrefabInstance: {fileID: 360225805}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 70f17867f91d9ab4286b7bf334c95a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Overdrive.Enemies.Enemy
 --- !u!1 &376248633
 GameObject:
   m_ObjectHideFlags: 0
@@ -1701,6 +1791,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1095807299}
     - target: {fileID: 1443848730335901471, guid: f82f86b42450a854d811df649c192a28, type: 3}
+      propertyPath: walkSpeed
+      value: 4.4
+      objectReference: {fileID: 0}
+    - target: {fileID: 1443848730335901471, guid: f82f86b42450a854d811df649c192a28, type: 3}
       propertyPath: patrolPoints.Array.size
       value: 2
       objectReference: {fileID: 0}
@@ -1786,6 +1880,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 3820092911776237237, guid: f82f86b42450a854d811df649c192a28, type: 3}
   m_PrefabInstance: {fileID: 438175595}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &438175598 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7308410548147510958, guid: f82f86b42450a854d811df649c192a28, type: 3}
+  m_PrefabInstance: {fileID: 438175595}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 70f17867f91d9ab4286b7bf334c95a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Overdrive.Enemies.Enemy
 --- !u!1 &454950088
 GameObject:
   m_ObjectHideFlags: 0
@@ -2509,6 +2614,7 @@ GameObject:
   - component: {fileID: 751945362}
   - component: {fileID: 751945364}
   - component: {fileID: 751945363}
+  - component: {fileID: 751945365}
   m_Layer: 0
   m_Name: Exit
   m_TagString: Untagged
@@ -2556,7 +2662,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 29dadc934e175b54ea544e2dbd1389ed, type: 2}
+  - {fileID: 2100000, guid: 6052f9624cd8d8044b7a3c5daa817a05, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -2588,6 +2694,22 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 751945361}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &751945365
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 751945361}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4a1b2eb9f99251c4dabf248c12f6bb1a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Overdrive.Level.ExitZone
+  size: {x: 3, y: 3}
+  zoneRenderer: {fileID: 751945363}
+  lockedMaterial: {fileID: 2100000, guid: 6052f9624cd8d8044b7a3c5daa817a05, type: 2}
+  openMaterial: {fileID: 2100000, guid: 29dadc934e175b54ea544e2dbd1389ed, type: 2}
 --- !u!1 &756379111
 GameObject:
   m_ObjectHideFlags: 0
@@ -2879,6 +3001,53 @@ MonoBehaviour:
   m_MinRegionArea: 2
   m_NavMeshData: {fileID: 23800000, guid: ba1ec41f7d44f6345b549fd00da58919, type: 2}
   m_BuildHeightMesh: 0
+--- !u!1 &863779333
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 863779334}
+  - component: {fileID: 863779335}
+  m_Layer: 0
+  m_Name: Blood
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &863779334
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 863779333}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 997003029}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &863779335
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 863779333}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a1373bb9878891a46943dd8631873fda, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Overdrive.Combat.BloodSpawner
+  bloodPrefab: {fileID: 1957846278608674559, guid: bc350a3cd578b8445886969eff7f05a3, type: 3}
+  maxSplats: 200
+  spread: 0.6
 --- !u!1 &898091453
 GameObject:
   m_ObjectHideFlags: 0
@@ -3170,6 +3339,8 @@ GameObject:
   m_Component:
   - component: {fileID: 997003029}
   - component: {fileID: 997003028}
+  - component: {fileID: 997003031}
+  - component: {fileID: 997003030}
   m_Layer: 0
   m_Name: Systems
   m_TagString: Untagged
@@ -3201,9 +3372,49 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 863779334}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &997003030
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 997003027}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6c023f49c9c3192449639035f0d0543f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Overdrive.UI.GameHUD
+  weapons: {fileID: 1095807300}
+  level: {fileID: 997003031}
+--- !u!114 &997003031
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 997003027}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6ca66bd5ecc3a6c48a62274dad54b15e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Overdrive.Level.LevelManager
+  player: {fileID: 1095807299}
+  exit: {fileID: 751945365}
+  enemies:
+  - {fileID: 1452112344}
+  - {fileID: 130287063}
+  - {fileID: 292894103}
+  - {fileID: 2075803866}
+  - {fileID: 360225808}
+  - {fileID: 1346952686}
+  - {fileID: 438175598}
+  - {fileID: 217860618}
+  - {fileID: 1489221332}
+  - {fileID: 1840575753}
 --- !u!1 &1018466740
 GameObject:
   m_ObjectHideFlags: 0
@@ -3405,6 +3616,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Player
       objectReference: {fileID: 0}
+    - target: {fileID: 3479341078645059018, guid: d91d6b194d3d84a46a67676559e21679, type: 3}
+      propertyPath: moveSpeed
+      value: 10
+      objectReference: {fileID: 0}
     - target: {fileID: 7329890989990959176, guid: d91d6b194d3d84a46a67676559e21679, type: 3}
       propertyPath: m_LocalPosition.x
       value: 6
@@ -3481,6 +3696,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 98382415f10d08745bbc071e3b2cc341, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Overdrive.Player.PlayerLife
+--- !u!114 &1095807300 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7869165369523923364, guid: d91d6b194d3d84a46a67676559e21679, type: 3}
+  m_PrefabInstance: {fileID: 1095807296}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f167782df3a98e746b21d20a092e6a10, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Overdrive.Weapons.PlayerWeapons
 --- !u!1 &1150135039
 GameObject:
   m_ObjectHideFlags: 0
@@ -3794,6 +4020,10 @@ PrefabInstance:
       propertyPath: player
       value: 
       objectReference: {fileID: 1095807299}
+    - target: {fileID: 1443848730335901471, guid: f82f86b42450a854d811df649c192a28, type: 3}
+      propertyPath: walkSpeed
+      value: 4.4
+      objectReference: {fileID: 0}
     - target: {fileID: 5133599919269517682, guid: f82f86b42450a854d811df649c192a28, type: 3}
       propertyPath: m_Name
       value: Enemy_s_c17_r14
@@ -3860,6 +4090,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 3820092911776237237, guid: f82f86b42450a854d811df649c192a28, type: 3}
   m_PrefabInstance: {fileID: 1346952683}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1346952686 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7308410548147510958, guid: f82f86b42450a854d811df649c192a28, type: 3}
+  m_PrefabInstance: {fileID: 1346952683}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 70f17867f91d9ab4286b7bf334c95a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Overdrive.Enemies.Enemy
 --- !u!1001 &1452112341
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3872,6 +4113,10 @@ PrefabInstance:
       propertyPath: player
       value: 
       objectReference: {fileID: 1095807299}
+    - target: {fileID: 1443848730335901471, guid: f82f86b42450a854d811df649c192a28, type: 3}
+      propertyPath: walkSpeed
+      value: 4.4
+      objectReference: {fileID: 0}
     - target: {fileID: 1443848730335901471, guid: f82f86b42450a854d811df649c192a28, type: 3}
       propertyPath: patrolPoints.Array.size
       value: 2
@@ -3958,6 +4203,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 3820092911776237237, guid: f82f86b42450a854d811df649c192a28, type: 3}
   m_PrefabInstance: {fileID: 1452112341}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1452112344 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7308410548147510958, guid: f82f86b42450a854d811df649c192a28, type: 3}
+  m_PrefabInstance: {fileID: 1452112341}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 70f17867f91d9ab4286b7bf334c95a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Overdrive.Enemies.Enemy
 --- !u!1 &1461517171
 GameObject:
   m_ObjectHideFlags: 0
@@ -4083,6 +4339,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 1095807299}
     - target: {fileID: 1443848730335901471, guid: f82f86b42450a854d811df649c192a28, type: 3}
+      propertyPath: walkSpeed
+      value: 4.4
+      objectReference: {fileID: 0}
+    - target: {fileID: 1443848730335901471, guid: f82f86b42450a854d811df649c192a28, type: 3}
       propertyPath: patrolPoints.Array.size
       value: 2
       objectReference: {fileID: 0}
@@ -4168,6 +4428,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 3820092911776237237, guid: f82f86b42450a854d811df649c192a28, type: 3}
   m_PrefabInstance: {fileID: 1489221329}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1489221332 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7308410548147510958, guid: f82f86b42450a854d811df649c192a28, type: 3}
+  m_PrefabInstance: {fileID: 1489221329}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 70f17867f91d9ab4286b7bf334c95a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Overdrive.Enemies.Enemy
 --- !u!1001 &1619016669
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4481,6 +4752,10 @@ PrefabInstance:
       propertyPath: player
       value: 
       objectReference: {fileID: 1095807299}
+    - target: {fileID: 1443848730335901471, guid: f82f86b42450a854d811df649c192a28, type: 3}
+      propertyPath: walkSpeed
+      value: 4.4
+      objectReference: {fileID: 0}
     - target: {fileID: 5133599919269517682, guid: f82f86b42450a854d811df649c192a28, type: 3}
       propertyPath: m_Name
       value: Enemy_b_c27_r16
@@ -4547,6 +4822,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 3820092911776237237, guid: f82f86b42450a854d811df649c192a28, type: 3}
   m_PrefabInstance: {fileID: 1840575750}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1840575753 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7308410548147510958, guid: f82f86b42450a854d811df649c192a28, type: 3}
+  m_PrefabInstance: {fileID: 1840575750}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 70f17867f91d9ab4286b7bf334c95a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Overdrive.Enemies.Enemy
 --- !u!1001 &1853025752
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -5073,6 +5359,10 @@ PrefabInstance:
       propertyPath: player
       value: 
       objectReference: {fileID: 1095807299}
+    - target: {fileID: 1443848730335901471, guid: f82f86b42450a854d811df649c192a28, type: 3}
+      propertyPath: walkSpeed
+      value: 4.4
+      objectReference: {fileID: 0}
     - target: {fileID: 5133599919269517682, guid: f82f86b42450a854d811df649c192a28, type: 3}
       propertyPath: m_Name
       value: Enemy_k_c26_r5
@@ -5139,6 +5429,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 3820092911776237237, guid: f82f86b42450a854d811df649c192a28, type: 3}
   m_PrefabInstance: {fileID: 2075803863}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &2075803866 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7308410548147510958, guid: f82f86b42450a854d811df649c192a28, type: 3}
+  m_PrefabInstance: {fileID: 2075803863}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 70f17867f91d9ab4286b7bf334c95a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Overdrive.Enemies.Enemy
 --- !u!1 &2116851019
 GameObject:
   m_ObjectHideFlags: 0
