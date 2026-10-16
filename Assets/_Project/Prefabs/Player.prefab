@@ -107,6 +107,7 @@ GameObject:
   - component: {fileID: 5781536501737919570}
   - component: {fileID: 3209719595741885290}
   - component: {fileID: 7869165369523923364}
+  - component: {fileID: 5646136542784917167}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -185,6 +186,7 @@ MonoBehaviour:
   life: {fileID: 7982732997962180055}
   moveSpeed: 7
   gravity: 25
+  groundStick: 6
 --- !u!114 &8763644904668813282
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -199,7 +201,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Overdrive.Player.PlayerAim
   aimCamera: {fileID: 0}
   life: {fileID: 7982732997962180055}
-  groundY: 0
 --- !u!114 &5781536501737919570
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -252,6 +253,21 @@ MonoBehaviour:
   melee: {fileID: 3209719595741885290}
   pickupRadius: 1.6
   swingTime: 0.15
+--- !u!114 &5646136542784917167
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1292686525374302431}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c9e3274f66284a34cbff6c3e5ac9a179, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Overdrive.Combat.PlayerStomp
+  controller: {fileID: 3479341078645059018}
+  minDrop: 1.5
+  radius: 1.4
 --- !u!1 &1885037976511885489
 GameObject:
   m_ObjectHideFlags: 0
