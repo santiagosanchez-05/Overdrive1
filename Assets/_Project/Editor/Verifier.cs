@@ -47,6 +47,8 @@ namespace Overdrive.EditorTools
             VerifyFloorsScene(c, layout);
             VerifyFloorsLogic(c);
             VerifyFloorsSimulation(c, layout);
+            VerifyStealthLogic(c);
+            VerifyStealthSimulation(c);
             return c;
         }
 
@@ -441,7 +443,8 @@ namespace Overdrive.EditorTools
             // Lejos del nivel para no interferir con la escena.
             Vector3 basePos = new Vector3(500f, 0f, 500f);
             GameObject player = Object.Instantiate(playerPrefab, basePos, Quaternion.identity);
-            GameObject enemyA = Object.Instantiate(enemyPrefab, basePos + new Vector3(0f, 0f, 1.2f), Quaternion.identity);
+            // Ambos miran al jugador: de frente el puñetazo derriba (por la espalda mataría, ver VerifyStealthSimulation).
+            GameObject enemyA = Object.Instantiate(enemyPrefab, basePos + new Vector3(0f, 0f, 1.2f), Quaternion.Euler(0f, 180f, 0f));
             GameObject enemyB = Object.Instantiate(enemyPrefab, basePos + new Vector3(0f, 0f, -1.2f), Quaternion.identity);
             try
             {

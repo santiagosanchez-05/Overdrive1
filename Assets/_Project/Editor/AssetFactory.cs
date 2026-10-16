@@ -269,6 +269,9 @@ namespace Overdrive.EditorTools
 
                 var stomp = BuilderUtil.EnsureComponent<PlayerStomp>(root);
                 BuilderUtil.SetRef(stomp, "controller", playerController);
+
+                var footsteps = BuilderUtil.EnsureComponent<PlayerFootsteps>(root);
+                BuilderUtil.SetRef(footsteps, "controller", playerController);
             });
         }
 

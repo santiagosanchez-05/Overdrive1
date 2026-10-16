@@ -123,12 +123,14 @@ namespace Overdrive.EditorTools
             };
 
             // --- Quieto → detecta → persigue → ataca (cuerpo a cuerpo) ---
+            // La detección gradual se verifica aparte (VerifyStealthLogic); aquí se parte de un enemigo que ya te detectó.
             var melee = new EnemyBrain(Vector3.zero, null, s);
             melee.Tick(0.1f, Blind(Vector3.zero, WeaponKind.Melee, 1.5f));
             c.Check(melee.State == AIState.Idle && !melee.HasMoveTarget, "Sin ver al jugador se queda quieto");
+            melee.Alert(new Vector3(5f, 0f, 0f));
             melee.Tick(0.1f, See(Vector3.zero, new Vector3(5f, 0f, 0f), WeaponKind.Melee, 1.5f));
             c.Check(melee.State == AIState.Chase && melee.HasMoveTarget && melee.MoveTarget == new Vector3(5f, 0f, 0f),
-                "Al ver al jugador lo persigue");
+                "Tras detectar al jugador lo persigue");
             c.Check(!melee.WantsAttack, "Lejos no ataca");
             melee.Tick(0.1f, See(new Vector3(4f, 0f, 0f), new Vector3(5f, 0f, 0f), WeaponKind.Melee, 1.5f));
             c.Check(melee.State == AIState.Attack && !melee.HasMoveTarget, "Al alcance se para a atacar");
@@ -139,6 +141,7 @@ namespace Overdrive.EditorTools
 
             // --- Armas de fuego: dispara desde lejos ---
             var ranged = new EnemyBrain(Vector3.zero, null, s);
+            ranged.Alert(new Vector3(8f, 0f, 0f));
             ranged.Tick(0.1f, See(Vector3.zero, new Vector3(8f, 0f, 0f), WeaponKind.Ranged, 11f));
             c.Check(ranged.State == AIState.Attack && !ranged.HasMoveTarget, "Con arma de fuego dispara desde la distancia sin acercarse");
             ranged.Tick(0.3f, See(Vector3.zero, new Vector3(8f, 0f, 0f), WeaponKind.Ranged, 11f));
@@ -148,6 +151,7 @@ namespace Overdrive.EditorTools
 
             // --- Pierde de vista al jugador: busca y vuelve ---
             var search = new EnemyBrain(Vector3.zero, null, s);
+            search.Alert(new Vector3(6f, 0f, 0f));
             search.Tick(0.1f, See(Vector3.zero, new Vector3(6f, 0f, 0f), WeaponKind.Melee, 1.5f));
             search.Tick(2f, Blind(new Vector3(2f, 0f, 0f), WeaponKind.Melee, 1.5f));
             c.Check(search.State == AIState.Chase && search.MoveTarget == new Vector3(6f, 0f, 0f),
@@ -184,6 +188,7 @@ namespace Overdrive.EditorTools
             Perception withWeapon = See(Vector3.zero, new Vector3(6f, 0f, 0f), WeaponKind.None, WeaponDefinition.UnarmedRange);
             withWeapon.HasNearbyWeapon = true;
             withWeapon.NearbyWeaponPosition = new Vector3(0f, 0f, 2f);
+            unarmed.Alert(new Vector3(6f, 0f, 0f));
             unarmed.Tick(0.1f, withWeapon);
             c.Check(unarmed.State == AIState.Retrieve && unarmed.MoveTarget == new Vector3(0f, 0f, 2f),
                 "Desarmado y alerta, va a recoger un arma");
@@ -195,7 +200,8 @@ namespace Overdrive.EditorTools
             close.HasNearbyWeapon = true;
             close.NearbyWeaponPosition = new Vector3(0f, 0f, 5f);
             cornered.Tick(0.5f, close);
-            c.Check(cornered.State == AIState.Attack && cornered.WantsAttack, "Desarmado con el jugador encima, pega con los puños");
+            c.Check(cornered.State == AIState.Attack && cornered.WantsAttack,
+                "Con el jugador pegado lo detecta al instante y, desarmado, pega con los puños");
 
             // --- Jugador muerto ---
             Perception dead = See(new Vector3(4f, 0f, 0f), new Vector3(5f, 0f, 0f), WeaponKind.Melee, 1.5f);
