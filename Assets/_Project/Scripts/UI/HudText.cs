@@ -38,6 +38,14 @@ namespace Overdrive.UI
         }
 
         public const string Sneaking = "Sigilo";
+        public const string NoRewindsLeft = "No quedan rebobinados";
+
+        /// <summary>Al morir: cuántos rebobinados quedan y con qué tecla se usa.</summary>
+        public static string RewindHint(int usesLeft) =>
+            usesLeft > 0 ? $"T: rebobinar 5 s (quedan {usesLeft})" : NoRewindsLeft;
+
+        /// <summary>Esquina del HUD: rebobinados disponibles.</summary>
+        public static string Rewinds(int usesLeft) => $"Rebobinados: {usesLeft}";
 
         /// <summary>Indicador sobre la cabeza de un enemigo: "?" si sospecha, "!" si te ha detectado.</summary>
         public static string AwarenessMark(Awareness awareness)

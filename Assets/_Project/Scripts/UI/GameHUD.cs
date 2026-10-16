@@ -1,3 +1,4 @@
+using Overdrive.Core;
 using Overdrive.Enemies;
 using Overdrive.Level;
 using Overdrive.Player;
@@ -11,6 +12,7 @@ namespace Overdrive.UI
     {
         [SerializeField] private PlayerWeapons weapons;
         [SerializeField] private LevelManager level;
+        [SerializeField] private TimeRewinder rewinder;
 
         private GUIStyle cornerLeft;
         private GUIStyle cornerRight;
@@ -24,6 +26,7 @@ namespace Overdrive.UI
 
         public PlayerWeapons Weapons => weapons;
         public LevelManager Level => level;
+        public TimeRewinder Rewinder => rewinder;
 
         private void OnGUI()
         {
@@ -51,8 +54,13 @@ namespace Overdrive.UI
 
             DrawAwarenessMarks();
 
+            if (rewinder != null)
+                DrawShadowed(new Rect(Screen.width * 0.5f - margin, margin + lineHeight, Screen.width * 0.5f, lineHeight),
+                    HudText.Rewinds(rewinder.UsesLeft), cornerRight);
+
             string message = HudText.CenterMessage(level.Progress.State);
             string hint = HudText.SubMessage(level.Progress.State, !level.Progress.HasObjective);
+            if (level.Progress.State == LevelState.Failed && rewinder != null) hint = HudText.RewindHint(rewinder.UsesLeft);
             float middle = Screen.height * 0.5f;
             if (message != null)
                 DrawShadowed(new Rect(0f, middle - 70f * scale, Screen.width, 80f * scale), message, center);

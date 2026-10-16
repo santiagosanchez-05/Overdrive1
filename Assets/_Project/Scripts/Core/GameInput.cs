@@ -31,6 +31,7 @@ namespace Overdrive.Core
         public static bool Sneak => Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
 
         public static bool RestartPressed => Input.GetKeyDown(KeyCode.R);
+        public static bool RewindPressed => Input.GetKeyDown(KeyCode.T);
         public static bool AttackPressed => Input.GetMouseButtonDown(0);
         public static bool AttackHeld => Input.GetMouseButton(0);
         public static bool ThrowPressed => Input.GetMouseButtonDown(1);
