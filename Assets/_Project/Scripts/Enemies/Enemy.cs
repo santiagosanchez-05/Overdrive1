@@ -111,6 +111,7 @@ namespace Overdrive.Enemies
         {
             DropWeapon();
             ApplyPosture();
+            BloodSpawner.SpawnAt(transform.position, 1.2f);
             CameraShake.Shake(0.35f);
             AnyDied?.Invoke(this);
         }

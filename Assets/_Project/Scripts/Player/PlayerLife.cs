@@ -1,4 +1,6 @@
 using System;
+using Overdrive.CameraRig;
+using Overdrive.Combat;
 using Overdrive.Core;
 using UnityEngine;
 
@@ -25,6 +27,8 @@ namespace Overdrive.Player
                 body.localRotation = Quaternion.Euler(90f, 0f, 0f);
                 body.localPosition = new Vector3(0f, 0.4f, 0f);
             }
+            BloodSpawner.SpawnAt(transform.position, 1.2f);
+            CameraShake.Shake(0.5f);
             Died?.Invoke();
             return true;
         }
