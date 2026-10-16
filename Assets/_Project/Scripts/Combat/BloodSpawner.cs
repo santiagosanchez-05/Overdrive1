@@ -4,7 +4,7 @@ using UnityEngine;
 namespace Overdrive.Combat
 {
     /// <summary>Manchas de sangre (quads rojos) en el suelo cuando alguien muere.</summary>
-    public class BloodSpawner : MonoBehaviour
+    public class BloodSpawner : MonoBehaviour, IRewindable
     {
         [SerializeField] private GameObject bloodPrefab;
         [SerializeField] private int maxSplats = 200;
@@ -23,6 +23,15 @@ namespace Overdrive.Combat
                 if (instance == null) instance = FindAnyObjectByType<BloodSpawner>();
                 return instance;
             }
+        }
+
+        /// <summary>Guarda cuántas manchas había; al rebobinar se borran las posteriores.</summary>
+        public object Capture() => transform.childCount;
+
+        public void Restore(object snapshot)
+        {
+            int keep = (int)snapshot;
+            while (transform.childCount > keep) Remove(transform.GetChild(transform.childCount - 1).gameObject);
         }
 
         /// <summary>Mancha grande y un par de salpicaduras alrededor del punto.</summary>

@@ -27,6 +27,13 @@ namespace Overdrive.Player
             Step(transform.position, controller != null && controller.IsSneaking);
         }
 
+        /// <summary>Tras un salto de posición (rebobinar), el siguiente paso empieza de cero.</summary>
+        public void ResetTracking()
+        {
+            hasLast = false;
+            Counter.Reset();
+        }
+
         /// <summary>Registra el movimiento hasta <paramref name="position"/>. Devuelve true si hizo ruido.</summary>
         public bool Step(Vector3 position, bool sneaking)
         {

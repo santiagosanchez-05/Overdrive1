@@ -11,7 +11,7 @@ namespace Overdrive.Weapons
     /// Conserva su munición al soltarla y recogerla.
     /// </summary>
     [DisallowMultipleComponent]
-    public class WeaponItem : MonoBehaviour
+    public class WeaponItem : MonoBehaviour, IRewindable
     {
         public enum Mode
         {
@@ -47,6 +47,45 @@ namespace Overdrive.Weapons
 
         private void OnEnable() => all.Add(this);
         private void OnDisable() => all.Remove(this);
+
+        // ---------- Rebobinar ----------
+
+        private sealed class Snapshot
+        {
+            public Mode Mode;
+            public Transform Parent;
+            public Vector3 LocalPosition;
+            public Quaternion LocalRotation;
+            public int Ammo;
+            public float Cooldown;
+            public LinearFlight.Snapshot Flight;
+            public Faction ThrownBy;
+        }
+
+        public object Capture() => new Snapshot
+        {
+            Mode = mode,
+            Parent = transform.parent,
+            LocalPosition = transform.localPosition,
+            LocalRotation = transform.localRotation,
+            Ammo = State.Ammo,
+            Cooldown = State.CooldownLeft,
+            Flight = flight.Capture(),
+            ThrownBy = thrownBy,
+        };
+
+        /// <summary>Vuelve a estar donde estaba (suelo, mano de quien la llevaba o en vuelo) y con la misma munición.</summary>
+        public void Restore(object snapshot)
+        {
+            var s = (Snapshot)snapshot;
+            transform.SetParent(s.Parent, false);
+            transform.localPosition = s.LocalPosition;
+            transform.localRotation = s.LocalRotation;
+            mode = s.Mode;
+            State.Restore(s.Ammo, s.Cooldown);
+            flight.Restore(s.Flight);
+            thrownBy = s.ThrownBy;
+        }
 
         private void Update()
         {

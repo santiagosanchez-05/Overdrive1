@@ -13,7 +13,7 @@ namespace Overdrive.Enemies
     /// se mueve con NavMeshAgent y ataca. Con armas cuerpo a cuerpo persigue; con armas de fuego dispara a distancia.
     /// </summary>
     [RequireComponent(typeof(NavMeshAgent))]
-    public class EnemyAI : MonoBehaviour
+    public class EnemyAI : MonoBehaviour, IRewindable
     {
         [SerializeField] private Enemy enemy;
         [SerializeField] private NavMeshAgent agent;
@@ -73,6 +73,62 @@ namespace Overdrive.Enemies
                 d.decayPerSecond = suspicionDecay;
                 return d;
             }
+        }
+
+        // ---------- Rebobinar ----------
+
+        private sealed class Snapshot
+        {
+            public bool Active;
+            public Vector3 Position;
+            public Quaternion Rotation;
+            public CombatState.Snapshot Combat;
+            public WeaponItem Weapon;
+            public EnemyBrain.Snapshot Brain;
+            public float AttackCooldown;
+            public PlayerLife HuntTarget;
+        }
+
+        /// <summary>Todo el enemigo (cuerpo, combate, arma e IA): este componente representa al enemigo al rebobinar.</summary>
+        public object Capture() => new Snapshot
+        {
+            Active = gameObject.activeSelf,
+            Position = transform.position,
+            Rotation = transform.rotation,
+            Combat = enemy.State.Capture(),
+            Weapon = enemy.Weapon,
+            Brain = Brain.Capture(),
+            AttackCooldown = attackCooldown,
+            HuntTarget = huntTarget,
+        };
+
+        public void Restore(object snapshot)
+        {
+            var s = (Snapshot)snapshot;
+            gameObject.SetActive(s.Active);
+
+            if (agent != null && agent.enabled && agent.isOnNavMesh)
+            {
+                agent.ResetPath();
+                agent.Warp(s.Position);
+            }
+            else
+            {
+                transform.position = s.Position;
+            }
+            transform.rotation = s.Rotation;
+
+            enemy.RestoreState(s.Combat, s.Weapon);
+            Brain.Restore(s.Brain);
+            attackCooldown = s.AttackCooldown;
+            huntTarget = s.HuntTarget;
+            huntTimer = 0f;
+            winding = false;
+            windupLeft = 0f;
+            repathTimer = 0f;
+            nearbyWeapon = null;
+            wasDown = s.Combat.Posture != Posture.Standing;
+            UpdateHandVisual();
         }
 
         /// <summary>Nivel de alerta para el indicador (?, !). Derribado o muerto no muestra nada.</summary>

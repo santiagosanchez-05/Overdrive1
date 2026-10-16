@@ -55,6 +55,13 @@ namespace Overdrive.Weapons
             }
         }
 
+        /// <summary>Rebobinar: vuelve a llevar el arma guardada (el arma restaura su propia posición).</summary>
+        public void RestoreCurrent(WeaponItem weapon)
+        {
+            current = weapon;
+            swingLeft = 0f;
+        }
+
         /// <summary>Recoge el arma del suelo más cercana; si ya lleva una, la deja en su lugar.</summary>
         public WeaponItem TryPickup(IReadOnlyList<WeaponItem> items)
         {

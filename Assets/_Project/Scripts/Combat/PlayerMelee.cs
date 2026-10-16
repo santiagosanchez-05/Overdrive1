@@ -32,6 +32,12 @@ namespace Overdrive.Combat
             UpdateFistVisual(Time.deltaTime);
         }
 
+        public void ResetForRewind()
+        {
+            cooldownLeft = 0f;
+            punchVisualLeft = 0f;
+        }
+
         /// <summary>Avanza el enfriamiento. Público para simularlo en el editor.</summary>
         public void Tick(float deltaTime)
         {

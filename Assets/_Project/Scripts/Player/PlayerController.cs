@@ -50,6 +50,14 @@ namespace Overdrive.Player
             TrackFall(controller.isGrounded, transform.position.y);
         }
 
+        /// <summary>Rebobinar: sin velocidad acumulada, sin caída en curso y con el movimiento libre.</summary>
+        public void ResetMotion()
+        {
+            verticalSpeed = 0f;
+            airborne = false;
+            MovementLocked = false;
+        }
+
         /// <summary>
         /// Detecta caídas: al pasar de estar en el aire a tocar suelo, avisa con la altura caída.
         /// Público para simularlo en el editor.

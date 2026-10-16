@@ -10,7 +10,7 @@ namespace Overdrive.Level
     /// Cuenta los enemigos vivos, vigila el maletín, lanza los refuerzos, abre la salida
     /// y detecta la victoria o la derrota.
     /// </summary>
-    public class LevelManager : MonoBehaviour
+    public class LevelManager : MonoBehaviour, IRewindable
     {
         [SerializeField] private PlayerLife player;
         [SerializeField] private ExitZone exit;
@@ -26,6 +26,11 @@ namespace Overdrive.Level
         public Enemy[] Enemies => enemies;
         public BriefcasePickup Briefcase => briefcase;
         public ReinforcementWave Reinforcements => reinforcements;
+
+        public object Capture() => progress.State;
+
+        /// <summary>Rebobinar: vuelve al estado guardado (de "perdido" a "jugando").</summary>
+        public void Restore(object snapshot) => progress.Restore((LevelState)snapshot);
 
         private void Start() => Evaluate();
         private void Update() => Evaluate();

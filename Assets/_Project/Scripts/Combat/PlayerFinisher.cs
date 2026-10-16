@@ -72,6 +72,13 @@ namespace Overdrive.Combat
             if (finished != null) finished.CompleteFinish();
         }
 
+        /// <summary>Rebobinar: olvida el remate en curso sin tocar al enemigo (que restaura su propio estado).</summary>
+        public void ResetForRewind()
+        {
+            sequence?.Cancel();
+            target = null;
+        }
+
         public void Cancel()
         {
             if (!IsFinishing) return;

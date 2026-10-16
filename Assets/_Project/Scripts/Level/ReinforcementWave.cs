@@ -1,3 +1,4 @@
+using Overdrive.Core;
 using Overdrive.Enemies;
 using Overdrive.Player;
 using UnityEngine;
@@ -8,7 +9,7 @@ namespace Overdrive.Level
     /// Refuerzos: esperan desactivados tras una puerta cerrada. Al activarse, la puerta se abre
     /// y entran a cazar al jugador.
     /// </summary>
-    public class ReinforcementWave : MonoBehaviour
+    public class ReinforcementWave : MonoBehaviour, IRewindable
     {
         [SerializeField] private EnemyAI[] squad = new EnemyAI[0];
         [SerializeField] private GameObject door;
@@ -16,6 +17,15 @@ namespace Overdrive.Level
         public EnemyAI[] Squad => squad;
         public GameObject Door => door;
         public bool Triggered { get; private set; }
+
+        /// <summary>Guarda si ya entraron; cada refuerzo restaura su propio estado (activo, posición...).</summary>
+        public object Capture() => Triggered;
+
+        public void Restore(object snapshot)
+        {
+            Triggered = (bool)snapshot;
+            if (door != null) door.SetActive(!Triggered);
+        }
 
         public void Trigger(PlayerLife target)
         {

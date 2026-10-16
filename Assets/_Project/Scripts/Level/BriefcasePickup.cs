@@ -1,3 +1,4 @@
+using Overdrive.Core;
 using Overdrive.Player;
 using UnityEngine;
 
@@ -7,7 +8,7 @@ namespace Overdrive.Level
     /// El maletín (la mercancía): se recoge al pasar por encima y se lleva a la espalda.
     /// Recogerlo hace entrar a los refuerzos (ver <see cref="LevelManager"/>).
     /// </summary>
-    public class BriefcasePickup : MonoBehaviour
+    public class BriefcasePickup : MonoBehaviour, IRewindable
     {
         [SerializeField] private PlayerLife player;
         [SerializeField] private float pickupRadius = 1.1f;
@@ -15,6 +16,31 @@ namespace Overdrive.Level
 
         public PlayerLife Player => player;
         public bool IsCollected { get; private set; }
+
+        private sealed class Snapshot
+        {
+            public bool Collected;
+            public Transform Parent;
+            public Vector3 LocalPosition;
+            public Quaternion LocalRotation;
+        }
+
+        public object Capture() => new Snapshot
+        {
+            Collected = IsCollected,
+            Parent = transform.parent,
+            LocalPosition = transform.localPosition,
+            LocalRotation = transform.localRotation,
+        };
+
+        public void Restore(object snapshot)
+        {
+            var s = (Snapshot)snapshot;
+            IsCollected = s.Collected;
+            transform.SetParent(s.Parent, false);
+            transform.localPosition = s.LocalPosition;
+            transform.localRotation = s.LocalRotation;
+        }
 
         private void Update()
         {

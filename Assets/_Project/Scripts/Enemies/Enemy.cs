@@ -25,6 +25,7 @@ namespace Overdrive.Enemies
         [SerializeField] private WeaponItem weapon;
 
         private readonly CombatState state = new CombatState();
+        private Material aliveMaterial;
 
         /// <summary>Enemigos activos en la escena.</summary>
         public static IReadOnlyList<Enemy> All => all;
@@ -126,7 +127,21 @@ namespace Overdrive.Enemies
             }
             // En el suelo no bloquea: el jugador puede ponerse encima para rematarlo.
             if (bodyCollider != null) bodyCollider.enabled = !lying;
-            if (state.IsDead && bodyRenderer != null && deadMaterial != null) bodyRenderer.sharedMaterial = deadMaterial;
+            if (bodyRenderer != null)
+            {
+                // Se recuerda el material de vivo para poder volver a él al rebobinar.
+                if (aliveMaterial == null) aliveMaterial = bodyRenderer.sharedMaterial;
+                Material wanted = state.IsDead && deadMaterial != null ? deadMaterial : aliveMaterial;
+                if (wanted != null && bodyRenderer.sharedMaterial != wanted) bodyRenderer.sharedMaterial = wanted;
+            }
+        }
+
+        /// <summary>Rebobinar: vuelve a la postura y el arma guardadas, sin efectos (ni sangre ni soltar el arma).</summary>
+        public void RestoreState(CombatState.Snapshot snapshot, WeaponItem heldWeapon)
+        {
+            state.Restore(snapshot);
+            weapon = heldWeapon;
+            ApplyPosture();
         }
     }
 }

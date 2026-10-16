@@ -22,15 +22,26 @@ namespace Overdrive.Player
         public bool Kill()
         {
             if (!health.Kill()) return false;
-            if (body != null)
-            {
-                body.localRotation = Quaternion.Euler(90f, 0f, 0f);
-                body.localPosition = new Vector3(0f, 0.4f, 0f);
-            }
+            ApplyPose();
             BloodSpawner.SpawnAt(transform.position, 1.2f);
             CameraShake.Shake(0.5f);
             Died?.Invoke();
             return true;
+        }
+
+        /// <summary>Rebobinar: vuelve a estar vivo (o muerto) sin sangre ni eventos.</summary>
+        public void Restore(bool dead)
+        {
+            health.Restore(dead);
+            ApplyPose();
+        }
+
+        private void ApplyPose()
+        {
+            if (body == null) return;
+            bool lying = health.IsDead;
+            body.localRotation = lying ? Quaternion.Euler(90f, 0f, 0f) : Quaternion.identity;
+            body.localPosition = new Vector3(0f, lying ? 0.4f : 0.9f, 0f);
         }
     }
 }
