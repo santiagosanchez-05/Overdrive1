@@ -33,14 +33,19 @@ namespace Overdrive.UI
             DrawShadowed(new Rect(Screen.width * 0.5f - margin, margin, Screen.width * 0.5f, lineHeight),
                 HudText.Enemies(level.Progress.Remaining), cornerRight);
 
+            bool carrying = level.Briefcase != null && level.Briefcase.IsCollected;
+            string briefcaseText = HudText.Briefcase(carrying);
+            if (briefcaseText != null)
+                DrawShadowed(new Rect(margin, margin + lineHeight, Screen.width * 0.5f, lineHeight), briefcaseText, cornerLeft);
+
             string message = HudText.CenterMessage(level.Progress.State);
-            string hint = HudText.SubMessage(level.Progress.State);
+            string hint = HudText.SubMessage(level.Progress.State, !level.Progress.HasObjective);
             float middle = Screen.height * 0.5f;
             if (message != null)
                 DrawShadowed(new Rect(0f, middle - 70f * scale, Screen.width, 80f * scale), message, center);
             if (hint != null)
             {
-                float y = message != null ? middle + 10f * scale : margin + lineHeight + 10f * scale;
+                float y = message != null ? middle + 10f * scale : margin + lineHeight * 2f + 10f * scale;
                 DrawShadowed(new Rect(0f, y, Screen.width, 50f * scale), hint, sub);
             }
         }

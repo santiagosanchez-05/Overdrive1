@@ -11,6 +11,8 @@ namespace Overdrive.UI
         public const string Complete = "Nivel completado";
         public const string CompleteHint = "Presiona R para jugar otra vez";
         public const string GoToExit = "¡Ve a la salida!";
+        public const string FindBriefcase = "Objetivo: el maletín del piso de arriba";
+        public const string CarryingBriefcase = "Maletín: lo tienes";
 
         /// <summary>Arma actual y munición: "Escopeta  4/6", "Bate", "Subfusil  0/30 (vacía)".</summary>
         public static string Weapon(WeaponDefinition definition, int ammo)
@@ -34,11 +36,16 @@ namespace Overdrive.UI
             }
         }
 
+        /// <summary>Línea del maletín en la esquina, o null si todavía no lo lleva.</summary>
+        public static string Briefcase(bool carrying) => carrying ? CarryingBriefcase : null;
+
         /// <summary>Mensaje pequeño bajo el central, o null si no hay.</summary>
-        public static string SubMessage(LevelState state)
+        /// <param name="needsObjective">Todavía falta recoger el maletín.</param>
+        public static string SubMessage(LevelState state, bool needsObjective = false)
         {
             switch (state)
             {
+                case LevelState.Playing: return needsObjective ? FindBriefcase : null;
                 case LevelState.ExitOpen: return GoToExit;
                 case LevelState.Complete: return CompleteHint;
                 default: return null;
