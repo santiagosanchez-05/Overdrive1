@@ -8,7 +8,6 @@ namespace Overdrive.Player
     {
         [SerializeField] private Camera aimCamera;
         [SerializeField] private PlayerLife life;
-        [SerializeField] private float groundY;
 
         public Vector3 AimPoint { get; private set; }
         public bool HasAim { get; private set; }
@@ -21,7 +20,8 @@ namespace Overdrive.Player
             if (aimCamera == null) return;
 
             Ray ray = aimCamera.ScreenPointToRay(GameInput.MousePosition);
-            HasAim = AimMath.TryGetPointOnPlane(ray, groundY, out Vector3 point);
+            // El plano de apuntado es el suelo del piso en el que está el jugador.
+            HasAim = AimMath.TryGetPointOnPlane(ray, transform.position.y, out Vector3 point);
             if (!HasAim) return;
             AimPoint = point;
 

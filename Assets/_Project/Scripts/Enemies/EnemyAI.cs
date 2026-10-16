@@ -41,6 +41,8 @@ namespace Overdrive.Enemies
 
         private EnemyBrain brain;
         private WeaponItem nearbyWeapon;
+        private PlayerLife huntTarget;
+        private float huntTimer;
         private float attackCooldown;
         private float windupLeft;
         private bool winding;
@@ -87,11 +89,38 @@ namespace Overdrive.Enemies
             return true;
         }
 
+        public PlayerLife HuntTarget => huntTarget;
+
+        /// <summary>
+        /// Modo caza (refuerzos): sabe aproximadamente dónde está el jugador y va a por él
+        /// aunque no lo vea. Al verlo, persigue y ataca como cualquier enemigo.
+        /// </summary>
+        public void Hunt(PlayerLife target)
+        {
+            huntTarget = target;
+            huntTimer = 0f;
+            UpdateHunt(0f);
+        }
+
+        /// <summary>Cada segundo actualiza el destino hacia la posición actual del jugador.</summary>
+        public void UpdateHunt(float deltaTime)
+        {
+            if (huntTarget == null || huntTarget.IsDead) return;
+            huntTimer -= deltaTime;
+            if (huntTimer > 0f) return;
+            huntTimer = HuntRefresh;
+            Brain.HearNoise(huntTarget.transform.position);
+        }
+
+        private const float HuntRefresh = 1f;
+
         /// <summary>Cono de visión + línea de vista: no ve a través de paredes.</summary>
         public bool CanSee(PlayerLife target)
         {
             if (target == null || target.IsDead) return false;
             Vector3 targetPosition = target.transform.position;
+            // Solo ve a quien está en su mismo piso (ni a través de huecos ni de la escalera).
+            if (!Floors.SameFloor(transform.position, targetPosition)) return false;
             if (!VisionLogic.InCone(transform.position, transform.forward, targetPosition, viewRange, viewHalfAngle, proximity))
                 return false;
             return LineOfSight.IsClear(EyePosition, targetPosition + Vector3.up, target.transform);
@@ -116,6 +145,7 @@ namespace Overdrive.Enemies
                 Brain.OnRecovered();
             }
             SetAgentActive(true);
+            UpdateHunt(dt);
 
             Perception perception = BuildPerception();
             Brain.Tick(dt, perception);
@@ -150,7 +180,7 @@ namespace Overdrive.Enemies
             float bestDistance = retrieveRadius;
             foreach (WeaponItem item in WeaponItem.All)
             {
-                if (!item.IsOnGround) continue;
+                if (!item.IsOnGround || !Floors.SameFloor(transform.position, item.transform.position)) continue;
                 float distance = EnemyBrain.FlatDistance(transform.position, item.transform.position);
                 if (distance > bestDistance) continue;
                 best = item;

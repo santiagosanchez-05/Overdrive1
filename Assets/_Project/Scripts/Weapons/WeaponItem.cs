@@ -68,7 +68,8 @@ namespace Overdrive.Weapons
             mode = Mode.Ground;
             flight.Stop();
             transform.SetParent(null, true);
-            position.y = groundHeight;
+            // Cae sobre el suelo que haya debajo: losa del piso de arriba o, por un hueco, la planta baja.
+            position.y = GroundProbe.GroundY(position) + groundHeight;
             transform.SetPositionAndRotation(position, Quaternion.Euler(0f, yaw, 0f));
         }
 

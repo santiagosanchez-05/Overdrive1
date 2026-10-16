@@ -21,7 +21,8 @@ namespace Overdrive.Level
         /// <summary>¿Está el punto dentro del rectángulo (ancho x, fondo z) centrado en <paramref name="center"/>?</summary>
         public static bool Contains(Vector3 center, Vector2 size, Vector3 point)
         {
-            return Mathf.Abs(point.x - center.x) <= size.x * 0.5f && Mathf.Abs(point.z - center.z) <= size.y * 0.5f;
+            return Mathf.Abs(point.x - center.x) <= size.x * 0.5f && Mathf.Abs(point.z - center.z) <= size.y * 0.5f
+                   && Mathf.Abs(point.y - center.y) <= 1.5f;
         }
 
         public void SetOpen(bool open)

@@ -16,8 +16,10 @@ namespace Overdrive.Core
             if (radius > 0f) NoiseMade?.Invoke(position, radius);
         }
 
+        /// <summary>Se oye dentro del radio y solo en el mismo piso.</summary>
         public static bool CanHear(Vector3 listener, Vector3 source, float radius)
         {
+            if (!Floors.SameFloor(listener, source)) return false;
             Vector3 d = listener - source;
             d.y = 0f;
             return d.sqrMagnitude <= radius * radius;

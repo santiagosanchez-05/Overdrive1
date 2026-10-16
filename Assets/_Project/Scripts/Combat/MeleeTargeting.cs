@@ -18,6 +18,11 @@ namespace Overdrive.Combat
             }
         }
 
+        /// <summary>Diferencia de altura máxima para golpear: no se pega a través del suelo de otro piso.</summary>
+        public const float MaxHeightDifference = 1.5f;
+
+        public static bool SameLevel(Vector3 a, Vector3 b) => Mathf.Abs(a.y - b.y) <= MaxHeightDifference;
+
         public static float FlatDistance(Vector3 a, Vector3 b)
         {
             Vector3 d = b - a;
@@ -28,6 +33,7 @@ namespace Overdrive.Combat
         /// <summary>¿Está <paramref name="target"/> dentro del abanico frente al atacante?</summary>
         public static bool InArc(Vector3 origin, Vector3 forward, Vector3 target, float range, float halfAngle)
         {
+            if (!SameLevel(origin, target)) return false;
             Vector3 toTarget = target - origin;
             toTarget.y = 0f;
             float distance = toTarget.magnitude;
@@ -70,7 +76,7 @@ namespace Overdrive.Combat
             for (int i = 0; i < candidates.Count; i++)
             {
                 Target t = candidates[i];
-                if (t.Posture != Posture.Down) continue;
+                if (t.Posture != Posture.Down || !SameLevel(origin, t.Position)) continue;
                 float distance = FlatDistance(origin, t.Position);
                 if (distance <= radius && distance < bestDistance)
                 {

@@ -1,3 +1,4 @@
+using Overdrive.Core;
 using UnityEngine;
 
 namespace Overdrive.Combat
@@ -46,7 +47,7 @@ namespace Overdrive.Combat
         private void SpawnOne(Vector3 position, float size)
         {
             // Cada mancha un poco más alta que la anterior para que no parpadeen al solaparse.
-            position.y = 0.01f + (spawned % 40) * 0.0005f;
+            position.y = GroundProbe.GroundY(position) + 0.01f + (spawned % 40) * 0.0005f;
             spawned++;
             GameObject splat = Instantiate(bloodPrefab, position, Quaternion.Euler(90f, Random.Range(0f, 360f), 0f), transform);
             splat.transform.localScale = Vector3.one * size;
