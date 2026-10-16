@@ -18,6 +18,7 @@ namespace Overdrive.EditorTools
         public const string PlayerPrefabPath = PrefabsPath + "/Player.prefab";
         public const string EnemyPrefabPath = PrefabsPath + "/Enemy.prefab";
         public const string BulletPrefabPath = PrefabsPath + "/Bullet.prefab";
+        public const string BloodPrefabPath = PrefabsPath + "/Blood.prefab";
         public const string HandName = "Hand";
 
         public static string WeaponPrefabPath(WeaponType type) => $"{PrefabsPath}/Weapon_{type}.prefab";
@@ -35,6 +36,8 @@ namespace Overdrive.EditorTools
         public const string MatWeaponDark = "WeaponDark";
         public const string MatBlade = "Blade";
         public const string MatBullet = "Bullet";
+        public const string MatBlood = "Blood";
+        public const string MatExitLocked = "ExitLocked";
 
         /// <summary>Nombre, color base e intensidad de emisión (0 = sin emisión).</summary>
         public static readonly (string name, Color color, float emission)[] MaterialDefs =
@@ -52,7 +55,24 @@ namespace Overdrive.EditorTools
             (MatWeaponDark, new Color(0.12f, 0.12f, 0.15f), 0f),
             (MatBlade, new Color(0.85f, 0.90f, 1.00f), 0.6f),
             (MatBullet, new Color(1.00f, 0.90f, 0.30f), 4f),
+            (MatBlood, new Color(0.65f, 0.00f, 0.03f), 0.25f),
+            (MatExitLocked, new Color(0.10f, 0.30f, 0.15f), 0.2f),
         };
+
+        public static GameObject EnsureBloodPrefab()
+        {
+            BuilderUtil.EnsureFolder(PrefabsPath);
+            return BuilderUtil.EditPrefab(BloodPrefabPath, "Blood", root =>
+            {
+                // El quad mira hacia -Z; el BloodSpawner gira la raíz 90° en X para tumbarlo en el suelo.
+                GameObject quad = BuilderUtil.EnsurePrimitiveChild(root.transform, "Quad", PrimitiveType.Quad, false);
+                BuilderUtil.SetLocal(quad, Vector3.zero, Vector3.one, Quaternion.identity);
+                BuilderUtil.SetMaterial(quad, Mat(MatBlood));
+                var renderer = quad.GetComponent<Renderer>();
+                renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                renderer.receiveShadows = true;
+            });
+        }
 
         /// <summary>Pieza visual de un arma: forma, posición, escala, rotación y material.</summary>
         private readonly struct Part

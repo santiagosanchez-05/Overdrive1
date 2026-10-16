@@ -2,10 +2,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Overdrive.CameraRig;
+using Overdrive.Combat;
 using Overdrive.Core;
 using Overdrive.Enemies;
 using Overdrive.Level;
 using Overdrive.Player;
+using Overdrive.UI;
 using Overdrive.Weapons;
 using Unity.AI.Navigation;
 using UnityEditor;
@@ -36,6 +38,7 @@ namespace Overdrive.EditorTools
         public const string CameraName = "Main Camera";
         public const string SystemsName = "Systems";
         public const string LightName = "Directional Light";
+        public const string BloodName = "Blood";
         public const string NavMeshPath = ScenesPath + "/Level01_NavMesh.asset";
         public const int PatrolCells = 4;
 
@@ -65,8 +68,7 @@ namespace Overdrive.EditorTools
             EnsureFloorWeapons(scene, map);
             EnsureCamera(scene, player);
 
-            GameObject systems = BuilderUtil.EnsureRoot(scene, SystemsName);
-            BuilderUtil.EnsureComponent<LevelRestart>(systems);
+            EnsureSystems(scene, level, player);
 
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene);
@@ -136,7 +138,42 @@ namespace Overdrive.EditorTools
                 map.BlockCenter(block) + new Vector3(0f, 0.03f, 0f),
                 new Vector3(block.Width * map.CellSize, 0.05f, block.Height * map.CellSize),
                 Quaternion.identity);
-            BuilderUtil.SetMaterial(exit, AssetFactory.Mat(AssetFactory.MatExit));
+            // Empieza apagada; LevelManager la enciende cuando no quedan enemigos.
+            BuilderUtil.SetMaterial(exit, AssetFactory.Mat(AssetFactory.MatExitLocked));
+
+            var zone = BuilderUtil.EnsureComponent<ExitZone>(exit);
+            var so = new SerializedObject(zone);
+            so.FindProperty("size").vector2Value = new Vector2(block.Width * map.CellSize, block.Height * map.CellSize);
+            so.ApplyModifiedPropertiesWithoutUndo();
+            BuilderUtil.SetRef(zone, "zoneRenderer", exit.GetComponent<Renderer>());
+            BuilderUtil.SetRef(zone, "lockedMaterial", AssetFactory.Mat(AssetFactory.MatExitLocked));
+            BuilderUtil.SetRef(zone, "openMaterial", AssetFactory.Mat(AssetFactory.MatExit));
+        }
+
+        /// <summary>Sistemas del nivel: reinicio, progreso/victoria, sangre y HUD.</summary>
+        private static void EnsureSystems(Scene scene, GameObject level, GameObject player)
+        {
+            GameObject systems = BuilderUtil.EnsureRoot(scene, SystemsName);
+            BuilderUtil.EnsureComponent<LevelRestart>(systems);
+
+            var manager = BuilderUtil.EnsureComponent<LevelManager>(systems);
+            BuilderUtil.SetRef(manager, "player", player.GetComponent<PlayerLife>());
+            BuilderUtil.SetRef(manager, "exit", level.transform.Find(ExitName).GetComponent<ExitZone>());
+            Enemy[] enemies = BuilderUtil.FindRoot(scene, EnemiesName).GetComponentsInChildren<Enemy>(true);
+            var so = new SerializedObject(manager);
+            SerializedProperty list = so.FindProperty("enemies");
+            list.arraySize = enemies.Length;
+            for (int i = 0; i < enemies.Length; i++) list.GetArrayElementAtIndex(i).objectReferenceValue = enemies[i];
+            so.ApplyModifiedPropertiesWithoutUndo();
+
+            // Las manchas de sangre se crean como hijas de este objeto.
+            GameObject bloodRoot = BuilderUtil.EnsureChild(systems.transform, BloodName);
+            var blood = BuilderUtil.EnsureComponent<BloodSpawner>(bloodRoot);
+            BuilderUtil.SetRef(blood, "bloodPrefab", AssetDatabase.LoadAssetAtPath<GameObject>(AssetFactory.BloodPrefabPath));
+
+            var hud = BuilderUtil.EnsureComponent<GameHUD>(systems);
+            BuilderUtil.SetRef(hud, "weapons", player.GetComponent<PlayerWeapons>());
+            BuilderUtil.SetRef(hud, "level", manager);
         }
 
         private static GameObject EnsurePlayer(Scene scene, LevelMap map)

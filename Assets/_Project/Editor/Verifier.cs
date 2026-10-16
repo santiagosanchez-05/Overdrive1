@@ -39,6 +39,9 @@ namespace Overdrive.EditorTools
             VerifyAIScene(c, map);
             VerifyAILogic(c, map);
             VerifyAISimulation(c);
+            VerifyLevelScene(c, map);
+            VerifyLevelLogic(c);
+            VerifyLevelSimulation(c);
             return c;
         }
 
