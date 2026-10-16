@@ -39,6 +39,13 @@ namespace Overdrive.Enemies
         [SerializeField] private float pickupDistance = 1f;
         [SerializeField] private BrainSettings brainSettings = BrainSettings.Default;
 
+        [Header("Detección gradual")]
+        [Tooltip("Segundos para detectarte de cerca (2 m o menos).")]
+        [SerializeField] private float detectNearTime = 0.3f;
+        [Tooltip("Segundos para detectarte en el límite de su vista.")]
+        [SerializeField] private float detectFarTime = 1.8f;
+        [SerializeField] private float suspicionDecay = 0.3f;
+
         private EnemyBrain brain;
         private WeaponItem nearbyWeapon;
         private PlayerLife huntTarget;
@@ -53,7 +60,28 @@ namespace Overdrive.Enemies
         public NavMeshAgent Agent => agent;
         public PlayerLife Player => player;
         public Vector3[] PatrolPoints => patrolPoints;
-        public EnemyBrain Brain => brain ??= new EnemyBrain(transform.position, patrolPoints, brainSettings);
+        public EnemyBrain Brain => brain ??= new EnemyBrain(transform.position, patrolPoints, brainSettings, Detection);
+
+        private DetectionSettings Detection
+        {
+            get
+            {
+                DetectionSettings d = DetectionSettings.Default;
+                d.farDistance = viewRange;
+                d.nearTime = detectNearTime;
+                d.farTime = detectFarTime;
+                d.decayPerSecond = suspicionDecay;
+                return d;
+            }
+        }
+
+        /// <summary>Nivel de alerta para el indicador (?, !). Derribado o muerto no muestra nada.</summary>
+        public Awareness Awareness => enemy.Posture == Posture.Standing ? Brain.Awareness : Awareness.Unaware;
+
+        /// <summary>¿Un golpe desde <paramref name="attacker"/> sería por la espalda y sin que lo haya detectado?</summary>
+        public bool IsUnawareOf(Vector3 attacker) =>
+            enemy.Posture == Posture.Standing &&
+            StealthLogic.IsBackstab(transform.position, transform.forward, attacker, Brain.IsInCombat);
         public bool IsWindingUp => winding;
         public Vector3 EyePosition => transform.position + Vector3.up * eyeHeight;
         private Vector3 ShotOrigin => transform.position + Vector3.up;
@@ -98,6 +126,7 @@ namespace Overdrive.Enemies
         public void Hunt(PlayerLife target)
         {
             huntTarget = target;
+            Brain.SetHunting(true);
             huntTimer = 0f;
             UpdateHunt(0f);
         }

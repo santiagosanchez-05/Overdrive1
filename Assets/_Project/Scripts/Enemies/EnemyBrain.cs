@@ -45,6 +45,44 @@ namespace Overdrive.Enemies
         };
     }
 
+    /// <summary>Nivel de alerta que se muestra sobre la cabeza del enemigo.</summary>
+    public enum Awareness
+    {
+        Unaware,
+        /// <summary>"?": te ha entrevisto u oído y va a mirar.</summary>
+        Suspicious,
+        /// <summary>"!": te ha detectado.</summary>
+        Alerted,
+    }
+
+    /// <summary>Detección gradual: cuánto tarda en llenarse la sospecha según la distancia.</summary>
+    public struct DetectionSettings
+    {
+        public float nearDistance;
+        public float farDistance;
+        /// <summary>Segundos para detectar a <see cref="nearDistance"/> o menos.</summary>
+        public float nearTime;
+        /// <summary>Segundos para detectar a <see cref="farDistance"/>.</summary>
+        public float farTime;
+        /// <summary>Más cerca que esto, detecta al instante.</summary>
+        public float instantDistance;
+        /// <summary>Sospecha a partir de la cual va a mirar (?).</summary>
+        public float suspiciousThreshold;
+        /// <summary>Cuánto baja la sospecha por segundo sin verte.</summary>
+        public float decayPerSecond;
+
+        public static DetectionSettings Default => new DetectionSettings
+        {
+            nearDistance = 2f,
+            farDistance = 14f,
+            nearTime = 0.3f,
+            farTime = 1.8f,
+            instantDistance = 1.5f,
+            suspiciousThreshold = 0.35f,
+            decayPerSecond = 0.3f,
+        };
+    }
+
     /// <summary>Lo que el enemigo percibe en un instante.</summary>
     public struct Perception
     {
@@ -60,12 +98,13 @@ namespace Overdrive.Enemies
     }
 
     /// <summary>
-    /// Máquina de estados del enemigo: patrulla o quieto → detecta → persigue → ataca.
+    /// Máquina de estados del enemigo: patrulla o quieto → sospecha (?) → detecta (!) → persigue → ataca.
     /// Lógica pura: no mueve nada, solo decide adónde ir, hacia dónde mirar y si atacar.
     /// </summary>
     public sealed class EnemyBrain
     {
         private readonly BrainSettings settings;
+        private readonly DetectionSettings detection;
         private readonly Vector3 home;
         private readonly Vector3[] patrol;
         private int patrolIndex;
@@ -84,21 +123,63 @@ namespace Overdrive.Enemies
 
         public bool IsAlerted => State == AIState.Chase || State == AIState.Attack || State == AIState.Investigate || State == AIState.Retrieve;
 
-        public EnemyBrain(Vector3 home, Vector3[] patrol, BrainSettings settings)
+        /// <summary>Ya sabe que el jugador está ahí: persigue, ataca o va a por un arma.</summary>
+        public bool IsInCombat => State == AIState.Chase || State == AIState.Attack || State == AIState.Retrieve;
+
+        /// <summary>Barra de sospecha de 0 a 1. Al llenarse, detecta al jugador.</summary>
+        public float Suspicion { get; private set; }
+
+        /// <summary>Caza (refuerzos): detecta al jugador en cuanto lo ve.</summary>
+        public bool Hunting { get; private set; }
+
+        /// <summary>Lo que muestra el indicador sobre la cabeza: nada, ? o !.</summary>
+        public Awareness Awareness
+        {
+            get
+            {
+                if (IsInCombat) return Awareness.Alerted;
+                if (State == AIState.Investigate || Suspicion >= detection.suspiciousThreshold) return Awareness.Suspicious;
+                return Awareness.Unaware;
+            }
+        }
+
+        public EnemyBrain(Vector3 home, Vector3[] patrol, BrainSettings settings, DetectionSettings? detection = null)
         {
             this.home = home;
             this.patrol = patrol ?? Array.Empty<Vector3>();
             this.settings = settings;
+            this.detection = detection ?? DetectionSettings.Default;
             State = this.patrol.Length >= 2 ? AIState.Patrol : AIState.Idle;
         }
 
-        /// <summary>Un ruido cercano: si no está ya persiguiendo, va a investigarlo.</summary>
+        /// <summary>Un ruido cercano: si no está ya persiguiendo, sospecha y va a investigarlo.</summary>
         public void HearNoise(Vector3 position)
         {
-            if (State == AIState.Chase || State == AIState.Attack || State == AIState.Retrieve) return;
+            if (IsInCombat) return;
             LastKnownPlayerPosition = position;
             State = AIState.Investigate;
             timer = 0f;
+            Suspicion = Mathf.Max(Suspicion, detection.suspiciousThreshold);
+        }
+
+        /// <summary>Detecta al jugador de golpe (sospecha llena) y empieza a perseguirlo.</summary>
+        public void Alert(Vector3 playerPosition)
+        {
+            Suspicion = 1f;
+            LastKnownPlayerPosition = playerPosition;
+            sinceSeen = 0f;
+            if (IsInCombat) return;
+            State = AIState.Chase;
+            reactionLeft = settings.reactionTime;
+        }
+
+        public void SetHunting(bool hunting) => Hunting = hunting;
+
+        /// <summary>Segundos que tarda en llenarse la sospecha viendo al jugador a esa distancia.</summary>
+        public float DetectionTime(float distance)
+        {
+            float t = Mathf.InverseLerp(detection.nearDistance, detection.farDistance, distance);
+            return Mathf.Lerp(detection.nearTime, detection.farTime, t);
         }
 
         /// <summary>Al levantarse tras un derribo necesita reaccionar de nuevo antes de atacar.</summary>
@@ -120,15 +201,12 @@ namespace Overdrive.Enemies
             {
                 LastKnownPlayerPosition = p.PlayerPosition;
                 sinceSeen = 0f;
-                if (State != AIState.Chase && State != AIState.Attack && State != AIState.Retrieve)
-                {
-                    State = AIState.Chase;
-                    reactionLeft = settings.reactionTime;
-                }
+                if (!IsInCombat) TickDetection(deltaTime, p);
             }
-            else if (sinceSeen < float.MaxValue)
+            else
             {
-                sinceSeen += deltaTime;
+                if (sinceSeen < float.MaxValue) sinceSeen += deltaTime;
+                if (!IsInCombat) Suspicion = Mathf.Max(0f, Suspicion - detection.decayPerSecond * deltaTime);
             }
             reactionLeft = Mathf.Max(0f, reactionLeft - deltaTime);
 
@@ -157,6 +235,35 @@ namespace Overdrive.Enemies
                 case AIState.Attack:
                     TickCombat(p);
                     break;
+            }
+        }
+
+        /// <summary>
+        /// Ve al jugador sin haberlo detectado: la sospecha sube más rápido cuanto más cerca.
+        /// A medias se acerca a mirar (?); llena, lo detecta (!) y persigue.
+        /// </summary>
+        private void TickDetection(float deltaTime, Perception p)
+        {
+            float distance = FlatDistance(p.SelfPosition, p.PlayerPosition);
+            if (Hunting || distance <= detection.instantDistance) Suspicion = 1f;
+            else Suspicion = Mathf.Min(1f, Suspicion + deltaTime / DetectionTime(distance));
+
+            if (Suspicion >= 1f)
+            {
+                State = AIState.Chase;
+                reactionLeft = settings.reactionTime;
+            }
+            else if (Suspicion >= detection.suspiciousThreshold && State != AIState.Investigate)
+            {
+                State = AIState.Investigate;
+                timer = 0f;
+            }
+
+            // Mientras sospecha, no aparta la vista del jugador.
+            if (!IsInCombat)
+            {
+                HasLookTarget = true;
+                LookTarget = p.PlayerPosition;
             }
         }
 
