@@ -1,4 +1,6 @@
+using Overdrive.Enemies;
 using Overdrive.Level;
+using Overdrive.Player;
 using Overdrive.Weapons;
 using UnityEngine;
 
@@ -14,7 +16,11 @@ namespace Overdrive.UI
         private GUIStyle cornerRight;
         private GUIStyle center;
         private GUIStyle sub;
+        private GUIStyle sneak;
+        private GUIStyle suspicious;
+        private GUIStyle alerted;
         private float scale = -1f;
+        private PlayerController controller;
 
         public PlayerWeapons Weapons => weapons;
         public LevelManager Level => level;
@@ -38,6 +44,13 @@ namespace Overdrive.UI
             if (briefcaseText != null)
                 DrawShadowed(new Rect(margin, margin + lineHeight, Screen.width * 0.5f, lineHeight), briefcaseText, cornerLeft);
 
+            if (controller == null && weapons != null) controller = weapons.GetComponent<PlayerController>();
+            if (controller != null && controller.IsSneaking)
+                DrawShadowed(new Rect(margin, Screen.height - margin - lineHeight, Screen.width * 0.5f, lineHeight),
+                    HudText.Sneaking, sneak);
+
+            DrawAwarenessMarks();
+
             string message = HudText.CenterMessage(level.Progress.State);
             string hint = HudText.SubMessage(level.Progress.State, !level.Progress.HasObjective);
             float middle = Screen.height * 0.5f;
@@ -50,6 +63,30 @@ namespace Overdrive.UI
             }
         }
 
+        /// <summary>Dibuja "?" o "!" sobre la cabeza de cada enemigo visible que sospecha o te ha detectado.</summary>
+        private void DrawAwarenessMarks()
+        {
+            Camera cam = Camera.main;
+            if (cam == null || weapons == null) return;
+            float playerY = weapons.transform.position.y;
+            float size = 60f * scale;
+
+            foreach (Enemy enemy in Enemy.All)
+            {
+                if (!FloorVisibility.IsVisible(enemy.transform.position.y, playerY)) continue;
+                var ai = enemy.GetComponent<EnemyAI>();
+                if (ai == null) continue;
+                Awareness awareness = ai.Awareness;
+                string mark = HudText.AwarenessMark(awareness);
+                if (mark == null) continue;
+
+                Vector3 screen = cam.WorldToScreenPoint(enemy.transform.position + Vector3.up * 2.4f);
+                if (screen.z <= 0f) continue;
+                var rect = new Rect(screen.x - size * 0.5f, Screen.height - screen.y - size * 0.5f, size, size);
+                DrawShadowed(rect, mark, awareness == Awareness.Alerted ? alerted : suspicious);
+            }
+        }
+
         private void EnsureStyles()
         {
             // Escala el texto según la altura de la pantalla (referencia 1080p).
@@ -58,6 +95,9 @@ namespace Overdrive.UI
             scale = newScale;
 
             cornerLeft = MakeStyle(30, TextAnchor.UpperLeft, new Color(1f, 0.95f, 0.3f));
+            sneak = MakeStyle(26, TextAnchor.LowerLeft, new Color(0.5f, 0.8f, 1f));
+            suspicious = MakeStyle(48, TextAnchor.MiddleCenter, new Color(1f, 0.85f, 0.1f));
+            alerted = MakeStyle(48, TextAnchor.MiddleCenter, new Color(1f, 0.15f, 0.2f));
             cornerRight = MakeStyle(30, TextAnchor.UpperRight, new Color(1f, 0.3f, 0.5f));
             center = MakeStyle(64, TextAnchor.MiddleCenter, Color.white);
             sub = MakeStyle(30, TextAnchor.MiddleCenter, new Color(0.3f, 1f, 0.6f));

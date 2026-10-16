@@ -1,4 +1,5 @@
 using Overdrive.Core;
+using Overdrive.Enemies;
 using Overdrive.Weapons;
 
 namespace Overdrive.UI
@@ -32,6 +33,19 @@ namespace Overdrive.UI
             {
                 case LevelState.Failed: return Dead;
                 case LevelState.Complete: return Complete;
+                default: return null;
+            }
+        }
+
+        public const string Sneaking = "Sigilo";
+
+        /// <summary>Indicador sobre la cabeza de un enemigo: "?" si sospecha, "!" si te ha detectado.</summary>
+        public static string AwarenessMark(Awareness awareness)
+        {
+            switch (awareness)
+            {
+                case Awareness.Suspicious: return "?";
+                case Awareness.Alerted: return "!";
                 default: return null;
             }
         }
