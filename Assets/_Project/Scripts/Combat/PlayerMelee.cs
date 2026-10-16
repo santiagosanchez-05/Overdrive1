@@ -38,7 +38,10 @@ namespace Overdrive.Combat
             cooldownLeft = Mathf.Max(0f, cooldownLeft - deltaTime);
         }
 
-        /// <summary>Lanza un puñetazo. Devuelve el enemigo derribado o null si no golpeó a nadie.</summary>
+        /// <summary>
+        /// Lanza un puñetazo. Devuelve el enemigo golpeado o null si no golpeó a nadie.
+        /// Normalmente lo derriba; por la espalda y sin que te haya detectado, lo mata en silencio.
+        /// </summary>
         public Enemy TryPunch(IReadOnlyList<Enemy> candidates)
         {
             if (!CanPunch) return null;
@@ -50,6 +53,10 @@ namespace Overdrive.Combat
             int index = MeleeTargeting.FindPunchTarget(transform.position, transform.forward, targets, range, halfAngle);
             if (index < 0) return null;
             Enemy enemy = candidates[index];
+
+            var ai = enemy.GetComponent<EnemyAI>();
+            if (ai != null && ai.IsUnawareOf(transform.position))
+                return enemy.ReceiveLethalHit() ? enemy : null;
             return enemy.ReceiveKnockdown() ? enemy : null;
         }
 
