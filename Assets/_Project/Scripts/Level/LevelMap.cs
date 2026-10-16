@@ -6,11 +6,14 @@ using UnityEngine;
 namespace Overdrive.Level
 {
     /// <summary>
-    /// Mapa ASCII del nivel. Fila 0 = norte (+Z), columna 0 = oeste (-X).
+    /// Mapa ASCII de un piso. Fila 0 = norte (+Z), columna 0 = oeste (-X).
     /// Leyenda:
     ///   # pared   . suelo   P inicio del jugador   X zona de salida
     ///   b enemigo con bate   k con cuchillo   s con escopeta   m con subfusil
     ///   B K S M: la misma arma tirada en el suelo, sin enemigo
+    ///   / escalera (rampa que sube hacia el este hasta el piso de arriba)
+    ///   ' ' sin suelo (fuera del piso)   O hueco en el suelo por el que se cae al piso de abajo
+    ///   C maletín   D puerta cerrada hasta que llegan los refuerzos   R punto de entrada de un refuerzo
     /// </summary>
     public sealed class LevelMap
     {
@@ -18,6 +21,12 @@ namespace Overdrive.Level
         public const char Floor = '.';
         public const char PlayerSpawn = 'P';
         public const char Exit = 'X';
+        public const char Stairs = '/';
+        public const char Void = ' ';
+        public const char Hole = 'O';
+        public const char Briefcase = 'C';
+        public const char Door = 'D';
+        public const char Reinforcement = 'R';
         public const string EnemyChars = "bksm";
         public const string FloorWeaponChars = "BKSM";
 
@@ -30,7 +39,8 @@ namespace Overdrive.Level
                 Col = col; Row = row; Width = width; Height = height;
             }
 
-            public string Name => $"Wall_c{Col}_r{Row}_{Width}x{Height}";
+            public string Name => NameWith("Wall");
+            public string NameWith(string prefix) => $"{prefix}_c{Col}_r{Row}_{Width}x{Height}";
         }
 
         private readonly string[] rows;
@@ -39,7 +49,13 @@ namespace Overdrive.Level
         public int Height { get; }
         public float CellSize { get; }
 
-        public LevelMap(string[] rows, float cellSize)
+        /// <summary>Índice del piso (0 = planta baja).</summary>
+        public int FloorIndex { get; }
+
+        /// <summary>Altura del suelo de este piso.</summary>
+        public float BaseY { get; }
+
+        public LevelMap(string[] rows, float cellSize, int floorIndex = 0, float baseY = 0f)
         {
             if (rows == null || rows.Length == 0) throw new ArgumentException("El mapa está vacío.");
             Width = rows[0].Length;
@@ -51,6 +67,8 @@ namespace Overdrive.Level
             this.rows = rows;
             Height = rows.Length;
             CellSize = cellSize;
+            FloorIndex = floorIndex;
+            BaseY = baseY;
         }
 
         public char At(int col, int row)
@@ -60,6 +78,21 @@ namespace Overdrive.Level
         }
 
         public bool IsWall(int col, int row) => At(col, row) == Wall;
+
+        /// <summary>Se puede pisar: no es pared, ni vacío, ni hueco.</summary>
+        public bool IsWalkable(int col, int row)
+        {
+            char c = At(col, row);
+            return c != Wall && c != Void && c != Hole;
+        }
+
+        /// <summary>Tiene losa de suelo (en los pisos superiores, también bajo las paredes).</summary>
+        public bool HasSlab(int col, int row)
+        {
+            char c = At(col, row);
+            return c != Void && c != Hole && c != Stairs;
+        }
+
         public static bool IsEnemy(char c) => EnemyChars.IndexOf(c) >= 0;
         public static bool IsFloorWeapon(char c) => FloorWeaponChars.IndexOf(c) >= 0;
 
@@ -76,16 +109,16 @@ namespace Overdrive.Level
             }
         }
 
-        /// <summary>Centro de la celda en el mundo, a la altura del suelo (y = 0).</summary>
-        public Vector3 CellToWorld(int col, int row) => new Vector3(col * CellSize, 0f, -row * CellSize);
+        /// <summary>Centro de la celda en el mundo, a la altura del suelo de este piso.</summary>
+        public Vector3 CellToWorld(int col, int row) => new Vector3(col * CellSize, BaseY, -row * CellSize);
 
         public Vector3 BlockCenter(Block b) => new Vector3(
             (b.Col + (b.Width - 1) * 0.5f) * CellSize,
-            0f,
+            BaseY,
             -(b.Row + (b.Height - 1) * 0.5f) * CellSize);
 
         /// <summary>Centro del rectángulo completo del mapa.</summary>
-        public Vector3 Center => new Vector3((Width - 1) * 0.5f * CellSize, 0f, -(Height - 1) * 0.5f * CellSize);
+        public Vector3 Center => new Vector3((Width - 1) * 0.5f * CellSize, BaseY, -(Height - 1) * 0.5f * CellSize);
 
         public IEnumerable<(int col, int row, char c)> Cells()
         {
@@ -102,11 +135,31 @@ namespace Overdrive.Level
             return result;
         }
 
+        /// <summary>Rectángulo mínimo que contiene todas las celdas con la letra, o null si no hay.</summary>
+        public Block? BoundsOf(char ch)
+        {
+            List<(int col, int row)> cells = FindAll(ch);
+            if (cells.Count == 0) return null;
+            int minC = int.MaxValue, maxC = int.MinValue, minR = int.MaxValue, maxR = int.MinValue;
+            foreach (var (col, row) in cells)
+            {
+                minC = Math.Min(minC, col); maxC = Math.Max(maxC, col);
+                minR = Math.Min(minR, row); maxR = Math.Max(maxR, row);
+            }
+            return new Block(minC, minR, maxC - minC + 1, maxR - minR + 1);
+        }
+
+        /// <summary>Agrupa las paredes en bloques (ver <see cref="Blocks"/>).</summary>
+        public List<Block> WallBlocks() => Blocks((c, r) => IsWall(c, r));
+
+        /// <summary>Agrupa las losas de suelo de un piso superior en bloques.</summary>
+        public List<Block> SlabBlocks() => Blocks((c, r) => HasSlab(c, r));
+
         /// <summary>
-        /// Agrupa las paredes en bloques: primero tramos horizontales de 2 o más celdas,
-        /// luego tramos verticales con las celdas sueltas restantes.
+        /// Agrupa las celdas que cumplen <paramref name="include"/> en bloques: primero tramos horizontales
+        /// de 2 o más celdas, luego tramos verticales con las celdas sueltas restantes.
         /// </summary>
-        public List<Block> WallBlocks()
+        public List<Block> Blocks(Func<int, int, bool> include)
         {
             var blocks = new List<Block>();
             var covered = new bool[Width, Height];
@@ -116,9 +169,9 @@ namespace Overdrive.Level
                 int c = 0;
                 while (c < Width)
                 {
-                    if (!IsWall(c, r)) { c++; continue; }
+                    if (!include(c, r)) { c++; continue; }
                     int start = c;
-                    while (c < Width && IsWall(c, r)) c++;
+                    while (c < Width && include(c, r)) c++;
                     int length = c - start;
                     if (length < 2) continue;
                     blocks.Add(new Block(start, r, length, 1));
@@ -131,15 +184,17 @@ namespace Overdrive.Level
                 int r = 0;
                 while (r < Height)
                 {
-                    if (!IsWall(c, r) || covered[c, r]) { r++; continue; }
+                    if (!include(c, r) || covered[c, r]) { r++; continue; }
                     int start = r;
-                    while (r < Height && IsWall(c, r) && !covered[c, r]) r++;
+                    while (r < Height && include(c, r) && !covered[c, r]) r++;
                     blocks.Add(new Block(c, start, 1, r - start));
                 }
             }
 
             return blocks;
         }
+
+        private bool IsFlatWalkable(int col, int row) => IsWalkable(col, row) && At(col, row) != Stairs && At(col, row) != Door;
 
         /// <summary>
         /// Ruta de patrulla de ida y vuelta: el tramo recto más largo (hasta <paramref name="maxCells"/>)
@@ -152,10 +207,10 @@ namespace Overdrive.Level
             foreach (var (dc, dr) in new[] { (1, 0), (-1, 0), (0, 1), (0, -1) })
             {
                 int length = 0;
-                // Deja una celda de margen con la pared para que el agente no roce.
+                // Deja una celda de margen con paredes y huecos para que el agente no roce ni caiga.
                 while (length < maxCells
-                       && !IsWall(col + dc * (length + 1), row + dr * (length + 1))
-                       && !IsWall(col + dc * (length + 2), row + dr * (length + 2)))
+                       && IsFlatWalkable(col + dc * (length + 1), row + dr * (length + 1))
+                       && IsFlatWalkable(col + dc * (length + 2), row + dr * (length + 2)))
                     length++;
                 if (length > bestLength)
                 {
@@ -171,7 +226,7 @@ namespace Overdrive.Level
         public HashSet<(int, int)> FloodFill(int col, int row)
         {
             var visited = new HashSet<(int, int)>();
-            if (IsWall(col, row)) return visited;
+            if (!IsWalkable(col, row)) return visited;
             var queue = new Queue<(int, int)>();
             queue.Enqueue((col, row));
             visited.Add((col, row));
@@ -181,7 +236,7 @@ namespace Overdrive.Level
                 foreach (var (dc, dr) in new[] { (1, 0), (-1, 0), (0, 1), (0, -1) })
                 {
                     int nc = c + dc, nr = r + dr;
-                    if (IsWall(nc, nr) || visited.Contains((nc, nr))) continue;
+                    if (!IsWalkable(nc, nr) || visited.Contains((nc, nr))) continue;
                     visited.Add((nc, nr));
                     queue.Enqueue((nc, nr));
                 }
