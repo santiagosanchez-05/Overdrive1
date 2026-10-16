@@ -272,6 +272,14 @@ namespace Overdrive.EditorTools
 
                 var footsteps = BuilderUtil.EnsureComponent<PlayerFootsteps>(root);
                 BuilderUtil.SetRef(footsteps, "controller", playerController);
+
+                var rewind = BuilderUtil.EnsureComponent<PlayerRewind>(root);
+                BuilderUtil.SetRef(rewind, "life", life);
+                BuilderUtil.SetRef(rewind, "controller", playerController);
+                BuilderUtil.SetRef(rewind, "weapons", weapons);
+                BuilderUtil.SetRef(rewind, "finisher", finisher);
+                BuilderUtil.SetRef(rewind, "melee", melee);
+                BuilderUtil.SetRef(rewind, "footsteps", footsteps);
             });
         }
 

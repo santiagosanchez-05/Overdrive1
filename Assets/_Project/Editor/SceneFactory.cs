@@ -384,9 +384,15 @@ namespace Overdrive.EditorTools
             var blood = BuilderUtil.EnsureComponent<BloodSpawner>(bloodRoot);
             BuilderUtil.SetRef(blood, "bloodPrefab", AssetDatabase.LoadAssetAtPath<GameObject>(AssetFactory.BloodPrefabPath));
 
+            var rewinder = BuilderUtil.EnsureComponent<TimeRewinder>(systems);
+            BuilderUtil.SetRef(rewinder, "player", player.GetComponent<PlayerLife>());
+            BuilderUtil.SetRef(rewinder, "level", manager);
+            BuilderUtil.SetRef(rewinder, "cameraRig", BuilderUtil.FindRoot(scene, CameraRigName).GetComponent<TopDownCamera>());
+
             var hud = BuilderUtil.EnsureComponent<GameHUD>(systems);
             BuilderUtil.SetRef(hud, "weapons", player.GetComponent<PlayerWeapons>());
             BuilderUtil.SetRef(hud, "level", manager);
+            BuilderUtil.SetRef(hud, "rewinder", rewinder);
         }
 
         private static GameObject EnsurePlayer(Scene scene, LevelMap map)

@@ -49,6 +49,10 @@ namespace Overdrive.EditorTools
             VerifyFloorsSimulation(c, layout);
             VerifyStealthLogic(c);
             VerifyStealthSimulation(c);
+            VerifyRewindLogic(c);
+            VerifyRewindScene(c);
+            // Último: modifica la escena abierta (no se guarda).
+            VerifyRewindSimulation(c, layout);
             return c;
         }
 
