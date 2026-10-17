@@ -84,6 +84,7 @@ namespace Overdrive.EditorTools
             AdoptDecor(scene, level);
             EnsureDecorColliders(level.transform);
             BuildAmbience(level.transform, layout);
+            BuildLedCables(level.transform, layout);
             BakeNavMesh(level);
 
             GameObject door = EnsureDoor(scene, ground);
@@ -517,6 +518,120 @@ namespace Overdrive.EditorTools
             foreach (LevelMap map in layout.Floors)
             {
                 Transform container = FloorParent(level, map.FloorIndex)?.Find(AmbienceName);
+                if (container == null) continue;
+                expected.TryGetValue(container, out HashSet<string> names);
+                for (int i = container.childCount - 1; i >= 0; i--)
+                {
+                    GameObject child = container.GetChild(i).gameObject;
+                    if (names == null || !names.Contains(child.name)) Object.DestroyImmediate(child);
+                }
+            }
+        }
+
+        public const string LedCablesName = "LedCables";
+        /// <summary>Contenedor de los cables LED anteriores (encima de las paredes), que ya no se usan.</summary>
+        public const string OldLedsName = "Leds";
+        public const float LedWidth = 0.22f;
+        public const float LedLightSpacing = 3f;
+        public const float LedLightIntensity = 1.6f;
+        public const float LedLightRangeLying = 2.6f;
+        public const float LedLightRangeHanging = 3.8f;
+
+        public static string LedCableName(int index, LedCable cable) => $"Cable_{index}_{cable.Color}{(cable.Flicker ? "_Rota" : "")}";
+
+        /// <summary>Recorrido de un cable en metros del mundo (curva suave o tramos colgantes).</summary>
+        public static Vector3[] LedWorldPath(LevelLayout layout, LedCable cable)
+        {
+            LevelMap map = layout.Floors[cable.Floor];
+            Vector3[] anchors = cable.Points
+                .Select(p => new Vector3(p.x * map.CellSize, map.BaseY + p.y, -p.z * map.CellSize)).ToArray();
+            return cable.Layout == LedLayout.Hanging
+                ? LedPath.Hang(anchors, cable.Sag, 12, cable.Bow)
+                : LedPath.Smooth(anchors, 8);
+        }
+
+        /// <summary>
+        /// Cables de LEDs de un solo color (shader Overdrive/LedLine en un LineRenderer) con luces puntuales reales
+        /// de su color repartidas a lo largo, que iluminan el suelo, las paredes y los muebles. Las tiras rotas
+        /// parpadean, y sus luces con ellas (FlickerLights). Sin colisión. Van bajo Level/LedCables o Level/FloorN/LedCables.
+        /// </summary>
+        private static void BuildLedCables(Transform level, LevelLayout layout)
+        {
+            // Los cables anteriores (encima de las paredes) se quitan.
+            foreach (Transform old in level.GetComponentsInChildren<Transform>(true).Where(t => t.name == OldLedsName).ToList())
+                Object.DestroyImmediate(old.gameObject);
+
+            var expected = new Dictionary<Transform, HashSet<string>>();
+            for (int i = 0; i < layout.LedCables.Length; i++)
+            {
+                LedCable cable = layout.LedCables[i];
+                Transform container = BuilderUtil.EnsureChild(FloorParent(level, cable.Floor), LedCablesName).transform;
+                if (!expected.TryGetValue(container, out HashSet<string> names)) expected[container] = names = new HashSet<string>();
+                string name = LedCableName(i, cable);
+                names.Add(name);
+
+                GameObject go = BuilderUtil.EnsureChild(container, name);
+                go.transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
+                Vector3[] path = LedWorldPath(layout, cable);
+
+                var line = BuilderUtil.EnsureComponent<LineRenderer>(go);
+                line.useWorldSpace = true;
+                line.positionCount = path.Length;
+                line.SetPositions(path);
+                line.widthMultiplier = LedWidth;
+                line.widthCurve = AnimationCurve.Constant(0f, 1f, 1f);
+                line.alignment = LineAlignment.View;
+                line.textureMode = LineTextureMode.Stretch;
+                line.numCornerVertices = 3;
+                line.numCapVertices = 2;
+                line.colorGradient = new Gradient();
+                line.sharedMaterial = AssetFactory.Mat(AssetFactory.LedMaterial(cable.Color, cable.Flicker));
+                line.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                line.receiveShadows = false;
+
+                // Luces reales de su color cada ~3 m (un poco separadas del cable para no quemar la superficie).
+                Vector3[] lightPoints = LedPath.EvenlySpaced(path, LedLightSpacing);
+                var lights = new List<Light>();
+                for (int k = 0; k < lightPoints.Length; k++)
+                {
+                    GameObject lightGo = BuilderUtil.EnsureChild(go.transform, $"Light_{k}");
+                    lightGo.transform.position = lightPoints[k] + Vector3.up * 0.15f;
+                    var light = BuilderUtil.EnsureComponent<Light>(lightGo);
+                    light.type = LightType.Point;
+                    light.color = AssetFactory.LedRgb(cable.Color);
+                    light.intensity = LedLightIntensity;
+                    light.range = cable.Layout == LedLayout.Hanging ? LedLightRangeHanging : LedLightRangeLying;
+                    light.shadows = LightShadows.None;
+                    lights.Add(light);
+                }
+                for (int k = go.transform.childCount - 1; k >= 0; k--)
+                {
+                    Transform child = go.transform.GetChild(k);
+                    if (!child.name.StartsWith("Light_") || int.Parse(child.name.Substring(6)) >= lightPoints.Length)
+                        Object.DestroyImmediate(child.gameObject);
+                }
+
+                var flicker = go.GetComponent<FlickerLights>();
+                if (cable.Flicker)
+                {
+                    if (flicker == null) flicker = go.AddComponent<FlickerLights>();
+                    var so = new SerializedObject(flicker);
+                    SerializedProperty list = so.FindProperty("lights");
+                    list.arraySize = lights.Count;
+                    for (int k = 0; k < lights.Count; k++) list.GetArrayElementAtIndex(k).objectReferenceValue = lights[k];
+                    so.FindProperty("baseIntensity").floatValue = LedLightIntensity;
+                    so.FindProperty("seed").floatValue = AssetFactory.LedSeed(cable.Color);
+                    so.ApplyModifiedPropertiesWithoutUndo();
+                }
+                else if (flicker != null)
+                {
+                    Object.DestroyImmediate(flicker);
+                }
+            }
+
+            foreach (LevelMap map in layout.Floors)
+            {
+                Transform container = FloorParent(level, map.FloorIndex)?.Find(LedCablesName);
                 if (container == null) continue;
                 expected.TryGetValue(container, out HashSet<string> names);
                 for (int i = container.childCount - 1; i >= 0; i--)

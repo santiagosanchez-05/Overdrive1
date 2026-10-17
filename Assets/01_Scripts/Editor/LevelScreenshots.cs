@@ -105,6 +105,7 @@ namespace Overdrive.EditorTools
         {
             if (floor == null) return;
             foreach (Renderer r in floor.GetComponentsInChildren<Renderer>(true)) r.enabled = visible;
+            foreach (Light l in floor.GetComponentsInChildren<Light>(true)) l.enabled = visible;
         }
 
         private static string ArgValue(string name)

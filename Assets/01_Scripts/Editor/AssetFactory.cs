@@ -73,6 +73,53 @@ namespace Overdrive.EditorTools
         public const string MatBeamViolet = "BeamViolet";
         public const string MatBeamCrimson = "BeamCrimson";
 
+        // Cables de LEDs (Overdrive/LedLine sobre un LineRenderer): un material por color, y uno "roto" que parpadea.
+        public const string ShaderLedLine = "Overdrive/LedLine";
+
+        /// <summary>Color de cada tipo de cable. Lo usan la tira y sus luces reales.</summary>
+        public static Color LedRgb(LedColor color)
+        {
+            switch (color)
+            {
+                case LedColor.Violet: return new Color(0.45f, 0.10f, 1.00f);
+                case LedColor.Crimson: return new Color(1.00f, 0.05f, 0.20f);
+                case LedColor.Teal: return new Color(0.00f, 0.80f, 0.75f);
+                case LedColor.Magenta: return new Color(0.95f, 0.10f, 0.75f);
+                case LedColor.ColdBlue: return new Color(0.15f, 0.35f, 1.00f);
+                default: throw new ArgumentOutOfRangeException(nameof(color), color, null);
+            }
+        }
+
+        public static string LedMaterial(LedColor color, bool flicker) => flicker ? $"Led{color}Broken" : $"Led{color}";
+
+        /// <summary>Semilla del parpadeo de las tiras rotas de ese color (la misma en el shader y en FlickerLights).</summary>
+        public static float LedSeed(LedColor color) => (int)color + 1;
+
+        private static (string, string, Action<Material>)[] LedMaterialDefs()
+        {
+            var defs = new System.Collections.Generic.List<(string, string, Action<Material>)>();
+            foreach (LedColor color in (LedColor[])Enum.GetValues(typeof(LedColor)))
+            {
+                foreach (bool flicker in new[] { false, true })
+                {
+                    LedColor c = color;
+                    bool f = flicker;
+                    defs.Add((LedMaterial(c, f), ShaderLedLine, m =>
+                    {
+                        m.SetColor("_Color", LedRgb(c));
+                        m.SetFloat("_Brightness", 3f);
+                        m.SetFloat("_CoreWidth", 0.3f);
+                        m.SetFloat("_GlowStrength", 0.6f);
+                        m.SetFloat("_Breath", 0.12f);
+                        m.SetFloat("_BreathSpeed", 1.2f + (int)c * 0.17f);
+                        m.SetFloat("_Flicker", f ? 1f : 0f);
+                        m.SetFloat("_Seed", LedSeed(c));
+                    }));
+                }
+            }
+            return defs.ToArray();
+        }
+
         public static string AmbientMaterial(AmbientKind kind)
         {
             switch (kind)
@@ -100,6 +147,10 @@ namespace Overdrive.EditorTools
         public static string[] DecorRoots => new[] { DecorRoot, Root + "/kenney_furniture-kit", NumberedFolder("Modelos", "02_Modelos") };
 
         /// <summary>Material, shader y cómo configurarlo.</summary>
+        /// <summary>Todos los materiales con shaders propios: los de la lista de abajo más los de los cables LED.</summary>
+        public static (string name, string shader, Action<Material> setup)[] AllShaderMaterialDefs =>
+            System.Linq.Enumerable.ToArray(System.Linq.Enumerable.Concat(ShaderMaterialDefs, LedMaterialDefs()));
+
         public static readonly (string name, string shader, Action<Material> setup)[] ShaderMaterialDefs =
         {
             (MatBulletTrail, ShaderTrail, m =>
@@ -194,7 +245,7 @@ namespace Overdrive.EditorTools
         public static void EnsureShaderMaterials()
         {
             BuilderUtil.EnsureFolder(MaterialsPath);
-            foreach (var (name, shaderName, setup) in ShaderMaterialDefs)
+            foreach (var (name, shaderName, setup) in AllShaderMaterialDefs)
             {
                 Shader shader = Shader.Find(shaderName);
                 if (shader == null) throw new InvalidOperationException($"No se encontró el shader '{shaderName}'.");

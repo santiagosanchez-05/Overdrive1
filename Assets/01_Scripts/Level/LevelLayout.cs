@@ -12,6 +12,9 @@ namespace Overdrive.Level
         /// <summary>Luces de ambiente del nivel (ver <see cref="AmbientLight"/>).</summary>
         public AmbientLight[] Ambience { get; set; } = new AmbientLight[0];
 
+        /// <summary>Cables de LEDs del nivel (ver <see cref="LedCable"/>).</summary>
+        public LedCable[] LedCables { get; set; } = new LedCable[0];
+
         public LevelLayout(params LevelMap[] floors)
         {
             if (floors == null || floors.Length == 0) throw new ArgumentException("El nivel no tiene pisos.");

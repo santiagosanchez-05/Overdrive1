@@ -63,6 +63,11 @@ namespace Overdrive.Level
         {
             root.GetComponentsInChildren(true, buffer);
             foreach (Renderer r in buffer) r.enabled = visible;
+            // Las luces de un piso oculto (cables LED) tampoco deben teñir el piso de abajo a través de la losa.
+            root.GetComponentsInChildren(true, lightBuffer);
+            foreach (Light l in lightBuffer) l.enabled = visible;
         }
+
+        private readonly List<Light> lightBuffer = new List<Light>();
     }
 }

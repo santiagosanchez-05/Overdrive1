@@ -16,13 +16,13 @@ namespace Overdrive.EditorTools
         private static void VerifyShadersAndMaterials(Checker c)
         {
             foreach (string name in new[] { AssetFactory.ShaderTrail, AssetFactory.ShaderAura, AssetFactory.ShaderLightBeam,
-                         AssetFactory.ShaderDissolve, AssetFactory.ShaderWall })
+                         AssetFactory.ShaderDissolve, AssetFactory.ShaderWall, AssetFactory.ShaderLedLine })
             {
                 Shader shader = Shader.Find(name);
                 c.NotNull(shader, $"Existe el shader {name}");
                 if (shader != null) c.Check(!ShaderUtil.ShaderHasError(shader), $"El shader {name} compila sin errores");
             }
-            foreach (var (name, shaderName, _) in AssetFactory.ShaderMaterialDefs)
+            foreach (var (name, shaderName, _) in AssetFactory.AllShaderMaterialDefs)
             {
                 Material m = AssetFactory.Mat(name);
                 c.Check(m != null && m.shader != null && m.shader.name == shaderName, $"M_{name} usa {shaderName}");
