@@ -1,4 +1,5 @@
 using Overdrive.Combat;
+using Overdrive.Core;
 using UnityEngine;
 
 namespace Overdrive.Weapons
@@ -38,7 +39,7 @@ namespace Overdrive.Weapons
             float distance = flight.NextStep(deltaTime);
             if (ProjectileCast.TryCast(flight.Position, flight.Direction, distance, radius, Owner, out ProjectileCast.Hit hit))
             {
-                if (hit.Enemy != null) hit.Enemy.ReceiveLethalHit(KillCause.Shot);
+                if (hit.Enemy != null && hit.Enemy.ReceiveLethalHit(KillCause.Shot)) GameSounds.Play(Sound.ShotKill);
                 if (hit.Player != null) hit.Player.Kill();
                 Despawn();
                 return;

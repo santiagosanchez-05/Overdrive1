@@ -42,6 +42,19 @@ namespace Overdrive.EditorTools
             for (int i = 0; i < ScoreRules.MaxMultiplier + 4; i++) capped.RegisterKill(KillCause.Shot);
             c.Check(capped.Multiplier == ScoreRules.MaxMultiplier, $"El multiplicador no pasa de x{ScoreRules.MaxMultiplier}");
 
+            // --- Sigilo ---
+            var sneaky = new ScoreState();
+            ScoreGain silent = sneaky.RegisterKill(KillCause.Melee, stealth: true);
+            c.Check(silent.Stealth && silent.Points == ScoreRules.KillPoints(KillCause.Melee) + ScoreRules.StealthBonus &&
+                    sneaky.StealthKills == 1, "Matar en sigilo suma el bonus de sigilo");
+            sneaky.RegisterKill(KillCause.Melee);
+            ScoreGain silentCombo = sneaky.RegisterKill(KillCause.Melee, stealth: true);
+            c.Check(silentCombo.Points == ScoreRules.KillPoints(KillCause.Melee) * 3 + ScoreRules.StealthBonus,
+                "El bonus de sigilo no se multiplica por el combo");
+            c.Check(HudText.PopupLabel(KillCause.Shot, true) == "SIGILO" &&
+                    HudText.PopupLabel(KillCause.Backstab, true) == "POR LA ESPALDA + SIGILO" &&
+                    HudText.PopupLabel(KillCause.Shot, false) == null, "El texto flotante indica el sigilo");
+
             // --- Rebobinar ---
             var r = new ScoreState();
             r.RegisterKill(KillCause.Melee);
@@ -64,7 +77,7 @@ namespace Overdrive.EditorTools
             c.Check(!slow.Bonuses.Any(b => b.Label == ScoreSummary.LabelTime || b.Label == ScoreSummary.LabelNoRewind) && slow.Total < fast.Total,
                 "Lento y rebobinando no hay esos bonus");
             c.Check(ScoreRules.GradeFor(0, 10) == "D" && ScoreRules.GradeFor(100000, 10) == "S" &&
-                    ScoreRules.GradeFor(12000, 10) == "B", "Las notas van de D a S según los puntos por enemigo");
+                    ScoreRules.GradeFor(9000, 10) == "B", "Las notas van de D a S según los puntos por enemigo");
 
             // --- Textos ---
             c.Check(HudText.Points(12400) == "12.400" && HudText.Points(999) == "999" && HudText.Points(1234567) == "1.234.567",

@@ -148,7 +148,7 @@ namespace Overdrive.UI
                 float alpha = 1f - t * t;
                 var rect = new Rect(screen.x - 150f * scale, Screen.height - screen.y - 20f * scale, 300f * scale, 40f * scale);
                 DrawShadowed(rect, HudText.Gain(popup.Gain.Points, popup.Gain.Multiplier), popupStyle, alpha);
-                string label = popup.Cause.HasValue ? HudText.KillLabel(popup.Cause.Value) : null;
+                string label = HudText.PopupLabel(popup.Cause, popup.Gain.Stealth);
                 if (label != null)
                     DrawShadowed(new Rect(rect.x, rect.y + 34f * scale, rect.width, 30f * scale), label, popupLabelStyle, alpha);
             }
