@@ -1,6 +1,9 @@
+using System.Text;
+using Overdrive.Combat;
 using Overdrive.Core;
 using Overdrive.Enemies;
 using Overdrive.Weapons;
+using UnityEngine;
 
 namespace Overdrive.UI
 {
@@ -60,6 +63,51 @@ namespace Overdrive.UI
 
         /// <summary>Línea del maletín en la esquina, o null si todavía no lo lleva.</summary>
         public static string Briefcase(bool carrying) => carrying ? CarryingBriefcase : null;
+
+        // ---------- Puntuación ----------
+
+        public const string NewRecord = "¡Nuevo récord!";
+
+        /// <summary>Puntos con separador de miles: 12400 → "12.400".</summary>
+        public static string Points(int points)
+        {
+            string digits = System.Math.Abs(points).ToString();
+            var sb = new StringBuilder();
+            if (points < 0) sb.Append('-');
+            for (int i = 0; i < digits.Length; i++)
+            {
+                if (i > 0 && (digits.Length - i) % 3 == 0) sb.Append('.');
+                sb.Append(digits[i]);
+            }
+            return sb.ToString();
+        }
+
+        /// <summary>Indicador de combo, o null si no hay combo que mostrar (menos de 2 muertes seguidas).</summary>
+        public static string Combo(int combo, int multiplier) => combo >= 2 ? $"x{multiplier} COMBO" : null;
+
+        /// <summary>Texto flotante de unos puntos ganados: "+800" o "+1.600 x2".</summary>
+        public static string Gain(int points, int multiplier) =>
+            multiplier > 1 ? $"+{Points(points)} x{multiplier}" : $"+{Points(points)}";
+
+        /// <summary>Etiqueta de las muertes especiales, o null para las normales.</summary>
+        public static string KillLabel(KillCause cause)
+        {
+            switch (cause)
+            {
+                case KillCause.Finisher: return "REMATE";
+                case KillCause.Backstab: return "POR LA ESPALDA";
+                default: return null;
+            }
+        }
+
+        /// <summary>Segundos como minutos:segundos: 95 → "1:35".</summary>
+        public static string Time(float seconds)
+        {
+            int total = Mathf.Max(0, Mathf.FloorToInt(seconds));
+            return $"{total / 60}:{total % 60:00}";
+        }
+
+        public static string Record(int best) => $"Récord: {Points(best)}";
 
         /// <summary>Mensaje pequeño bajo el central, o null si no hay.</summary>
         /// <param name="needsObjective">Todavía falta recoger el maletín.</param>

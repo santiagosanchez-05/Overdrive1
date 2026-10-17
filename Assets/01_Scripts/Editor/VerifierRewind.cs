@@ -6,6 +6,7 @@ using Overdrive.Core;
 using Overdrive.Enemies;
 using Overdrive.Level;
 using Overdrive.Player;
+using Overdrive.Scoring;
 using Overdrive.UI;
 using Overdrive.Weapons;
 using UnityEditor;
@@ -111,12 +112,13 @@ namespace Overdrive.EditorTools
             GameObject systems = BuilderUtil.FindRoot(scene, SceneFactory.SystemsName);
             var rewinder = systems != null ? systems.GetComponent<TimeRewinder>() : null;
             var manager = systems != null ? systems.GetComponent<LevelManager>() : null;
+            var score = systems != null ? systems.GetComponent<ScoreKeeper>() : null;
             var blood = BloodSpawner.Instance;
             GameObject playerGo = BuilderUtil.FindRoot(scene, SceneFactory.PlayerName);
             Transform enemiesRoot = BuilderUtil.FindRoot(scene, SceneFactory.EnemiesName)?.transform;
             Transform weaponsRoot = BuilderUtil.FindRoot(scene, SceneFactory.WeaponsName)?.transform;
             Transform objectiveRoot = BuilderUtil.FindRoot(scene, SceneFactory.ObjectiveName)?.transform;
-            if (rewinder == null || manager == null || blood == null || playerGo == null || enemiesRoot == null ||
+            if (rewinder == null || manager == null || score == null || blood == null || playerGo == null || enemiesRoot == null ||
                 weaponsRoot == null || objectiveRoot == null || manager.Briefcase == null || manager.Reinforcements == null)
             {
                 c.Check(false, "Faltan objetos de la escena para simular el rebobinado");
@@ -140,6 +142,7 @@ namespace Overdrive.EditorTools
             c.Check(targets.OfType<WeaponItem>().Count() == 15, $"Se graban las 15 armas, también las de los refuerzos ({targets.OfType<WeaponItem>().Count()})");
             c.Check(targets.Contains(briefcase) && targets.Contains(wave) && targets.Contains(manager) && targets.Contains(blood),
                 "Se graban el maletín, los refuerzos, el progreso y la sangre");
+            c.Check(targets.Contains(score), "Se graba la puntuación");
 
             // --- Momento guardado ---
             manager.Evaluate();
@@ -148,6 +151,7 @@ namespace Overdrive.EditorTools
             Vector3 batStart = bat.transform.position;
             Vector3 briefcaseStart = briefcase.transform.position;
             int bloodStart = blood.SplatCount;
+            int pointsStart = score.State.Points;
             rewinder.Record();
 
             // --- Pasan cosas ---
@@ -160,8 +164,11 @@ namespace Overdrive.EditorTools
             }
             MovePlayer(bat.transform.position);
             c.Check(weapons.TryPickup(new[] { bat }) == bat, "Simulación: el jugador recoge el bate");
-            victim.ReceiveLethalHit();
+            victim.ReceiveLethalHit(KillCause.Melee);
             knocked.ReceiveKnockdown();
+            // En modo editor ScoreKeeper no se suscribe a los eventos (no hay OnEnable): se suma a mano.
+            score.AddKill(KillCause.Melee, victim.transform.position);
+            score.AddKnockdown(KnockdownCause.Punch, knocked.transform.position);
             knocked.GetComponent<EnemyAI>().Brain.Alert(playerGo.transform.position);
             MovePlayer(briefcase.transform.position);
             briefcase.TryCollect(playerGo.transform);
@@ -199,6 +206,8 @@ namespace Overdrive.EditorTools
                 "Los refuerzos vuelven tras la puerta cerrada");
             c.Check(Object.FindObjectsByType<Projectile>(FindObjectsInactive.Include).Length == 0, "Las balas en el aire desaparecen");
             c.Check(blood.SplatCount == bloodStart, "La sangre posterior desaparece");
+            c.Check(score.State.Points == pointsStart && score.State.Combo == 0 && score.Popups.Count == 0,
+                "Los puntos ganados después del rebobinado se pierden");
             c.Check(after == LevelState.Playing && manager.Progress.Remaining == 10 && !manager.Progress.HasObjective,
                 "El nivel vuelve a estar en juego, con 10 enemigos y sin el maletín");
 

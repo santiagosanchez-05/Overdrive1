@@ -18,10 +18,11 @@ namespace Overdrive.Weapons
         public LinearFlight Flight => flight;
         public TrailRenderer Trail => trail;
 
-        public void Launch(Vector3 origin, Vector3 direction, float speed, Faction owner)
+        /// <param name="range">Distancia hasta desaparecer; 0 usa la del prefab.</param>
+        public void Launch(Vector3 origin, Vector3 direction, float speed, Faction owner, float range = 0f)
         {
             Owner = owner;
-            flight.Launch(origin, direction, speed, maxDistance);
+            flight.Launch(origin, direction, speed, range > 0f ? range : maxDistance);
             transform.SetPositionAndRotation(origin, Quaternion.LookRotation(flight.Direction, Vector3.up));
             // La bala se crea en el origen del prefab y se teletransporta: sin esto la estela
             // dibujaría una raya desde (0,0,0) hasta el arma en el primer fotograma.
@@ -37,7 +38,7 @@ namespace Overdrive.Weapons
             float distance = flight.NextStep(deltaTime);
             if (ProjectileCast.TryCast(flight.Position, flight.Direction, distance, radius, Owner, out ProjectileCast.Hit hit))
             {
-                if (hit.Enemy != null) hit.Enemy.ReceiveLethalHit();
+                if (hit.Enemy != null) hit.Enemy.ReceiveLethalHit(KillCause.Shot);
                 if (hit.Player != null) hit.Player.Kill();
                 Despawn();
                 return;

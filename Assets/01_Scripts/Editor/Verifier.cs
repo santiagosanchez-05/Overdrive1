@@ -57,6 +57,8 @@ namespace Overdrive.EditorTools
             VerifyDecorSimulation(c);
             VerifyRewindLogic(c);
             VerifyRewindScene(c);
+            VerifyScoreLogic(c);
+            VerifyScoreScene(c);
             // Último: modifica la escena abierta (no se guarda).
             VerifyRewindSimulation(c, layout);
             return c;

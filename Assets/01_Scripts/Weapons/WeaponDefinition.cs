@@ -30,6 +30,8 @@ namespace Overdrive.Weapons
         public float SpreadAngle { get; private set; }
         public bool Automatic { get; private set; }
         public float ProjectileSpeed { get; private set; }
+        /// <summary>Distancia que recorre cada bala o perdigón antes de desaparecer.</summary>
+        public float ProjectileRange { get; private set; }
         public float NoiseRadius { get; private set; }
         public float Shake { get; private set; }
 
@@ -62,7 +64,7 @@ namespace Overdrive.Weapons
         {
             Type = WeaponType.Shotgun, DisplayName = "Escopeta", IsMelee = false,
             UseInterval = 0.6f, MaxAmmo = 6, Pellets = 6, SpreadAngle = 30f, Automatic = false,
-            ProjectileSpeed = 40f, NoiseRadius = 18f, Shake = 0.4f,
+            ProjectileSpeed = 40f, ProjectileRange = 10f, NoiseRadius = 18f, Shake = 0.4f,
             EnemyAttackInterval = 1.2f, EnemyAttackRange = 8f,
         };
 
@@ -70,7 +72,7 @@ namespace Overdrive.Weapons
         {
             Type = WeaponType.Smg, DisplayName = "Subfusil", IsMelee = false,
             UseInterval = 0.08f, MaxAmmo = 30, Pellets = 1, SpreadAngle = 6f, Automatic = true,
-            ProjectileSpeed = 45f, NoiseRadius = 15f, Shake = 0.12f,
+            ProjectileSpeed = 45f, ProjectileRange = 35f, NoiseRadius = 15f, Shake = 0.12f,
             EnemyAttackInterval = 0.3f, EnemyAttackRange = 11f,
         };
 

@@ -25,6 +25,8 @@ namespace Overdrive.Enemies
         [SerializeField] private float viewHalfAngle = 55f;
         [SerializeField] private float proximity = 1.5f;
         [SerializeField] private float eyeHeight = 1.6f;
+        [Tooltip("A esta distancia nota que muere otro enemigo aunque no esté mirando (lo oye caer).")]
+        [SerializeField] private float witnessRadius = 4f;
 
         [Header("Movimiento")]
         [SerializeField] private float walkSpeed = 2.2f;
@@ -159,8 +161,35 @@ namespace Overdrive.Enemies
             if (agent != null) agent.updateRotation = false;
         }
 
-        private void OnEnable() => NoiseSystem.NoiseMade += OnNoise;
-        private void OnDisable() => NoiseSystem.NoiseMade -= OnNoise;
+        private void OnEnable()
+        {
+            NoiseSystem.NoiseMade += OnNoise;
+            Enemy.AnyKilled += OnEnemyKilled;
+        }
+
+        private void OnDisable()
+        {
+            NoiseSystem.NoiseMade -= OnNoise;
+            Enemy.AnyKilled -= OnEnemyKilled;
+        }
+
+        private void OnEnemyKilled(Enemy dead, KillCause cause) => WitnessDeath(dead);
+
+        /// <summary>
+        /// Muere otro enemigo: si lo ve (en su cono y sin paredes en medio, o muy cerca), se alerta.
+        /// Devuelve true si se ha enterado.
+        /// </summary>
+        public bool WitnessDeath(Enemy dead)
+        {
+            if (dead == null || dead == enemy || enemy.Posture != Posture.Standing) return false;
+            Vector3 position = dead.transform.position;
+            if (!Floors.SameFloor(transform.position, position)) return false;
+            if (!VisionLogic.InCone(transform.position, transform.forward, position, viewRange, viewHalfAngle, witnessRadius))
+                return false;
+            if (!LineOfSight.IsClear(EyePosition, position + Vector3.up * 0.5f, dead.transform)) return false;
+            Brain.WitnessDeath(position);
+            return true;
+        }
 
         private void OnNoise(Vector3 position, float radius) => HearNoise(position, radius);
 

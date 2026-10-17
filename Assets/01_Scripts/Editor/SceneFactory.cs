@@ -7,6 +7,7 @@ using Overdrive.Core;
 using Overdrive.Enemies;
 using Overdrive.Level;
 using Overdrive.Player;
+using Overdrive.Scoring;
 using Overdrive.UI;
 using Overdrive.Weapons;
 using Unity.AI.Navigation;
@@ -746,7 +747,7 @@ namespace Overdrive.EditorTools
             go.transform.position += slide;
         }
 
-        /// <summary>Sistemas del nivel: reinicio, progreso/victoria, sangre y HUD.</summary>
+        /// <summary>Sistemas del nivel: reinicio, progreso/victoria, sangre, rebobinado, puntuación y HUD.</summary>
         private static void EnsureSystems(Scene scene, GameObject level, GameObject player,
             BriefcasePickup briefcase, ReinforcementWave wave)
         {
@@ -786,10 +787,15 @@ namespace Overdrive.EditorTools
             BuilderUtil.SetRef(rewinder, "level", manager);
             BuilderUtil.SetRef(rewinder, "cameraRig", BuilderUtil.FindRoot(scene, CameraRigName).GetComponent<TopDownCamera>());
 
+            var score = BuilderUtil.EnsureComponent<ScoreKeeper>(systems);
+            BuilderUtil.SetRef(score, "level", manager);
+            BuilderUtil.SetRef(score, "rewinder", rewinder);
+
             var hud = BuilderUtil.EnsureComponent<GameHUD>(systems);
             BuilderUtil.SetRef(hud, "weapons", player.GetComponent<PlayerWeapons>());
             BuilderUtil.SetRef(hud, "level", manager);
             BuilderUtil.SetRef(hud, "rewinder", rewinder);
+            BuilderUtil.SetRef(hud, "score", score);
         }
 
         private static GameObject EnsurePlayer(Scene scene, LevelMap map)

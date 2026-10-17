@@ -144,7 +144,7 @@ namespace Overdrive.Weapons
             if (ProjectileCast.TryCast(flight.Position, flight.Direction, distance, throwRadius, thrownBy, out ProjectileCast.Hit hit))
             {
                 // Un arma lanzada derriba, igual que un puñetazo.
-                if (hit.Enemy != null) hit.Enemy.ReceiveKnockdown();
+                if (hit.Enemy != null) hit.Enemy.ReceiveKnockdown(KnockdownCause.Thrown);
                 Vector3 stop = flight.Position + flight.Direction * Mathf.Max(0f, hit.Distance - throwRadius);
                 DropAt(stop, transform.eulerAngles.y);
                 return;
@@ -170,7 +170,7 @@ namespace Overdrive.Weapons
             foreach (float angle in angles)
             {
                 Projectile projectile = Instantiate(projectilePrefab);
-                projectile.Launch(origin, ShotPattern.Rotate(direction, angle), def.ProjectileSpeed, owner);
+                projectile.Launch(origin, ShotPattern.Rotate(direction, angle), def.ProjectileSpeed, owner, def.ProjectileRange);
                 spawned?.Add(projectile);
             }
             NoiseSystem.Emit(origin, def.NoiseRadius);

@@ -59,7 +59,7 @@ namespace Overdrive.EditorTools
         public const string MatDoor = "Door";
         public const string MatBriefcase = "Briefcase";
 
-        // Materiales con los shaders de Assets/05_Materials/Shaders (adaptados de VrProject).
+        // Materiales con los shaders de 04_Materials/Shaders (adaptados de VrProject).
         public const string MatBulletTrail = "BulletTrail";
         public const string MatThrowTrail = "ThrowTrail";
         public const string MatAuraBriefcase = "AuraBriefcase";

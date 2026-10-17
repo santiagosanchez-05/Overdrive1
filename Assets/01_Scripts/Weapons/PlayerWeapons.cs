@@ -113,7 +113,7 @@ namespace Overdrive.Weapons
                 Enemy.CollectTargets(enemies, targets);
                 int index = MeleeTargeting.FindPunchTarget(transform.position, transform.forward, targets,
                     def.MeleeRange, def.MeleeHalfAngle, includeDown: true);
-                if (index >= 0 && enemies[index].ReceiveLethalHit()) CameraShake.Shake(def.Shake);
+                if (index >= 0 && enemies[index].ReceiveLethalHit(KillCause.Melee)) CameraShake.Shake(def.Shake);
                 return true;
             }
 

@@ -56,6 +56,15 @@ namespace Overdrive.EditorTools
             close.Tick(0.05f, See(new Vector3(1.2f, 0f, 0f)));
             c.Check(close.Awareness == Awareness.Alerted, "Pegado a él te detecta al instante");
 
+            // --- Ver morir a otro enemigo ---
+            var witness = new EnemyBrain(Vector3.zero, null, s, d);
+            Vector3 body = new Vector3(5f, 0f, 0f);
+            witness.WitnessDeath(body);
+            c.Check(witness.Awareness == Awareness.Alerted && witness.Hunting && witness.LastKnownPlayerPosition == body,
+                "Ver morir a otro enemigo lo alerta (!) y lo deja en guardia");
+            witness.Tick(0.1f, Blind());
+            c.Check(witness.HasMoveTarget && witness.MoveTarget == body, "Tras ver morir a otro, corre hacia el cadáver");
+
             var hunter = new EnemyBrain(Vector3.zero, null, s, d);
             hunter.SetHunting(true);
             hunter.Tick(0.05f, See(far));
@@ -169,6 +178,21 @@ namespace Overdrive.EditorTools
                 warned.GetComponent<EnemyAI>().Brain.Alert(player.transform.position);
                 c.Check(melee.TryPunch(new[] { warned }) == warned && warned.Posture == Posture.Down && !warned.IsDead,
                     "Si ya te detectó, por la espalda solo lo derribas");
+
+                // --- Ver morir a otro enemigo ---
+                var victim = Make(enemyPrefab, new Vector3(70f, 0f, 0f), 0f).GetComponent<Enemy>();
+                var watcher = Make(enemyPrefab, new Vector3(70f, 0f, -6f), 0f).GetComponent<EnemyAI>();
+                var lookingAway = Make(enemyPrefab, new Vector3(70f, 0f, 8f), 0f).GetComponent<EnemyAI>();
+                var nextTo = Make(enemyPrefab, new Vector3(72.5f, 0f, 0f), 90f).GetComponent<EnemyAI>();
+                Physics.SyncTransforms();
+                victim.ReceiveLethalHit(KillCause.Melee);
+                c.Check(watcher.WitnessDeath(victim) && watcher.Awareness == Awareness.Alerted,
+                    "Simulación: un enemigo que ve morir a otro se alerta");
+                c.Check(!lookingAway.WitnessDeath(victim) && lookingAway.Awareness == Awareness.Unaware,
+                    "Simulación: uno de espaldas y lejos no se entera");
+                c.Check(nextTo.WitnessDeath(victim) && nextTo.Awareness == Awareness.Alerted,
+                    "Simulación: uno pegado al que muere se entera aunque no mire");
+                c.Check(!victim.GetComponent<EnemyAI>().WitnessDeath(victim), "El que muere no se alerta a sí mismo");
             }
             finally
             {
