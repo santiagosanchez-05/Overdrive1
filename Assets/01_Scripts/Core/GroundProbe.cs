@@ -4,8 +4,8 @@ using UnityEngine;
 namespace Overdrive.Core
 {
     /// <summary>
-    /// Busca la superficie del suelo bajo un punto (suelo, losas y rampas son BoxCollider;
-    /// los personajes usan cápsulas y se ignoran). Sin suelo debajo, usa la altura del piso.
+    /// Busca suelo, losas y rampas de caja o malla, ignorando cápsulas y triggers.
+    /// Sin suelo debajo, GroundY conserva la altura lógica del piso como respaldo.
     /// </summary>
     public static class GroundProbe
     {
@@ -14,13 +14,21 @@ namespace Overdrive.Core
         private static readonly Comparison<RaycastHit> ByDistance = (a, b) => a.distance.CompareTo(b.distance);
 
         public static float GroundY(Vector3 point)
+            => TrySurface(point, out var surface) ? surface.point.y : Floors.BaseY(Floors.IndexOf(point.y));
+
+        public static bool TrySurface(Vector3 point, out RaycastHit surface)
         {
             Vector3 origin = point + Vector3.up * StartAbove;
             RaycastHit[] hits = Physics.RaycastAll(origin, Vector3.down, MaxDepth, ~0, QueryTriggerInteraction.Ignore);
             Array.Sort(hits, ByDistance);
             foreach (RaycastHit hit in hits)
-                if (hit.collider is BoxCollider) return hit.point.y;
-            return Floors.BaseY(Floors.IndexOf(point.y));
+                if ((hit.collider is BoxCollider || hit.collider is MeshCollider) && hit.normal.y > .5f)
+                {
+                    surface = hit;
+                    return true;
+                }
+            surface = default;
+            return false;
         }
     }
 }

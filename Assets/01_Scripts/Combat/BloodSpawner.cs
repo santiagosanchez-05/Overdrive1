@@ -58,11 +58,35 @@ namespace Overdrive.Combat
 
         private void SpawnOne(Vector3 position, float size)
         {
+            if (!GroundProbe.TrySurface(position, out var surface)) return;
+            Quaternion rotation = Quaternion.FromToRotation(Vector3.up, surface.normal)
+                * Quaternion.Euler(90f, Random.Range(0f, 360f), 0f);
+            // Reduce las manchas junto a un escalón para que no queden suspendidas sobre el piso inferior.
+            bool fits = false;
+            for (int attempt = 0; attempt < 6; attempt++)
+            {
+                if (FitsSurface(surface.point, rotation, size)) { fits = true; break; }
+                size *= .6f;
+            }
+            if (!fits) return;
             // Cada mancha un poco más alta que la anterior para que no parpadeen al solaparse.
-            position.y = GroundProbe.GroundY(position) + 0.01f + (spawned % 40) * 0.0005f;
+            position = surface.point + surface.normal * (0.01f + (spawned % 40) * 0.0005f);
             spawned++;
-            GameObject splat = Instantiate(bloodPrefab, position, Quaternion.Euler(90f, Random.Range(0f, 360f), 0f), transform);
+            GameObject splat = Instantiate(bloodPrefab, position, rotation, transform);
             splat.transform.localScale = Vector3.one * size;
+        }
+
+        private static bool FitsSurface(Vector3 center, Quaternion rotation, float size)
+        {
+            for (int x = -1; x <= 1; x++)
+                for (int y = -1; y <= 1; y++)
+                {
+                    if (x == 0 && y == 0) continue;
+                    Vector3 corner = center + rotation * new Vector3(x * size * .5f, y * size * .5f, 0f);
+                    if (!GroundProbe.TrySurface(corner, out var hit) || Mathf.Abs(hit.point.y - corner.y) > .06f)
+                        return false;
+                }
+            return true;
         }
 
         /// <summary>

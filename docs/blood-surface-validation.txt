@@ -1,0 +1,1 @@
+PASS MeshCollider negativo, sangre apoyada, orientación en pendiente, BoxCollider y borde del escalón.

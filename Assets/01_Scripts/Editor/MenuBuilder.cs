@@ -115,9 +115,10 @@ namespace Overdrive.EditorTools
 
             // Panel de selección de niveles.
             var levels = CreatePanel(canvasGo.transform, "LevelsPanel", "SELECCIÓN DE NIVELES");
-            var level01 = CreateButton(levels, "NIVEL 01", s.play, new Vector2(0f, 40f), s, audio, hover, click, true);
+            var level01 = CreateButton(levels, "NIVEL 01", s.play, new Vector2(0f, 90f), s, audio, hover, click, true);
+            var level02 = CreateButton(levels, "NIVEL 02 · ELYSIUM", s.play, new Vector2(0f, -25f), s, audio, hover, click, true);
             var backLevels = CreateButton(levels, "VOLVER", s.back, new Vector2(0f, -150f), s, audio, hover, click, true);
-            WireVertical(new Selectable[] { level01.GetComponent<Button>(), backLevels.GetComponent<Button>() });
+            WireVertical(new Selectable[] { level01.GetComponent<Button>(), level02.GetComponent<Button>(), backLevels.GetComponent<Button>() });
 
             var controller = canvasGo.AddComponent<MainMenuController>();
             controller.playButton = mainButtons[0];
@@ -130,8 +131,8 @@ namespace Overdrive.EditorTools
             controller.settingsPanel = settings.GetComponent<CanvasGroup>();
             controller.levelsPanel = levels.GetComponent<CanvasGroup>();
             controller.backButtons = new[] { backSettings, backLevels };
-            controller.levelButtons = new[] { level01 };
-            controller.levelScenes = new[] { "Level01" };
+            controller.levelButtons = new[] { level01, level02 };
+            controller.levelScenes = new[] { "Level01", "Level02" };
             controller.volumeSlider = volume;
             controller.musicSlider = music;
             controller.fullscreenToggle = fullscreen;

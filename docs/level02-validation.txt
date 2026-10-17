@@ -1,0 +1,34 @@
+PASS 14 guardias y 7 refuerzos conectados, incluido el grupo de salida
+PASS Cuatro refuerzos en backstage y tres junto a la salida
+PASS Jugador apoyado sobre suelo físico al iniciar
+PASS Las paredes del acceso detienen al CharacterController
+PASS Recogida real del bate inicial
+PASS Guardado de la escena Level02
+PASS Carga de Level02 desde la partida guardada
+PASS La carga restaura la posición guardada
+PASS La carga restaura el arma equipada
+PASS Ruta completa en Play Mode a (-11.00, 1.60, 12.00)
+PASS Ruta completa en Play Mode a (11.00, 1.60, 12.00)
+PASS Ruta completa en Play Mode a (-7.00, -1.50, -61.00)
+PASS Ruta completa en Play Mode a (-7.00, -1.38, -77.00)
+PASS Combate real con el bate despeja el recorrido
+PASS Recoger el maletín activa la oleada
+PASS Los siete refuerzos están activos
+PASS Refuerzo con ruta al jugador: Response_1
+PASS Refuerzo con ruta al jugador: Response_2
+PASS Refuerzo con ruta al jugador: Response_3
+PASS Refuerzo con ruta al jugador: Response_4
+PASS Refuerzo con ruta al jugador: ExitGuard_1
+PASS Refuerzo con ruta al jugador: ExitGuard_2
+PASS Refuerzo con ruta al jugador: ExitGuard_3
+PASS La puerta libera su collider al abrirse
+PASS La puerta abierta deja una ruta completa de regreso a la salida
+PASS Derrota y rebobinado disponibles
+PASS Rebobinado real ejecutado
+PASS El rebobinado revive y consume un uso
+PASS El rebobinado restaura maletín y refuerzos
+PASS Eliminar la oleada completa abre la salida
+PASS Llegar a la salida completa el nivel
+PASS Puntuación y resumen final generados
+PASS Pausa detiene tiempo y entrada
+PASS Reanudar recupera tiempo y entrada
