@@ -16,7 +16,12 @@ namespace Overdrive.EditorTools
     internal static class PlayerModelFactory
     {
         public const string ModelName = "Model";
-        public const float ModelScale = 1.6f;
+        /// <summary>Escala del modelo: la cabeza a la altura de la antigua cápsula (1.8 m), que desde arriba se lea igual de grande.</summary>
+        public const float ModelScale = 2.0f;
+        public const string MaterialName = "PlayerModel";
+        public const string LightName = "PlayerLight";
+        /// <summary>Brillo propio de la textura: el nivel es muy oscuro y sin esto no se ven los detalles del personaje.</summary>
+        public static readonly Color ModelEmission = new Color(0.42f, 0.42f, 0.42f);
 
         public const string ClipIdle = "Player@Warrior Idle.fbx";
         public const string ClipRun = "Player@Running.fbx";
@@ -38,6 +43,8 @@ namespace Overdrive.EditorTools
         public static string AnimationsPath => AssetFactory.NumberedFolder("Animations", "08_Animations");
         public static string ControllerPath => AnimationsPath + "/Player.controller";
         public static string ClipPath(string file) => AnimationsPath + "/" + file;
+        public static string TexturePath => AssetFactory.PrefabsPath + "/Player_basecolor.PNG";
+        public static string MaterialPath => AssetFactory.MaterialsPath + "/M_" + MaterialName + ".mat";
 
         public static bool ModelAvailable => AssetDatabase.LoadAssetAtPath<GameObject>(ModelPath) != null &&
                                              AllClips.All(f => AssetDatabase.LoadAssetAtPath<GameObject>(ClipPath(f)) != null);
@@ -101,6 +108,10 @@ namespace Overdrive.EditorTools
             controller.AddParameter(PlayerAnimator.Punch, AnimatorControllerParameterType.Trigger);
             controller.AddParameter(PlayerAnimator.SwingBat, AnimatorControllerParameterType.Trigger);
             controller.AddParameter(PlayerAnimator.StabKnife, AnimatorControllerParameterType.Trigger);
+            controller.AddParameter(new AnimatorControllerParameter
+            {
+                name = PlayerAnimator.StepSpeedParam, type = AnimatorControllerParameterType.Float, defaultFloat = 1f,
+            });
 
             AnimatorStateMachine sm = controller.layers[0].stateMachine;
 
@@ -124,6 +135,8 @@ namespace Overdrive.EditorTools
 
             AnimatorState locomotion = sm.AddState(PlayerAnimator.LocomotionState, new Vector3(300f, 0f));
             locomotion.motion = tree;
+            locomotion.speedParameter = PlayerAnimator.StepSpeedParam; // los pasos van al ritmo real del jugador
+            locomotion.speedParameterActive = true;
             sm.defaultState = locomotion;
 
             AnimatorState death = sm.AddState("Death", new Vector3(300f, 200f));
@@ -169,12 +182,72 @@ namespace Overdrive.EditorTools
             string[] parameters =
             {
                 PlayerAnimator.MoveParam, PlayerAnimator.ArmedParam, PlayerAnimator.DeadParam,
-                PlayerAnimator.Punch, PlayerAnimator.SwingBat, PlayerAnimator.StabKnife,
+                PlayerAnimator.Punch, PlayerAnimator.SwingBat, PlayerAnimator.StabKnife, PlayerAnimator.StepSpeedParam,
             };
             if (controller.layers.Length != 1 || !parameters.All(p => controller.parameters.Any(x => x.name == p))) return false;
             ChildAnimatorState[] states = controller.layers[0].stateMachine.states;
             string[] names = { PlayerAnimator.LocomotionState, "Death", PlayerAnimator.Punch, PlayerAnimator.SwingBat, PlayerAnimator.StabKnife };
-            return names.All(n => states.Any(s => s.state.name == n && s.state.motion != null));
+            return names.All(n => states.Any(s => s.state.name == n && s.state.motion != null)) &&
+                   states.Any(s => s.state.name == PlayerAnimator.LocomotionState && s.state.speedParameterActive &&
+                                   s.state.speedParameter == PlayerAnimator.StepSpeedParam);
+        }
+
+        /// <summary>Material del modelo: su textura, poco brillo especular y algo de luz propia para que se vea en la oscuridad.</summary>
+        public static Material EnsureMaterial()
+        {
+            var texture = AssetDatabase.LoadAssetAtPath<Texture2D>(TexturePath);
+            var mat = AssetDatabase.LoadAssetAtPath<Material>(MaterialPath);
+            bool created = mat == null;
+            if (created) mat = new Material(Shader.Find("Universal Render Pipeline/Lit"));
+            mat.SetTexture("_BaseMap", texture);
+            mat.SetTexture("_MainTex", texture);
+            mat.SetColor("_BaseColor", Color.white);
+            mat.SetFloat("_Metallic", 0f);
+            mat.SetFloat("_Smoothness", 0.35f);
+            mat.EnableKeyword("_EMISSION");
+            mat.SetTexture("_EmissionMap", texture);
+            mat.SetColor("_EmissionColor", ModelEmission);
+            mat.globalIlluminationFlags = MaterialGlobalIlluminationFlags.RealtimeEmissive;
+            if (created) AssetDatabase.CreateAsset(mat, MaterialPath);
+            else EditorUtility.SetDirty(mat);
+            return mat;
+        }
+
+        /// <summary>
+        /// Velocidad (m/s) a la que avanza de verdad cada animación de correr con el modelo a su escala:
+        /// se reproduce con root motion en una copia temporal y se mide cuánto se desplaza.
+        /// </summary>
+        public static (float run, float back, float gun) MeasureStepSpeeds(AnimatorController controller)
+        {
+            var source = AssetDatabase.LoadAssetAtPath<GameObject>(ModelPath);
+            var temp = (GameObject)Object.Instantiate(source, new Vector3(0f, -500f, 0f), Quaternion.identity);
+            try
+            {
+                temp.transform.localScale = Vector3.one * ModelScale;
+                if (!temp.TryGetComponent(out Animator animator)) animator = temp.AddComponent<Animator>();
+                animator.runtimeAnimatorController = controller;
+                animator.avatar = AssetDatabase.LoadAllAssetsAtPath(ModelPath).OfType<Avatar>().FirstOrDefault();
+                animator.applyRootMotion = true;
+                float Measure(float move, float armed)
+                {
+                    temp.transform.SetPositionAndRotation(new Vector3(0f, -500f, 0f), Quaternion.identity);
+                    animator.Rebind();
+                    animator.SetFloat(PlayerAnimator.MoveParam, move);
+                    animator.SetFloat(PlayerAnimator.ArmedParam, armed);
+                    animator.SetFloat(PlayerAnimator.StepSpeedParam, 1f);
+                    for (int i = 0; i < 10; i++) animator.Update(0.02f);
+                    Vector3 start = temp.transform.position;
+                    for (int i = 0; i < 100; i++) animator.Update(0.02f);
+                    Vector3 delta = temp.transform.position - start;
+                    delta.y = 0f;
+                    return delta.magnitude / 2f;
+                }
+                return (Measure(1f, 0f), Measure(-1f, 0f), Measure(1f, 1f));
+            }
+            finally
+            {
+                Object.DestroyImmediate(temp);
+            }
         }
 
         /// <summary>Monta el modelo animado dentro del prefab y oculta la cápsula (que sigue para la lógica de muerte y el puño).</summary>
@@ -201,8 +274,10 @@ namespace Overdrive.EditorTools
             animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
             animator.updateMode = AnimatorUpdateMode.Normal;
 
+            Material material = EnsureMaterial();
             foreach (Renderer r in model.GetComponentsInChildren<Renderer>(true))
             {
+                r.sharedMaterials = Enumerable.Repeat(material, r.sharedMaterials.Length).ToArray();
                 r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.On;
                 if (r is SkinnedMeshRenderer skinned) skinned.updateWhenOffscreen = true;
             }
@@ -211,7 +286,24 @@ namespace Overdrive.EditorTools
             body.GetComponent<Renderer>().enabled = false;
             nose.GetComponent<Renderer>().enabled = false;
 
+            // Luz suave encima del jugador: lo separa del suelo oscuro y deja ver sus detalles.
+            GameObject lightGo = BuilderUtil.EnsureChild(root.transform, LightName);
+            BuilderUtil.SetLocal(lightGo, new Vector3(0f, 2.6f, 0.4f), Vector3.one, Quaternion.identity);
+            var light = BuilderUtil.EnsureComponent<Light>(lightGo);
+            light.type = LightType.Point;
+            light.color = new Color(1f, 0.93f, 0.85f);
+            light.intensity = 1.6f;
+            light.range = 3.6f;
+            light.shadows = LightShadows.None;
+            light.renderMode = LightRenderMode.ForcePixel;
+
+            var (run, back, gun) = MeasureStepSpeeds(controller);
             var anim = BuilderUtil.EnsureComponent<PlayerAnimator>(root);
+            var so = new SerializedObject(anim);
+            so.FindProperty("runClipSpeed").floatValue = run;
+            so.FindProperty("backClipSpeed").floatValue = back;
+            so.FindProperty("gunRunClipSpeed").floatValue = gun;
+            so.ApplyModifiedPropertiesWithoutUndo();
             BuilderUtil.SetRef(anim, "animator", animator);
             BuilderUtil.SetRef(anim, "controller", root.GetComponent<PlayerController>());
             BuilderUtil.SetRef(anim, "life", root.GetComponent<PlayerLife>());

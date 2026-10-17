@@ -22,6 +22,16 @@ namespace Overdrive.Player
             return backwards ? -amount : amount;
         }
 
+        /// <summary>
+        /// Velocidad de reproducción de las animaciones de correr para que los pasos vayan al ritmo real
+        /// (sin patinar): velocidad del jugador / velocidad a la que avanza el clip. Quieto, a velocidad normal.
+        /// </summary>
+        public static float StepSpeed(float speed, float clipSpeed)
+        {
+            if (speed < 0.05f || clipSpeed <= 0.01f) return 1f;
+            return Mathf.Clamp(speed / clipSpeed, 0.6f, 1.8f);
+        }
+
         /// <summary>Trigger de ataque según el arma: puñetazo sin arma o con arma de fuego, bate o daga.</summary>
         public static string AttackTrigger(WeaponType? weapon)
         {
@@ -44,6 +54,7 @@ namespace Overdrive.Player
         public const string MoveParam = "Move";
         public const string ArmedParam = "Armed";
         public const string DeadParam = "Dead";
+        public const string StepSpeedParam = "StepSpeed";
         public const string Punch = "Punch";
         public const string SwingBat = "SwingBat";
         public const string StabKnife = "StabKnife";
@@ -56,12 +67,22 @@ namespace Overdrive.Player
         [SerializeField] private PlayerMelee melee;
         [SerializeField] private PlayerFinisher finisher;
         [SerializeField] private float damping = 0.08f;
+        [Tooltip("m/s a los que avanza cada clip con el modelo a escala (los mide el constructor).")]
+        [SerializeField] private float runClipSpeed = 5f;
+        [SerializeField] private float backClipSpeed = 3f;
+        [SerializeField] private float gunRunClipSpeed = 5f;
 
         private Vector3 lastPosition;
         private bool wasDead;
         private bool wasFinishing;
+        private Transform handBone;
+        private Vector3 handRest;
+        private bool handRestCaptured;
 
         public Animator Animator => animator;
+        public float RunClipSpeed => runClipSpeed;
+        public float BackClipSpeed => backClipSpeed;
+        public float GunRunClipSpeed => gunRunClipSpeed;
 
         private void OnEnable()
         {
@@ -87,7 +108,11 @@ namespace Overdrive.Player
             float maxSpeed = controller != null ? controller.MoveSpeed : 6f;
             float move = dead ? 0f : PlayerAnimLogic.Move(velocity, transform.forward, maxSpeed);
             animator.SetFloat(MoveParam, move, damping, dt);
-            animator.SetFloat(ArmedParam, IsArmedWithGun() ? 1f : 0f, damping, dt);
+            bool armed = IsArmedWithGun();
+            animator.SetFloat(ArmedParam, armed ? 1f : 0f, damping, dt);
+            Vector3 flat = new Vector3(velocity.x, 0f, velocity.z);
+            float clipSpeed = move < 0f ? backClipSpeed : armed ? gunRunClipSpeed : runClipSpeed;
+            animator.SetFloat(StepSpeedParam, PlayerAnimLogic.StepSpeed(flat.magnitude, clipSpeed), damping, dt);
             animator.SetBool(DeadParam, dead);
 
             // Rebobinar: de muerto a vivo sin esperar a la transición.
@@ -102,6 +127,21 @@ namespace Overdrive.Player
             bool finishing = finisher != null && finisher.IsFinishing;
             if (finishing && !wasFinishing) animator.SetTrigger(Punch);
             wasFinishing = finishing;
+        }
+
+        /// <summary>El arma va en la mano del modelo: el punto Hand sigue la posición de la mano derecha (no su giro).</summary>
+        private void LateUpdate()
+        {
+            Transform hand = weapons != null ? weapons.Hand : null;
+            if (hand == null || animator == null || !animator.isHuman) return;
+            if (!handRestCaptured)
+            {
+                handRest = hand.localPosition;
+                handRestCaptured = true;
+                handBone = animator.GetBoneTransform(HumanBodyBones.RightHand);
+            }
+            bool follow = handBone != null && (life == null || !life.IsDead);
+            hand.position = follow ? handBone.position + transform.forward * 0.08f : hand.parent.TransformPoint(handRest);
         }
 
         private bool IsArmedWithGun()

@@ -33,6 +33,10 @@ namespace Overdrive.EditorTools
             c.Near(PlayerAnimLogic.Move(new Vector3(0f, 0f, -3f), fwd, 6f), -0.5f, "Retrocediendo a media velocidad: Move -0.5");
             c.Check(PlayerAnimLogic.Move(new Vector3(6f, 0f, 0f), fwd, 6f) > 0.9f, "De lado cuenta como correr de frente");
             c.Near(PlayerAnimLogic.Move(new Vector3(0f, -9f, 20f), fwd, 6f), 1f, "La caída no cuenta y la velocidad se limita a 1");
+            c.Near(PlayerAnimLogic.StepSpeed(0f, 5f), 1f, "Quieto, la animación va a su ritmo");
+            c.Near(PlayerAnimLogic.StepSpeed(7f, 5f), 1.4f, "Más rápido que el clip: los pasos se aceleran", 0.001f);
+            c.Near(PlayerAnimLogic.StepSpeed(1f, 5f), 0.6f, "Muy despacio (sigilo): los pasos se frenan hasta un mínimo");
+            c.Near(PlayerAnimLogic.StepSpeed(50f, 5f), 1.8f, "Y no se aceleran sin límite");
             c.Check(PlayerAnimLogic.AttackTrigger(null) == PlayerAnimator.Punch, "Sin arma: puñetazo");
             c.Check(PlayerAnimLogic.AttackTrigger(WeaponType.Bat) == PlayerAnimator.SwingBat, "Bate: golpe de bate");
             c.Check(PlayerAnimLogic.AttackTrigger(WeaponType.Knife) == PlayerAnimator.StabKnife, "Cuchillo: puñalada");
@@ -102,7 +106,22 @@ namespace Overdrive.EditorTools
 
             c.Check(!prefab.transform.Find("Body").GetComponent<Renderer>().enabled && !prefab.transform.Find("Body/Nose").GetComponent<Renderer>().enabled,
                 "La cápsula del jugador ya no se ve");
+            c.Check(anim != null && anim.RunClipSpeed > 1f && anim.BackClipSpeed > 0.5f && anim.GunRunClipSpeed > 1f,
+                $"Se midió a qué velocidad avanza cada clip de correr ({anim?.RunClipSpeed:F1} / {anim?.BackClipSpeed:F1} / {anim?.GunRunClipSpeed:F1} m/s)");
+            float runStep = anim != null ? PlayerAnimLogic.StepSpeed(prefab.GetComponent<PlayerController>().MoveSpeed, anim.RunClipSpeed) : 0f;
+            c.Check(runStep > 0.6f && runStep < 1.8f, $"A velocidad normal los pasos no patinan ni se saturan (x{runStep:F2})");
+
+            var material = AssetDatabase.LoadAssetAtPath<Material>(PlayerModelFactory.MaterialPath);
+            c.Check(material != null && material.IsKeywordEnabled("_EMISSION") && material.GetTexture("_EmissionMap") != null &&
+                    material.GetColor("_EmissionColor").maxColorComponent > 0.2f &&
+                    (material.globalIlluminationFlags & MaterialGlobalIlluminationFlags.AnyEmissive) != 0,
+                "El material del modelo tiene luz propia para que se vean sus detalles");
+            Light light = prefab.transform.Find(PlayerModelFactory.LightName)?.GetComponent<Light>();
+            c.Check(light != null && light.type == LightType.Point && light.shadows == LightShadows.None && light.range > 2f &&
+                    light.transform.localPosition.y > 2f, "El jugador lleva una luz suave encima, sin sombras");
+
             Renderer[] renderers = model.GetComponentsInChildren<Renderer>();
+            c.Check(renderers.All(r => r.sharedMaterials.All(m => m == material)), "El modelo usa M_PlayerModel");
             c.Check(renderers.Length > 0 && renderers.All(r => r.enabled && r.sharedMaterials.All(m => m != null)), "El modelo se ve y tiene materiales");
         }
 
@@ -119,7 +138,7 @@ namespace Overdrive.EditorTools
                 Transform head = animator.GetBoneTransform(HumanBodyBones.Head);
                 Transform hips = animator.GetBoneTransform(HumanBodyBones.Hips);
                 float headHeight = head.position.y - player.transform.position.y;
-                c.Check(headHeight > 1.3f && headHeight < 1.9f, $"De pie, la cabeza queda a la altura de la cápsula ({headHeight:F2} m)");
+                c.Check(headHeight > 1.6f && headHeight < 1.9f, $"De pie, la cabeza queda a la altura de la cápsula ({headHeight:F2} m)");
 
                 Vector3 shoulders = animator.GetBoneTransform(HumanBodyBones.RightUpperArm).position -
                                     animator.GetBoneTransform(HumanBodyBones.LeftUpperArm).position;
