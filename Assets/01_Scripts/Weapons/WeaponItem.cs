@@ -30,6 +30,8 @@ namespace Overdrive.Weapons
         [SerializeField] private float throwRadius = 0.25f;
         [SerializeField] private float groundHeight = 0.08f;
         [SerializeField] private float spinSpeed = 900f;
+        [Tooltip("Estela mientras vuela tras lanzarla (shader Overdrive/Trail).")]
+        [SerializeField] private TrailRenderer trail;
 
         private readonly LinearFlight flight = new LinearFlight();
         private WeaponState state;
@@ -44,6 +46,15 @@ namespace Overdrive.Weapons
         public Mode CurrentMode => mode;
         public bool IsOnGround => mode == Mode.Ground;
         public Projectile ProjectilePrefab => projectilePrefab;
+        public TrailRenderer Trail => trail;
+
+        /// <summary>La estela solo se ve mientras el arma vuela.</summary>
+        private void SetTrail(bool flying)
+        {
+            if (trail == null) return;
+            trail.Clear();
+            trail.emitting = flying;
+        }
 
         private void OnEnable() => all.Add(this);
         private void OnDisable() => all.Remove(this);
@@ -85,6 +96,7 @@ namespace Overdrive.Weapons
             State.Restore(s.Ammo, s.Cooldown);
             flight.Restore(s.Flight);
             thrownBy = s.ThrownBy;
+            SetTrail(mode == Mode.Thrown);
         }
 
         private void Update()
@@ -100,6 +112,7 @@ namespace Overdrive.Weapons
             transform.SetParent(hand, false);
             transform.localPosition = Vector3.zero;
             transform.localRotation = Quaternion.identity;
+            SetTrail(false);
         }
 
         public void DropAt(Vector3 position, float yaw)
@@ -110,6 +123,7 @@ namespace Overdrive.Weapons
             // Cae sobre el suelo que haya debajo: losa del piso de arriba o, por un hueco, la planta baja.
             position.y = GroundProbe.GroundY(position) + groundHeight;
             transform.SetPositionAndRotation(position, Quaternion.Euler(0f, yaw, 0f));
+            SetTrail(false);
         }
 
         public void Throw(Vector3 origin, Vector3 direction, Faction thrower)
@@ -119,6 +133,7 @@ namespace Overdrive.Weapons
             thrownBy = thrower;
             flight.Launch(origin, direction, throwSpeed, throwMaxDistance);
             transform.position = origin;
+            SetTrail(true);
         }
 
         /// <summary>Avanza el vuelo del arma lanzada. Público para simularlo en el editor.</summary>

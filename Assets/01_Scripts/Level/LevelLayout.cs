@@ -9,6 +9,9 @@ namespace Overdrive.Level
         public LevelMap[] Floors { get; }
         public LevelMap Ground => Floors[0];
 
+        /// <summary>Luces de ambiente del nivel (ver <see cref="AmbientLight"/>).</summary>
+        public AmbientLight[] Ambience { get; set; } = new AmbientLight[0];
+
         public LevelLayout(params LevelMap[] floors)
         {
             if (floors == null || floors.Length == 0) throw new ArgumentException("El nivel no tiene pisos.");

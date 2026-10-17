@@ -13,6 +13,10 @@ namespace Overdrive.Level
         [SerializeField] private PlayerLife player;
         [SerializeField] private float pickupRadius = 1.1f;
         [SerializeField] private Vector3 carriedOffset = new Vector3(0f, 1.1f, -0.45f);
+        [Tooltip("Halo dorado (shader Overdrive/Aura) que marca el objetivo mientras está en el suelo.")]
+        [SerializeField] private GameObject glow;
+
+        public GameObject Glow => glow;
 
         public PlayerLife Player => player;
         public bool IsCollected { get; private set; }
@@ -40,6 +44,7 @@ namespace Overdrive.Level
             transform.SetParent(s.Parent, false);
             transform.localPosition = s.LocalPosition;
             transform.localRotation = s.LocalRotation;
+            if (glow != null) glow.SetActive(!IsCollected);
         }
 
         private void Update()
@@ -57,6 +62,7 @@ namespace Overdrive.Level
             if (d.magnitude > pickupRadius) return false;
 
             IsCollected = true;
+            if (glow != null) glow.SetActive(false);
             transform.SetParent(collector, false);
             transform.localPosition = carriedOffset;
             transform.localRotation = Quaternion.identity;

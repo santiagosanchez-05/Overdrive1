@@ -8,18 +8,24 @@ namespace Overdrive.Weapons
     {
         [SerializeField] private float maxDistance = 40f;
         [SerializeField] private float radius = 0.08f;
+        [Tooltip("Estela (shader Overdrive/Trail).")]
+        [SerializeField] private TrailRenderer trail;
 
         private readonly LinearFlight flight = new LinearFlight();
 
         public Faction Owner { get; private set; }
         public bool Active => flight.Active;
         public LinearFlight Flight => flight;
+        public TrailRenderer Trail => trail;
 
         public void Launch(Vector3 origin, Vector3 direction, float speed, Faction owner)
         {
             Owner = owner;
             flight.Launch(origin, direction, speed, maxDistance);
             transform.SetPositionAndRotation(origin, Quaternion.LookRotation(flight.Direction, Vector3.up));
+            // La bala se crea en el origen del prefab y se teletransporta: sin esto la estela
+            // dibujaría una raya desde (0,0,0) hasta el arma en el primer fotograma.
+            if (trail != null) trail.Clear();
         }
 
         private void Update() => Step(Time.deltaTime);

@@ -9,6 +9,10 @@ namespace Overdrive.Level
         [SerializeField] private Renderer zoneRenderer;
         [SerializeField] private Material lockedMaterial;
         [SerializeField] private Material openMaterial;
+        [Tooltip("Haz de luz (shader Overdrive/LightBeam) que se enciende cuando la salida se abre.")]
+        [SerializeField] private GameObject beam;
+
+        public GameObject Beam => beam;
 
         public Vector2 Size => size;
         public Renderer ZoneRenderer => zoneRenderer;
@@ -28,6 +32,7 @@ namespace Overdrive.Level
         public void SetOpen(bool open)
         {
             IsOpen = open;
+            if (beam != null && beam.activeSelf != open) beam.SetActive(open);
             if (zoneRenderer == null) return;
             Material material = open ? openMaterial : lockedMaterial;
             if (material != null && zoneRenderer.sharedMaterial != material) zoneRenderer.sharedMaterial = material;

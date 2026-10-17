@@ -28,6 +28,8 @@ namespace Overdrive.EditorTools
         private static int step;
         private static int startFrame = -1;
         private static int waitUntilFrame;
+        private static float waitUntilTime;
+        private static DoorDissolve door;
 
         // Estado de la partida simulada.
         private static TimeRewinder rewinder;
@@ -113,8 +115,34 @@ namespace Overdrive.EditorTools
                     Next(frame, 30);
                     break;
 
-                case 5: // Unos fotogramas más de juego normal sin errores.
+                case 5: // Unos fotogramas más de juego normal sin errores; luego, a por el maletín.
                     Check(!player.IsDead && level.Progress.State == LevelState.Playing, "El juego sigue con normalidad tras rebobinar");
+                    Check(level.Briefcase != null && level.Reinforcements != null, "El nivel tiene maletín y refuerzos");
+                    if (failures.Count > 0) { Finish(); return; }
+                    door = level.Reinforcements.Door != null ? level.Reinforcements.Door.GetComponent<DoorDissolve>() : null;
+                    // El jugador aparece junto al maletín: BriefcasePickup lo recoge solo en su Update.
+                    var cc = player.GetComponent<CharacterController>();
+                    cc.enabled = false;
+                    player.transform.position = level.Briefcase.transform.position;
+                    cc.enabled = true;
+                    waitUntilTime = Time.time + 0.15f;
+                    step++;
+                    break;
+
+                case 6: // Recogido: la puerta empieza a disolverse y deja pasar.
+                    if (Time.time < waitUntilTime) return;
+                    Check(level.Briefcase.IsCollected, "Al pasar por encima, el maletín se recoge");
+                    Check(level.Reinforcements.Triggered, "Al recogerlo, llegan los refuerzos");
+                    Check(door != null && door.IsDissolving && !door.DoorCollider.enabled,
+                        "La puerta se está disolviendo y ya deja pasar");
+                    waitUntilTime = Time.time + (door != null ? door.Duration : 0f) + 0.3f;
+                    step++;
+                    break;
+
+                case 7: // Terminada la disolución, la puerta desaparece y los refuerzos están dentro.
+                    if (Time.time < waitUntilTime) return;
+                    Check(door != null && !door.gameObject.activeSelf, "Al terminar la disolución, la puerta desaparece");
+                    Check(level.Reinforcements.Squad.All(a => a.gameObject.activeSelf), "Los refuerzos están activos");
                     Finish();
                     break;
             }

@@ -24,14 +24,24 @@ namespace Overdrive.Level
         public void Restore(object snapshot)
         {
             Triggered = (bool)snapshot;
-            if (door != null) door.SetActive(!Triggered);
+            if (door == null) return;
+            var dissolve = door.GetComponent<DoorDissolve>();
+            if (dissolve == null) door.SetActive(!Triggered);
+            else if (Triggered) dissolve.SetOpenImmediate();
+            else dissolve.ResetClosed();
         }
 
         public void Trigger(PlayerLife target)
         {
             if (Triggered) return;
             Triggered = true;
-            if (door != null) door.SetActive(false);
+            if (door != null)
+            {
+                // Con DoorDissolve la puerta se disuelve (y deja pasar al instante); si no, desaparece.
+                var dissolve = door.GetComponent<DoorDissolve>();
+                if (dissolve != null) dissolve.Play();
+                else door.SetActive(false);
+            }
             foreach (EnemyAI ai in squad)
             {
                 if (ai == null) continue;

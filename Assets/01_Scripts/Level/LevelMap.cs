@@ -14,6 +14,7 @@ namespace Overdrive.Level
     ///   / escalera (rampa que sube hacia el este hasta el piso de arriba)
     ///   ' ' sin suelo (fuera del piso)   O hueco en el suelo por el que se cae al piso de abajo
     ///   C maletín   D puerta cerrada hasta que llegan los refuerzos   R punto de entrada de un refuerzo
+    ///   0-9 muebles (ver <see cref="PropCatalog"/>), pegados a la pared más cercana
     /// </summary>
     public sealed class LevelMap
     {
@@ -194,7 +195,19 @@ namespace Overdrive.Level
             return blocks;
         }
 
-        private bool IsFlatWalkable(int col, int row) => IsWalkable(col, row) && At(col, row) != Stairs && At(col, row) != Door;
+        private bool IsFlatWalkable(int col, int row) =>
+            IsWalkable(col, row) && At(col, row) != Stairs && At(col, row) != Door && !PropCatalog.IsProp(At(col, row));
+
+        /// <summary>
+        /// Lado de la celda que toca pared (dirección en celdas: (1,0) este, (-1,0) oeste, (0,1) sur, (0,-1) norte),
+        /// o (0,0) si no toca ninguna. Con dos paredes (esquina) elige primero norte/sur.
+        /// </summary>
+        public (int dc, int dr) WallSideOf(int col, int row)
+        {
+            foreach (var (dc, dr) in new[] { (0, -1), (0, 1), (-1, 0), (1, 0) })
+                if (IsWall(col + dc, row + dr)) return (dc, dr);
+            return (0, 0);
+        }
 
         /// <summary>
         /// Ruta de patrulla de ida y vuelta: el tramo recto más largo (hasta <paramref name="maxCells"/>)

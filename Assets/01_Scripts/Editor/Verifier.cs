@@ -49,6 +49,11 @@ namespace Overdrive.EditorTools
             VerifyFloorsSimulation(c, layout);
             VerifyStealthLogic(c);
             VerifyStealthSimulation(c);
+            VerifyShadersAndMaterials(c);
+            VerifyDecorScene(c, layout);
+            VerifyNothingBlocksKeyCells(c, layout);
+            VerifyDecorAndAmbience(c, layout);
+            VerifyDecorSimulation(c);
             VerifyRewindLogic(c);
             VerifyRewindScene(c);
             // Último: modifica la escena abierta (no se guarda).
@@ -60,8 +65,16 @@ namespace Overdrive.EditorTools
 
         private static void VerifyAssets(Checker c)
         {
-            foreach (var (name, _, _) in AssetFactory.MaterialDefs)
-                c.NotNull(AssetFactory.Mat(name), $"Falta el material M_{name}");
+            foreach (var (name, _, emission) in AssetFactory.MaterialDefs)
+            {
+                Material m = AssetFactory.Mat(name);
+                c.NotNull(m, $"Falta el material M_{name}");
+                if (m == null || emission <= 0f || m.shader.name != "Universal Render Pipeline/Lit") continue;
+                // Sin un flag emisivo, URP quita _EMISSION al validar el material y se pierde el neón.
+                c.Check(m.IsKeywordEnabled("_EMISSION") &&
+                        (m.globalIlluminationFlags & MaterialGlobalIlluminationFlags.AnyEmissive) != 0,
+                    $"M_{name}: el neón (emisión) sobrevive a la validación de URP");
+            }
 
             var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(AssetFactory.PlayerPrefabPath);
             c.NotNull(prefab, "Falta el prefab Player");
@@ -157,15 +170,25 @@ namespace Overdrive.EditorTools
             c.Check(scene.path == SceneFactory.ScenePath, $"La escena activa debería ser {SceneFactory.ScenePath} (es '{scene.path}')");
 
             EditorBuildSettingsScene[] buildScenes = EditorBuildSettings.scenes;
-            c.Check(buildScenes.Length > 0 && buildScenes[0].path == SceneFactory.ScenePath && buildScenes[0].enabled,
-                "Level01 debe ser la primera escena habilitada en Build Settings");
+            c.Check(buildScenes.Any(s => s.path == SceneFactory.ScenePath && s.enabled), "Level01 está habilitada en Build Settings");
+            string menuPath = SceneFactory.ScenesPath + "/Menu.unity";
+            if (System.IO.File.Exists(menuPath))
+                c.Check(buildScenes.Length > 0 && buildScenes[0].path == menuPath && buildScenes[0].enabled,
+                    "El menú principal es la primera escena (la que abre el juego)");
             foreach (EditorBuildSettingsScene s in buildScenes)
                 c.Check(!string.IsNullOrEmpty(AssetDatabase.GUIDToAssetPath(s.guid.ToString())),
                     $"Build Settings no debe tener escenas que ya no existen ({s.path})");
 
             // Las rutas del constructor siguen la estructura de carpetas del equipo.
             c.Check(AssetDatabase.IsValidFolder(AssetFactory.ScenesPath) && AssetDatabase.IsValidFolder(AssetFactory.PrefabsPath) &&
-                    AssetDatabase.IsValidFolder(AssetFactory.MaterialsPath), "Existen 00_Scenes, 04_Prefabs y 05_Materials");
+                    AssetDatabase.IsValidFolder(AssetFactory.MaterialsPath),
+                $"Existen {AssetFactory.ScenesPath}, {AssetFactory.PrefabsPath} y {AssetFactory.MaterialsPath}");
+            foreach (string name in new[] { "Scenes", "Prefabs", "Materials" })
+            {
+                int count = System.IO.Directory.GetDirectories(AssetFactory.Root)
+                    .Count(d => System.Text.RegularExpressions.Regex.IsMatch(System.IO.Path.GetFileName(d), $@"^\d+_{name}$"));
+                c.Check(count == 1, $"Hay una sola carpeta NN_{name} (hay {count}): el constructor no duplicó nada tras renumerar");
+            }
             c.Check(!AssetDatabase.IsValidFolder("Assets/_Project"), "No se ha vuelto a crear la estructura antigua Assets/_Project");
 
             foreach (string root in new[] { SceneFactory.LevelRoot, SceneFactory.PlayerName, SceneFactory.EnemiesName, SceneFactory.WeaponsName,
