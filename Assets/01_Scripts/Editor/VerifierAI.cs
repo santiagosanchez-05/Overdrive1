@@ -67,8 +67,13 @@ namespace Overdrive.EditorTools
             LevelMap.Block? doorBounds = map.BoundsOf(LevelMap.Door);
             if (doorBounds != null)
             {
-                Vector3 inFront = map.CellToWorld(doorBounds.Value.Col - 1, doorBounds.Value.Row);
-                bool reach = NavMesh.CalculatePath(spawn, inFront, NavMesh.AllAreas, path) && path.status == NavMeshPathStatus.PathComplete;
+                // Basta con llegar delante de uno de los huecos de la puerta (puede haber decoración junto al otro).
+                bool reach = false;
+                for (int r = doorBounds.Value.Row; r < doorBounds.Value.Row + doorBounds.Value.Height && !reach; r++)
+                {
+                    Vector3 inFront = map.CellToWorld(doorBounds.Value.Col - 1, r);
+                    reach = NavMesh.CalculatePath(spawn, inFront, NavMesh.AllAreas, path) && path.status == NavMeshPathStatus.PathComplete;
+                }
                 c.Check(reach, "Hay camino por el NavMesh hasta delante de la puerta de los refuerzos");
             }
 
