@@ -79,6 +79,24 @@ namespace Overdrive.EditorTools
             Validate();
         }
 
+        [MenuItem("TopDown/Nivel 02/Instalar paredes perimetrales y barandillas")]
+        public static void InstallPerimeterWalls()
+        {
+            if (EditorApplication.isPlaying) throw new InvalidOperationException("Detén Play Mode primero.");
+            var scene = SceneManager.GetSceneByPath(ScenePath);
+            if (!scene.isLoaded) scene = EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
+            SceneManager.SetActiveScene(scene);
+            var level = BuilderUtil.FindRoot(scene, "Level");
+            Level02Environment.AddPerimeterWalls(level.transform);
+            Level02Environment.BakeNavigation(level);
+            EditorSceneManager.MarkSceneDirty(scene);
+            EditorSceneManager.SaveScene(scene);
+            AssetDatabase.SaveAssets();
+            Validate();
+            CaptureGameplay();
+            Debug.Log("[Level02] Paredes perimetrales y barandillas instaladas correctamente.");
+        }
+
         [MenuItem("TopDown/Nivel 02/Ajustar anclajes de neón")]
         public static void FixHangingNeon()
         {

@@ -36,3 +36,14 @@ Ajuste posterior: GroundProbe reconoce pisos MeshCollider y BoxCollider. La sang
 Los Hanging Neon tienen postes metálicos, bases y abrazaderas en cada anclaje (18 soportes). Se ajustó la separación de los cables para mantener todos los extremos sobre superficies existentes. Herramienta: TopDown → Nivel 02 → Ajustar anclajes de neón.
 
 Se retiraron los cuatro tramos exteriores de escalera que subían hacia plantas eliminadas, integrados en FirstLevel. Sus huellas quedan como piso plano a y=1.6, con textura de terraza y MeshCollider. Las escaleras del recorrido principal se conservan. Herramienta: TopDown → Nivel 02 → Retirar escaleras superiores sin uso. Se volvió a hornear la navegación y CheckRemovedStairs verifica apoyo físico en los cuatro tramos.
+
+Paredes perimetrales y barandillas:
+- Implementado `AddPerimeterWalls` en `Level02Environment.cs` para evitar caídas al vacío o desniveles altos (>0.8m).
+- 26 barreras perimetrales (`BoxCollider` con material `L02_Threshold`):
+  - Entrada norte: muro posterior en z=33.3m para impedir retroceder al vacío fuera del puente.
+  - Perímetro exterior de terrazas: 4 muros que sellan los huecos de las escaleras exteriores retiradas.
+  - Balcón interior de FirstLevel: antepechos de 1.15m mirando a la pista de baile y cerrando el hueco central sobre el hall (caída de 3.1m).
+  - Rampas de acceso: barandillas interiores inclinadas a lo largo de las rampas (z de 0 a 6m).
+  - Fondo de camerinos: tope sur de seguridad en z=-87.2m.
+- Altura calibrada a 1.15m para frenar físicamente al CharacterController sin obstaculizar la cámara cenital (pitch 70°).
+- Herramientas: **TopDown → Nivel 02 → Instalar paredes perimetrales y barandillas** y **TopDown → Nivel 02 → Comprobar Caidas Físicas**. Superadas 31/31 pruebas físicas con 0 caídas (reporte en `Temp/Level02.walls_check.txt`). NavMesh 100% transitable sin enemigos aislados.
