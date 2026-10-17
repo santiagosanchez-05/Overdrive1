@@ -18,6 +18,15 @@ namespace Overdrive.UI
         public const string FindBriefcase = "Objetivo: el maletín del piso de arriba";
         public const string CarryingBriefcase = "Maletín: lo tienes";
 
+        /// <summary>Instrucción al completar el nivel según si hay siguiente escena configurada.</summary>
+        public static string CompleteActionHint(string nextScene)
+        {
+            if (string.IsNullOrEmpty(nextScene)) return CompleteHint;
+            if (string.Equals(nextScene, "Menu", System.StringComparison.OrdinalIgnoreCase))
+                return "ESPACIO · Volver al menú  |  R · Reiniciar";
+            return "ESPACIO · Siguiente nivel  |  R · Reiniciar";
+        }
+
         /// <summary>Arma actual y munición: "Escopeta  4/6", "Bate", "Subfusil  0/30 (vacía)".</summary>
         public static string Weapon(WeaponDefinition definition, int ammo)
         {
@@ -98,6 +107,14 @@ namespace Overdrive.UI
                 case KillCause.Backstab: return "POR LA ESPALDA";
                 default: return null;
             }
+        }
+
+        /// <summary>Etiqueta del texto flotante: la de la muerte especial y/o "SIGILO", o null si no hay.</summary>
+        public static string PopupLabel(KillCause? cause, bool stealth)
+        {
+            string kill = cause.HasValue ? KillLabel(cause.Value) : null;
+            if (!stealth) return kill;
+            return kill != null ? $"{kill} + SIGILO" : "SIGILO";
         }
 
         /// <summary>Segundos como minutos:segundos: 95 → "1:35".</summary>

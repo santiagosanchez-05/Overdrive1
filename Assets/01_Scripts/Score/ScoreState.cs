@@ -8,11 +8,14 @@ namespace Overdrive.Scoring
     {
         public readonly int Points;
         public readonly int Multiplier;
+        /// <summary>Incluye el bonus de sigilo.</summary>
+        public readonly bool Stealth;
 
-        public ScoreGain(int points, int multiplier)
+        public ScoreGain(int points, int multiplier, bool stealth = false)
         {
             Points = points;
             Multiplier = multiplier;
+            Stealth = stealth;
         }
     }
 
@@ -29,6 +32,8 @@ namespace Overdrive.Scoring
         public float ComboTimeLeft { get; private set; }
         public int BestCombo { get; private set; }
         public int Kills { get; private set; }
+        /// <summary>Muertes con bonus de sigilo.</summary>
+        public int StealthKills { get; private set; }
         /// <summary>Formas de matar distintas usadas (un bit por <see cref="KillCause"/>).</summary>
         public int CausesMask { get; private set; }
 
@@ -45,7 +50,8 @@ namespace Overdrive.Scoring
             }
         }
 
-        public ScoreGain RegisterKill(KillCause cause)
+        /// <param name="stealth">Agachado y sin que el enemigo te hubiera detectado: suma <see cref="ScoreRules.StealthBonus"/>.</param>
+        public ScoreGain RegisterKill(KillCause cause, bool stealth = false)
         {
             Combo = ComboTimeLeft > 0f ? Combo + 1 : 1;
             ComboTimeLeft = ScoreRules.ComboWindow;
@@ -55,8 +61,13 @@ namespace Overdrive.Scoring
 
             int multiplier = ScoreRules.MultiplierFor(Combo);
             int points = ScoreRules.KillPoints(cause) * multiplier;
+            if (stealth)
+            {
+                points += ScoreRules.StealthBonus;
+                StealthKills++;
+            }
             Points += points;
-            return new ScoreGain(points, multiplier);
+            return new ScoreGain(points, multiplier, stealth);
         }
 
         public ScoreGain RegisterKnockdown(KnockdownCause cause)
@@ -80,12 +91,12 @@ namespace Overdrive.Scoring
 
         public readonly struct Snapshot
         {
-            public readonly int Points, Combo, BestCombo, Kills, CausesMask;
+            public readonly int Points, Combo, BestCombo, Kills, StealthKills, CausesMask;
             public readonly float ComboTimeLeft;
 
             public Snapshot(ScoreState s)
             {
-                Points = s.Points; Combo = s.Combo; BestCombo = s.BestCombo; Kills = s.Kills;
+                Points = s.Points; Combo = s.Combo; BestCombo = s.BestCombo; Kills = s.Kills; StealthKills = s.StealthKills;
                 CausesMask = s.CausesMask; ComboTimeLeft = s.ComboTimeLeft;
             }
         }
@@ -99,6 +110,7 @@ namespace Overdrive.Scoring
             Combo = s.Combo;
             BestCombo = s.BestCombo;
             Kills = s.Kills;
+            StealthKills = s.StealthKills;
             CausesMask = s.CausesMask;
             ComboTimeLeft = s.ComboTimeLeft;
         }

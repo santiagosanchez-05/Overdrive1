@@ -1,4 +1,5 @@
 using System;
+using Overdrive.Core;
 
 namespace Overdrive.Weapons
 {
@@ -35,6 +36,9 @@ namespace Overdrive.Weapons
         public float NoiseRadius { get; private set; }
         public float Shake { get; private set; }
 
+        /// <summary>Sonido del golpe cuerpo a cuerpo cuando conecta.</summary>
+        public Sound HitSound { get; private set; } = Sound.Punch;
+
         /// <summary>Segundos entre ataques cuando la usa un enemigo (más lento que el jugador, por justicia).</summary>
         public float EnemyAttackInterval { get; private set; }
 
@@ -48,14 +52,14 @@ namespace Overdrive.Weapons
 
         public static readonly WeaponDefinition Bat = new WeaponDefinition
         {
-            Type = WeaponType.Bat, DisplayName = "Bate", IsMelee = true,
+            Type = WeaponType.Bat, DisplayName = "Bate", IsMelee = true, HitSound = Sound.BatHit,
             UseInterval = 0.45f, MeleeRange = 1.9f, MeleeHalfAngle = 70f, Shake = 0.3f,
             EnemyAttackInterval = 0.9f, EnemyAttackRange = 1.5f,
         };
 
         public static readonly WeaponDefinition Knife = new WeaponDefinition
         {
-            Type = WeaponType.Knife, DisplayName = "Cuchillo", IsMelee = true,
+            Type = WeaponType.Knife, DisplayName = "Cuchillo", IsMelee = true, HitSound = Sound.KnifeHit,
             UseInterval = 0.3f, MeleeRange = 1.6f, MeleeHalfAngle = 55f, Shake = 0.25f,
             EnemyAttackInterval = 0.7f, EnemyAttackRange = 1.3f,
         };

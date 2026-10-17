@@ -54,11 +54,13 @@ namespace Overdrive.EditorTools
             VerifyNothingBlocksKeyCells(c, layout);
             VerifyDecorAndAmbience(c, layout);
             VerifyLedCables(c, layout);
+            VerifyPlayerModel(c);
             VerifyDecorSimulation(c);
             VerifyRewindLogic(c);
             VerifyRewindScene(c);
             VerifyScoreLogic(c);
             VerifyScoreScene(c);
+            VerifySoundsScene(c);
             // Último: modifica la escena abierta (no se guarda).
             VerifyRewindSimulation(c, layout);
             return c;

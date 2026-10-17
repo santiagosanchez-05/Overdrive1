@@ -38,13 +38,17 @@ namespace Overdrive.EditorTools
             var rt = new RenderTexture(Width, Height, 24, RenderTextureFormat.ARGB32) { antiAliasing = 4 };
             cam.targetTexture = rt;
 
+            var bakedPoses = new System.Collections.Generic.List<GameObject>();
             try
             {
+                bakedPoses = BakePoses(scene);
                 // Planta baja (piso de arriba oculto, como en el juego cuando estás abajo).
                 SetFloorVisible(floor1, false);
                 SetUpperObjectsVisible(scene, false);
                 // Calentamiento: en batch, el primer render puede usar texturas a medio enlazar.
                 cam.Render();
+                Transform player = BuilderUtil.FindRoot(scene, SceneFactory.PlayerName).transform;
+                Shot(cam, rt, dir, "00_jugador", player.position, 4.5f);
                 Shot(cam, rt, dir, "01_planta_baja_inicio", new Vector3(8f, 0f, -6f), 20f);
                 Shot(cam, rt, dir, "02_planta_baja_norte", new Vector3(32f, 0f, -6f), 20f);
                 Shot(cam, rt, dir, "03_planta_baja_sur", new Vector3(14f, 0f, -24f), 20f);
@@ -65,11 +69,67 @@ namespace Overdrive.EditorTools
             }
             finally
             {
+                CleanupBakedPoses(bakedPoses);
                 cam.targetTexture = null;
                 UnityEngine.Object.DestroyImmediate(go);
                 rt.Release();
                 UnityEngine.Object.DestroyImmediate(rt);
                 EditorSceneManager.OpenScene(SceneFactory.ScenePath, OpenSceneMode.Single);
+            }
+        }
+
+        public static System.Collections.Generic.List<GameObject> BakePoses(Scene scene)
+        {
+            var created = new System.Collections.Generic.List<GameObject>();
+            foreach (GameObject root in scene.GetRootGameObjects())
+            {
+                foreach (Animator animator in root.GetComponentsInChildren<Animator>(false))
+                {
+                    animator.Rebind();
+                    animator.Update(0.5f);
+                    Transform head = animator.isHuman ? animator.GetBoneTransform(HumanBodyBones.Head) : null;
+                    Transform hips = animator.isHuman ? animator.GetBoneTransform(HumanBodyBones.Hips) : null;
+                    foreach (SkinnedMeshRenderer skinned in animator.GetComponentsInChildren<SkinnedMeshRenderer>(false))
+                    {
+                        var baked = new Mesh();
+                        skinned.BakeMesh(baked);
+                        var posed = new GameObject(skinned.name + "_Pose");
+                        posed.transform.SetParent(animator.transform, true);
+                        posed.transform.SetPositionAndRotation(skinned.transform.position, skinned.transform.rotation);
+                        posed.AddComponent<MeshFilter>().sharedMesh = baked;
+                        var meshRenderer = posed.AddComponent<MeshRenderer>();
+                        meshRenderer.sharedMaterials = skinned.sharedMaterials;
+                        skinned.enabled = false;
+                        created.Add(posed);
+                        if (head == null || hips == null) continue;
+
+                        float floorY = animator.transform.position.y;
+                        float target = head.position.y - floorY + 0.18f;
+                        if (meshRenderer.bounds.size.y > 0.001f)
+                            posed.transform.localScale *= target / meshRenderer.bounds.size.y;
+                        Bounds b = meshRenderer.bounds;
+                        posed.transform.position += new Vector3(hips.position.x - b.center.x, floorY - b.min.y, hips.position.z - b.center.z);
+                    }
+                }
+            }
+            return created;
+        }
+
+        public static void CleanupBakedPoses(System.Collections.Generic.List<GameObject> created)
+        {
+            if (created == null) return;
+            foreach (GameObject posed in created)
+            {
+                if (posed == null) continue;
+                Transform parent = posed.transform.parent;
+                if (parent != null)
+                {
+                    foreach (SkinnedMeshRenderer skinned in parent.GetComponentsInChildren<SkinnedMeshRenderer>(true))
+                        skinned.enabled = true;
+                }
+                MeshFilter mf = posed.GetComponent<MeshFilter>();
+                if (mf != null && mf.sharedMesh != null) UnityEngine.Object.DestroyImmediate(mf.sharedMesh);
+                UnityEngine.Object.DestroyImmediate(posed);
             }
         }
 
@@ -97,7 +157,16 @@ namespace Overdrive.EditorTools
             {
                 if (root.name == SceneFactory.LevelRoot || root.name == SceneFactory.CameraRigName) continue;
                 foreach (Renderer r in root.GetComponentsInChildren<Renderer>(true))
+                {
+                    if (r is SkinnedMeshRenderer) continue;
+                    if ((r.gameObject.name == "Body" || r.gameObject.name == "Nose") &&
+                        r.transform.root.GetComponentInChildren<Animator>(true) != null)
+                    {
+                        r.enabled = false;
+                        continue;
+                    }
                     if (Core.Floors.IndexOf(r.bounds.min.y) >= 1) r.enabled = visible;
+                }
             }
         }
 

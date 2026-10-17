@@ -179,6 +179,35 @@ namespace Overdrive.EditorTools
             if (opened) EditorSceneManager.CloseScene(menu, true);
         }
 
+        [MenuItem("TopDown/Nivel 02/Integrar sonidos y personajes")]
+        public static void IntegrateSoundsAndCharacters()
+        {
+            if (EditorApplication.isPlaying) throw new InvalidOperationException("Detén Play Mode primero.");
+            TopDownBuilder.BuildAndVerify();
+            LevelScreenshots.Capture();
+
+            Scene scene = SceneManager.GetSceneByPath(ScenePath);
+            if (!scene.isLoaded) scene = EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
+            SceneManager.SetActiveScene(scene);
+
+            GameObject systems = BuilderUtil.FindRoot(scene, "Systems");
+            if (systems != null) SoundFactory.EnsureGameSounds(systems);
+
+            GameObject level = BuilderUtil.FindRoot(scene, "Level");
+            if (level != null) Level02Gameplay.EnsureFemaleNpc(level.transform);
+
+            EditorSceneManager.MarkSceneDirty(scene);
+            EditorSceneManager.SaveScene(scene);
+            AssetDatabase.SaveAssets();
+
+            Validate();
+            CaptureGameplay();
+            if (File.Exists("Temp/Level02-start.png"))
+                File.Copy("Temp/Level02-start.png", "docs/level02-preview.png", true);
+            File.WriteAllText("Temp/Integration.done.txt", "PASS: sonidos, modelos 3D y animaciones integrados en Level01 y Level02.");
+            Debug.Log("[Level02] Sonidos y personajes integrados y verificados.");
+        }
+
         [MenuItem("TopDown/Nivel 02/Capturas")]
         public static void CaptureGameplay()
         {
@@ -187,13 +216,21 @@ namespace Overdrive.EditorTools
             var rig = scene.GetRootGameObjects().SelectMany(r => r.GetComponentsInChildren<Overdrive.CameraRig.TopDownCamera>(true)).Single();
             var clone = Object.Instantiate(rig.Cam.gameObject).GetComponent<Camera>();
             if (clone.GetComponent<AudioListener>() != null) Object.DestroyImmediate(clone.GetComponent<AudioListener>());
-            // Warm up URP before the first saved image.
-            RenderShot(clone, "Temp/Level02-warmup.png", Level02Gameplay.Start, 20f);
-            RenderShot(clone, "Temp/Level02-start.png", Level02Gameplay.Start, 20f);
-            RenderShot(clone, "Temp/Level02-combat.png", new Vector3(-10f, 0f, 0f), 20f);
-            RenderShot(clone, "Temp/Level02-backstage.png", new Vector3(-6f, -2f, -51f), 20f);
-            RenderShot(clone, "Temp/Level02-objective.png", new Vector3(-7f, -1.5f, -77f), 20f);
-            Object.DestroyImmediate(clone.gameObject);
+            var baked = LevelScreenshots.BakePoses(scene);
+            try
+            {
+                // Warm up URP before the first saved image.
+                RenderShot(clone, "Temp/Level02-warmup.png", Level02Gameplay.Start, 20f);
+                RenderShot(clone, "Temp/Level02-start.png", Level02Gameplay.Start, 20f);
+                RenderShot(clone, "Temp/Level02-combat.png", new Vector3(-10f, 0f, 0f), 20f);
+                RenderShot(clone, "Temp/Level02-backstage.png", new Vector3(-6f, -2f, -51f), 20f);
+                RenderShot(clone, "Temp/Level02-objective.png", new Vector3(-7f, -1.5f, -77f), 20f);
+            }
+            finally
+            {
+                LevelScreenshots.CleanupBakedPoses(baked);
+                Object.DestroyImmediate(clone.gameObject);
+            }
             if (!wasDirty) EditorSceneManager.SaveScene(scene);
         }
 

@@ -134,6 +134,7 @@ namespace Overdrive.Weapons
             flight.Launch(origin, direction, throwSpeed, throwMaxDistance);
             transform.position = origin;
             SetTrail(true);
+            GameSounds.Play(Sound.Throw);
         }
 
         /// <summary>Avanza el vuelo del arma lanzada. Público para simularlo en el editor.</summary>
@@ -144,7 +145,11 @@ namespace Overdrive.Weapons
             if (ProjectileCast.TryCast(flight.Position, flight.Direction, distance, throwRadius, thrownBy, out ProjectileCast.Hit hit))
             {
                 // Un arma lanzada derriba, igual que un puñetazo.
-                if (hit.Enemy != null) hit.Enemy.ReceiveKnockdown(KnockdownCause.Thrown);
+                if (hit.Enemy != null)
+                {
+                    GameSounds.Play(Sound.ThrownHit);
+                    hit.Enemy.ReceiveKnockdown(KnockdownCause.Thrown);
+                }
                 Vector3 stop = flight.Position + flight.Direction * Mathf.Max(0f, hit.Distance - throwRadius);
                 DropAt(stop, transform.eulerAngles.y);
                 return;
@@ -175,6 +180,7 @@ namespace Overdrive.Weapons
             }
             NoiseSystem.Emit(origin, def.NoiseRadius);
             CameraShake.Shake(def.Shake);
+            GameSounds.Play(def.Type == WeaponType.Shotgun ? Sound.Shotgun : Sound.Smg);
             return angles.Length;
         }
     }

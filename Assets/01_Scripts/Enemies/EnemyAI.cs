@@ -363,6 +363,8 @@ namespace Overdrive.Enemies
             {
                 winding = true;
                 windupLeft = meleeWindup;
+                WeaponDefinition held = enemy.Weapon != null ? enemy.Weapon.Definition : null;
+                GameSounds.Play(held != null && held.IsMelee ? held.HitSound : Sound.Swing);
                 float interval = enemy.Weapon != null ? enemy.Weapon.Definition.EnemyAttackInterval : WeaponDefinition.UnarmedEnemyInterval;
                 attackCooldown = meleeWindup + interval;
             }
@@ -387,6 +389,7 @@ namespace Overdrive.Enemies
             if (!MeleeTargeting.InArc(transform.position, transform.forward, target, range, halfAngle)) return false;
             if (!LineOfSight.IsClear(ShotOrigin, target + Vector3.up, player.transform)) return false;
             CameraShake.Shake(0.3f);
+            if (def == null || !def.IsMelee) GameSounds.Play(Sound.Punch);
             return player.Kill();
         }
 

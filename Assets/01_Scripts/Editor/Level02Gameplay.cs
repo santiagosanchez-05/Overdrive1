@@ -43,6 +43,7 @@ namespace Overdrive.EditorTools
             var wave = CreateReinforcements(player.Life);
             CreateSystems(player, camera, enemies, briefcase, exit, wave);
             CreateFloorWeapons();
+            EnsureFemaleNpc(level.transform);
             AddWayfinding(level.transform);
             MenuBuilder.AddPauseMenu(scene);
             MenuBuilder.AddLevelMusic(scene);
@@ -216,6 +217,8 @@ namespace Overdrive.EditorTools
             BuilderUtil.SetRef(level, "exit", exit);
             BuilderUtil.SetRef(level, "reinforcements", wave);
             var serialized = new SerializedObject(level);
+            SerializedProperty nextProp = serialized.FindProperty("nextScene");
+            if (nextProp != null) nextProp.stringValue = "Menu";
             var list = serialized.FindProperty("enemies");
             list.arraySize = enemies.Length;
             for (int i = 0; i < enemies.Length; i++) list.GetArrayElementAtIndex(i).objectReferenceValue = enemies[i];
@@ -233,11 +236,22 @@ namespace Overdrive.EditorTools
             var score = systems.AddComponent<ScoreKeeper>();
             BuilderUtil.SetRef(score, "level", level);
             BuilderUtil.SetRef(score, "rewinder", rewind);
+            SoundFactory.EnsureGameSounds(systems);
             var hud = systems.AddComponent<GameHUD>();
             BuilderUtil.SetRef(hud, "weapons", player.GetComponent<PlayerWeapons>());
             BuilderUtil.SetRef(hud, "level", level);
             BuilderUtil.SetRef(hud, "rewinder", rewind);
             BuilderUtil.SetRef(hud, "score", score);
+        }
+
+        internal static void EnsureFemaleNpc(Transform level)
+        {
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(CharacterModelFactory.FemalePrefabPath);
+            if (prefab == null || level == null) return;
+            Transform existing = level.Find("FemaleNPC");
+            GameObject npc = existing != null ? existing.gameObject : (GameObject)PrefabUtility.InstantiatePrefab(prefab, level);
+            npc.name = "FemaleNPC";
+            npc.transform.SetPositionAndRotation(new Vector3(4.2f, 0f, 16.5f), Quaternion.Euler(0f, -135f, 0f));
         }
 
         private static void CreateFloorWeapons()

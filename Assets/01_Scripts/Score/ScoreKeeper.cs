@@ -3,6 +3,7 @@ using Overdrive.Combat;
 using Overdrive.Core;
 using Overdrive.Enemies;
 using Overdrive.Level;
+using Overdrive.Player;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -60,14 +61,29 @@ namespace Overdrive.Scoring
             Enemy.AnyKnockedDown -= OnKnockedDown;
         }
 
-        private void OnKilled(Enemy enemy, KillCause cause) => AddKill(cause, enemy.transform.position);
+        private void OnKilled(Enemy enemy, KillCause cause) => AddKill(cause, enemy.transform.position, IsStealthKill(enemy));
+
+        private PlayerController playerController;
+
+        /// <summary>
+        /// ¿Muerte en sigilo? El jugador va agachado (Ctrl) y el enemigo no lo había detectado
+        /// (no tenía "!"). La IA conserva su estado al morir, así que se puede mirar ahora.
+        /// </summary>
+        public bool IsStealthKill(Enemy enemy)
+        {
+            if (playerController == null && level != null && level.Player != null)
+                playerController = level.Player.GetComponent<PlayerController>();
+            if (playerController == null || !playerController.IsSneaking) return false;
+            var ai = enemy.GetComponent<EnemyAI>();
+            return ai != null && !ai.Brain.IsInCombat;
+        }
         private void OnKnockedDown(Enemy enemy, KnockdownCause cause) => AddKnockdown(cause, enemy.transform.position);
 
         /// <summary>Suma una muerte. Público para simularlo en el editor.</summary>
-        public ScoreGain AddKill(KillCause cause, Vector3 position)
+        public ScoreGain AddKill(KillCause cause, Vector3 position, bool stealth = false)
         {
             if (Summary != null) return default;
-            ScoreGain gain = state.RegisterKill(cause);
+            ScoreGain gain = state.RegisterKill(cause, stealth);
             popups.Add(new Popup { Position = position, Gain = gain, Cause = cause });
             return gain;
         }

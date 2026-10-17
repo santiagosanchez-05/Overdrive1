@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Overdrive.CameraRig;
 using Overdrive.Combat;
+using Overdrive.Core;
 using Overdrive.Weapons;
 using UnityEngine;
 
@@ -68,6 +69,7 @@ namespace Overdrive.Enemies
             DropWeapon();
             ApplyPosture();
             CameraShake.Shake(0.25f);
+            GameSounds.Play(Sound.EnemyFall);
             AnyKnockedDown?.Invoke(this, cause);
             return true;
         }
@@ -121,6 +123,7 @@ namespace Overdrive.Enemies
             ApplyPosture();
             BloodSpawner.SpawnAt(transform.position, 1.2f);
             CameraShake.Shake(0.35f);
+            GameSounds.Play(Sound.EnemyFall);
             AnyDied?.Invoke(this);
             AnyKilled?.Invoke(this, cause);
         }

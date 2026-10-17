@@ -98,6 +98,7 @@ namespace Overdrive.EditorTools
             EnsureCamera(scene, player);
 
             EnsureSystems(scene, level, player, briefcase, wave);
+            EnsureFemaleNpc(level.transform, ground);
             MenuBuilder.AddPauseMenu(scene);
             MenuBuilder.AddLevelMusic(scene);
 
@@ -761,6 +762,10 @@ namespace Overdrive.EditorTools
             BuilderUtil.SetRef(manager, "exit", level.transform.Find(ExitName).GetComponent<ExitZone>());
             BuilderUtil.SetRef(manager, "briefcase", briefcase);
             BuilderUtil.SetRef(manager, "reinforcements", wave);
+            var mgrSo = new SerializedObject(manager);
+            SerializedProperty nextProp = mgrSo.FindProperty("nextScene");
+            if (nextProp != null) nextProp.stringValue = "Level02";
+            mgrSo.ApplyModifiedPropertiesWithoutUndo();
 
             var visibility = BuilderUtil.EnsureComponent<FloorVisibility>(systems);
             BuilderUtil.SetRef(visibility, "player", player.transform);
@@ -793,6 +798,8 @@ namespace Overdrive.EditorTools
             BuilderUtil.SetRef(score, "level", manager);
             BuilderUtil.SetRef(score, "rewinder", rewinder);
 
+            SoundFactory.EnsureGameSounds(systems);
+
             var hud = BuilderUtil.EnsureComponent<GameHUD>(systems);
             BuilderUtil.SetRef(hud, "weapons", player.GetComponent<PlayerWeapons>());
             BuilderUtil.SetRef(hud, "level", manager);
@@ -812,6 +819,16 @@ namespace Overdrive.EditorTools
             var (col, row) = map.FindAll(LevelMap.PlayerSpawn)[0];
             player.transform.SetPositionAndRotation(map.CellToWorld(col, row), Quaternion.identity);
             return player;
+        }
+
+        private static void EnsureFemaleNpc(Transform level, LevelMap map)
+        {
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(CharacterModelFactory.FemalePrefabPath);
+            if (prefab == null) return;
+            Transform existing = level.Find("FemaleNPC");
+            GameObject npc = existing != null ? existing.gameObject : (GameObject)PrefabUtility.InstantiatePrefab(prefab, level);
+            npc.name = "FemaleNPC";
+            npc.transform.SetPositionAndRotation(map.CellToWorld(2, 6), Quaternion.Euler(0f, 35f, 0f));
         }
 
         /// <summary>Nombre de un enemigo del mapa. Los de pisos superiores llevan el sufijo _fN.</summary>

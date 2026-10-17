@@ -1,0 +1,28 @@
+PASS: 26 comprobaciones del flujo completo (Menu -> Level01 -> Level02) OK.
+
+OK: Build Settings contiene las 3 escenas habilitadas
+OK: Build Settings incluye Menu.unity
+OK: Build Settings incluye Level01.unity
+OK: Build Settings incluye Level02.unity
+OK: Menu.unity tiene MainMenuController
+OK: MainMenuController.gameScene inicia en 'Level01'
+OK: MainMenuController permite seleccionar Level01 y Level02
+OK: Botón JUGAR conectado
+OK: Botón NIVELES conectado
+OK: Level01 tiene LevelManager
+OK: Level01.LevelManager.nextScene apunta a 'Level02'
+OK: Level01 tiene 10 enemigos iniciales
+OK: Level01 tiene GameSounds configurado
+OK: Level01 tiene Player con PlayerAnimator y modelo 3D
+OK: Level01 tiene animadores EnemyAnimator (14/10)
+OK: Level01 tiene Female_Character de ambiente
+OK: Level02 tiene LevelManager
+OK: Level02.LevelManager.nextScene apunta a 'Menu'
+OK: Level02 tiene 14 enemigos iniciales
+OK: Level02 tiene GameSounds configurado
+OK: Level02 tiene Player con PlayerAnimator y modelo 3D
+OK: Level02 tiene animadores EnemyAnimator (21/14)
+OK: Level02 tiene Female_Character de ambiente
+OK: Level02 pasa validación completa (escena, navegación, colisiones)
+OK: HudText indica siguiente nivel para Level01
+OK: HudText indica volver al menú para Level02

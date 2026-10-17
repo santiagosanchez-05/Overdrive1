@@ -7,10 +7,16 @@ namespace Overdrive.Scoring
     public static class ScoreRules
     {
         /// <summary>Segundos que tienes tras una muerte para que la siguiente sume al combo.</summary>
-        public const float ComboWindow = 4f;
+        public const float ComboWindow = 7f;
         public const int MaxMultiplier = 8;
 
         public static int MultiplierFor(int combo) => Mathf.Clamp(combo, 1, MaxMultiplier);
+
+        /// <summary>
+        /// Bonus fijo (sin multiplicar por el combo) por matar agachado (Ctrl) a un enemigo
+        /// que no te ha detectado (sin "!" sobre la cabeza).
+        /// </summary>
+        public const int StealthBonus = 700;
 
         public static int KillPoints(KillCause cause)
         {
@@ -54,10 +60,10 @@ namespace Overdrive.Scoring
         /// <summary>Proporción mínima de la referencia para cada nota, de mejor a peor.</summary>
         public static readonly (string grade, float ratio)[] Grades =
         {
-            ("S", 2.2f),
-            ("A", 1.6f),
-            ("B", 1.1f),
-            ("C", 0.7f),
+            ("S", 1.6f),
+            ("A", 1.2f),
+            ("B", 0.8f),
+            ("C", 0.5f),
             ("D", 0f),
         };
 

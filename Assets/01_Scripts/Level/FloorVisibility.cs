@@ -61,8 +61,17 @@ namespace Overdrive.Level
 
         private void SetVisible(Transform root, bool visible)
         {
+            bool hasModel = root.GetComponentInChildren<Animator>(true) != null;
             root.GetComponentsInChildren(true, buffer);
-            foreach (Renderer r in buffer) r.enabled = visible;
+            foreach (Renderer r in buffer)
+            {
+                if (hasModel && (r.gameObject.name == "Body" || r.gameObject.name == "Nose"))
+                {
+                    r.enabled = false;
+                    continue;
+                }
+                r.enabled = visible;
+            }
             // Las luces de un piso oculto (cables LED) tampoco deben teñir el piso de abajo a través de la losa.
             root.GetComponentsInChildren(true, lightBuffer);
             foreach (Light l in lightBuffer) l.enabled = visible;
