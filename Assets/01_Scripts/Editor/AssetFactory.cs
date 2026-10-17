@@ -50,7 +50,7 @@ namespace Overdrive.EditorTools
         /// <summary>Nombre, color base e intensidad de emisión (0 = sin emisión).</summary>
         public static readonly (string name, Color color, float emission)[] MaterialDefs =
         {
-            (MatFloor, new Color(0.45f, 0.08f, 0.50f), 0f),
+            (MatFloor, Color.white, 0f),
             (MatWall, new Color(0.05f, 0.85f, 0.85f), 0.6f),
             (MatPlayer, new Color(1.00f, 0.85f, 0.10f), 0.3f),
             (MatPlayerDetail, Color.white, 0.5f),
