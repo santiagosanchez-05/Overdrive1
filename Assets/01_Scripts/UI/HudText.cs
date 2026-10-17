@@ -100,6 +100,14 @@ namespace Overdrive.UI
             }
         }
 
+        /// <summary>Etiqueta del texto flotante: la de la muerte especial y/o "SIGILO", o null si no hay.</summary>
+        public static string PopupLabel(KillCause? cause, bool stealth)
+        {
+            string kill = cause.HasValue ? KillLabel(cause.Value) : null;
+            if (!stealth) return kill;
+            return kill != null ? $"{kill} + SIGILO" : "SIGILO";
+        }
+
         /// <summary>Segundos como minutos:segundos: 95 → "1:35".</summary>
         public static string Time(float seconds)
         {

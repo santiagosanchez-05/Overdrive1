@@ -115,15 +115,12 @@ namespace Overdrive.Weapons
                 swingLeft = swingTime;
                 Swung?.Invoke(def.Type);
                 CameraShake.Shake(0.1f);
-                GameSounds.Play(Sound.Swing);
+                // Cada golpe con el arma suena a esa arma (bate o cuchillo), acierte o no.
+                GameSounds.Play(def.HitSound);
                 Enemy.CollectTargets(enemies, targets);
                 int index = MeleeTargeting.FindPunchTarget(transform.position, transform.forward, targets,
                     def.MeleeRange, def.MeleeHalfAngle, includeDown: true);
-                if (index >= 0 && enemies[index].ReceiveLethalHit(KillCause.Melee))
-                {
-                    CameraShake.Shake(def.Shake);
-                    GameSounds.Play(def.HitSound);
-                }
+                if (index >= 0 && enemies[index].ReceiveLethalHit(KillCause.Melee)) CameraShake.Shake(def.Shake);
                 return true;
             }
 

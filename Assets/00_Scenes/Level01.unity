@@ -16241,12 +16241,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Overdrive.Core.GameSounds
   shotgun:
-    clip: {fileID: 8300000, guid: 16320c3c36f7c3948aea0d64b75cf371, type: 3}
+    clip: {fileID: 8300000, guid: 3750c5bd55006004f8adc7bd6d82ac68, type: 3}
     volume: 0.8
     pitchVariation: 0.08
   smg:
-    clip: {fileID: 8300000, guid: 6a1fa43ef8bf5b442af4538cd5d5429b, type: 3}
+    clip: {fileID: 8300000, guid: 226d927e9f5a6da4f9d8b51712276cb9, type: 3}
     volume: 0.5
+    pitchVariation: 0.08
+  shotKill:
+    clip: {fileID: 8300000, guid: 1089025c57a62f046a06a91c384f2a93, type: 3}
+    volume: 0.8
     pitchVariation: 0.08
   swing:
     clip: {fileID: 8300000, guid: 1e9c3ce691e66704fa6f10c22d4dfe9f, type: 3}
@@ -16265,7 +16269,7 @@ MonoBehaviour:
     volume: 0.2
     pitchVariation: 0.08
   kick:
-    clip: {fileID: 8300000, guid: df1b4462b8f83b84a9074b43ea4a81a7, type: 3}
+    clip: {fileID: 8300000, guid: e3ae0ba49ba940049a05d44a2a72ffd1, type: 3}
     volume: 0.2
     pitchVariation: 0.08
   throwWeapon:
@@ -16273,7 +16277,7 @@ MonoBehaviour:
     volume: 0.2
     pitchVariation: 0.08
   thrownHit:
-    clip: {fileID: 0}
+    clip: {fileID: 8300000, guid: bfa26ff5e71143d45b65245cd8929cd1, type: 3}
     volume: 0.8
     pitchVariation: 0.08
   enemyFall:
@@ -16281,7 +16285,7 @@ MonoBehaviour:
     volume: 0.2
     pitchVariation: 0.08
   playerDeath:
-    clip: {fileID: 8300000, guid: 5e7ea6ad457a7f34d9c99c2f2d11d618, type: 3}
+    clip: {fileID: 8300000, guid: 204170665fc4ecd41ac86d765e15007a, type: 3}
     volume: 0.2
     pitchVariation: 0
   voices: 16

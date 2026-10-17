@@ -19,8 +19,10 @@ namespace Overdrive.Core
         KnifeHit,
         /// <summary>Cada golpe del remate a un enemigo en el suelo.</summary>
         Kick,
-        /// <summary>Un arma lanzada que impacta contra un enemigo.</summary>
+        /// <summary>Un arma lanzada (clic derecho) que impacta contra un enemigo y lo derriba.</summary>
         ThrownHit,
+        /// <summary>Una bala o perdigón tuyo mata a un enemigo.</summary>
+        ShotKill,
         /// <summary>Un enemigo cae al suelo (derribado o muerto).</summary>
         EnemyFall,
         Throw,
@@ -46,18 +48,24 @@ namespace Overdrive.Core
         [Header("Disparos")]
         [SerializeField] private Entry shotgun = new Entry();
         [SerializeField] private Entry smg = new Entry { volume = 0.5f };
+        [Tooltip("Una bala o perdigón tuyo mata a un enemigo (escopeta o subfusil).")]
+        [SerializeField] private Entry shotKill = new Entry();
 
         [Header("Cuerpo a cuerpo")]
-        [Tooltip("Puñetazo, bate o cuchillo al aire (también el enemigo antes de pegarte).")]
+        [Tooltip("Puñetazo al aire (también el enemigo desarmado antes de pegarte).")]
         [SerializeField] private Entry swing = new Entry { volume = 0.5f };
+        [Tooltip("Puñetazo que conecta.")]
         [SerializeField] private Entry punch = new Entry();
+        [Tooltip("Cada golpe con el bate en la mano, acierte o no (tuyo o de un enemigo).")]
         [SerializeField] private Entry batHit = new Entry();
+        [Tooltip("Cada golpe con el cuchillo en la mano, acierte o no (tuyo o de un enemigo).")]
         [SerializeField] private Entry knifeHit = new Entry();
         [Tooltip("Cada golpe del remate (Espacio) a un enemigo en el suelo.")]
         [SerializeField] private Entry kick = new Entry();
 
         [Header("Armas lanzadas")]
         [SerializeField] private Entry throwWeapon = new Entry { volume = 0.7f };
+        [Tooltip("El arma lanzada (clic derecho) golpea a un enemigo y lo derriba.")]
         [SerializeField] private Entry thrownHit = new Entry();
 
         [Header("Personajes")]
@@ -85,6 +93,7 @@ namespace Overdrive.Core
                 case Sound.KnifeHit: return knifeHit;
                 case Sound.Kick: return kick;
                 case Sound.ThrownHit: return thrownHit;
+                case Sound.ShotKill: return shotKill;
                 case Sound.EnemyFall: return enemyFall;
                 case Sound.Throw: return throwWeapon;
                 case Sound.PlayerDeath: return playerDeath;
