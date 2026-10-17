@@ -24,7 +24,35 @@ namespace Overdrive.EditorTools
 
         public static void RunPlayTest() => Level02PlayTest.Run();
         public static void CheckBloodSurfaces() => BloodSurfaceChecks.Run();
-
+        public static void CheckRemovedStairs()
+        {
+            foreach (float side in new[] { -1f, 1f })
+                foreach (var sample in new[] { new Vector3(side * 22f, 3f, 2f), new Vector3(side * 21f, 3f, -9f) })
+                    if (!Overdrive.Core.GroundProbe.TrySurface(sample, out var floor) || Mathf.Abs(floor.point.y - 1.6f) > .04f || floor.normal.y < .99f)
+                        throw new InvalidOperationException("El antiguo tramo de escalera debe conservar un piso plano con collider: " + sample);
+            File.WriteAllText("Temp/Level02.stair-validation.txt", "PASS Los cuatro tramos retirados conservan suelo plano y collider a y=1.6.");
+            var rig = Object.FindAnyObjectByType<Overdrive.CameraRig.TopDownCamera>();
+            var clone = Object.Instantiate(rig.Cam.gameObject).GetComponent<Camera>();
+            if (clone.GetComponent<AudioListener>() != null) Object.DestroyImmediate(clone.GetComponent<AudioListener>());
+            RenderShot(clone, "Temp/Level02-stairs-removed.png", new Vector3(-22f, 1.6f, 2f), 9f);
+            Object.DestroyImmediate(clone.gameObject);
+        }
+        [MenuItem("TopDown/Nivel 02/Retirar escaleras superiores sin uso")]
+        public static void RemoveUnusedStairs()
+        {
+            if (EditorApplication.isPlaying) throw new InvalidOperationException("Detén Play Mode primero.");
+            var scene = SceneManager.GetSceneByPath(ScenePath);
+            if (!scene.isLoaded || scene.isDirty) throw new InvalidOperationException("Abre y guarda Level02 antes de retirar sus escaleras.");
+            SceneManager.SetActiveScene(scene);
+            var level = BuilderUtil.FindRoot(scene, "Level");
+            Level02Environment.RemoveUnusedUpperStairs(level.transform);
+            Level02Environment.BakeNavigation(level);
+            EditorSceneManager.MarkSceneDirty(scene);
+            EditorSceneManager.SaveScene(scene);
+            AssetDatabase.SaveAssets();
+            Validate();
+            CaptureGameplay();
+        }
         [MenuItem("TopDown/Nivel 02/Separar refuerzos de backstage y salida")]
         public static void SeparateReinforcements()
         {

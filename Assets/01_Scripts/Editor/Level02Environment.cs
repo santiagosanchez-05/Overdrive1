@@ -310,7 +310,8 @@ namespace Overdrive.EditorTools
 
         public static void BakeNavigation(GameObject level)
         {
-            var surface = level.AddComponent<NavMeshSurface>();
+            var surface = level.GetComponent<NavMeshSurface>();
+            if (surface == null) surface = level.AddComponent<NavMeshSurface>();
             surface.collectObjects = CollectObjects.Children;
             surface.useGeometry = NavMeshCollectGeometry.PhysicsColliders;
             surface.overrideVoxelSize = true;
@@ -342,6 +343,7 @@ namespace Overdrive.EditorTools
             T existing = AssetDatabase.LoadAssetAtPath<T>(path);
             if (existing == null) { AssetDatabase.CreateAsset(asset, path); return asset; }
             EditorUtility.CopySerialized(asset, existing);
+            if (existing is Mesh mesh) RefreshMeshBuffers(mesh);
             Object.DestroyImmediate(asset);
             EditorUtility.SetDirty(existing);
             return existing;
@@ -406,9 +408,34 @@ namespace Overdrive.EditorTools
                                 pieces = pieces.SelectMany(piece => SubtractVolume(piece, opening, filter.transform)).ToList();
                             }
                         }
+                        if (filter.name == "FirstLevel")
+                        {
+                            var flattened = new List<List<Vertex>>();
+                            foreach (Plane[] stairs in UnusedStairVolumes())
+                            {
+                                foreach (var piece in pieces)
+                                {
+                                    var footprint = piece;
+                                    foreach (Plane plane in stairs) footprint = ClipPolygon(footprint, plane, filter.transform);
+                                    if (footprint.Count < 3) continue;
+                                    if (filter.transform.TransformDirection(footprint[0].Normal).y < .5f) continue;
+                                    flattened.Add(footprint.Select(v =>
+                                    {
+                                        Vector3 world = filter.transform.TransformPoint(v.Position);
+                                        world.y = 1.6f;
+                                        v.Position = filter.transform.InverseTransformPoint(world);
+                                        v.Normal = filter.transform.InverseTransformDirection(Vector3.up);
+                                        return v;
+                                    }).ToList());
+                                }
+                                pieces = pieces.SelectMany(piece => SubtractVolume(piece, stairs, filter.transform)).ToList();
+                            }
+                            pieces.AddRange(flattened);
+                        }
                         foreach (var piece in pieces)
                         for (int j = 1; j + 1 < piece.Count; j++)
                         {
+                            if (Vector3.Cross(piece[j].Position - piece[0].Position, piece[j + 1].Position - piece[0].Position).sqrMagnitude < 1e-12f) continue;
                             int start = output.Count;
                             output.Add(piece[0]); output.Add(piece[j]); output.Add(piece[j + 1]);
                             indices.Add(start); indices.Add(start + 1); indices.Add(start + 2);
@@ -424,8 +451,79 @@ namespace Overdrive.EditorTools
             mesh.subMeshCount = submeshes.Count;
             for (int i = 0; i < submeshes.Count; i++) mesh.SetTriangles(submeshes[i], i);
             mesh.RecalculateBounds();
+            if (filter.name == "FirstLevel") MatchFlattenedFloorTexture(mesh, filter.transform);
             mesh.RecalculateTangents();
             return mesh;
+        }
+
+        private static void MatchFlattenedFloorTexture(Mesh mesh, Transform transform)
+        {
+            var vertices = mesh.vertices;
+            var uv = mesh.uv;
+            var triangles = mesh.triangles;
+            var regions = UnusedStairVolumes().ToArray();
+            bool InStairFootprint(Vector3 p) => regions.Any(region => region.All(plane => plane.GetDistanceToPoint(new Vector3(p.x, 2f, p.z)) >= 0f));
+            float largest = 0f;
+            Vector2 floorUv = Vector2.zero;
+            Vector3 floorCenter = Vector3.zero;
+            for (int i = 0; i < triangles.Length; i += 3)
+            {
+                int a = triangles[i], b = triangles[i + 1], c = triangles[i + 2];
+                var pa = transform.TransformPoint(vertices[a]); var pb = transform.TransformPoint(vertices[b]); var pc = transform.TransformPoint(vertices[c]);
+                var normal = Vector3.Cross(pb - pa, pc - pa);
+                if (pa.y < 1.5f || pa.y > 1.64f || Mathf.Abs(pb.y - pa.y) > .001f || Mathf.Abs(pc.y - pa.y) > .001f || normal.y <= 0f) continue;
+                if (InStairFootprint(pa) || InStairFootprint(pb) || InStairFootprint(pc) || normal.sqrMagnitude <= largest) continue;
+                largest = normal.sqrMagnitude;
+                floorUv = (uv[a] + uv[b] + uv[c]) / 3f;
+                floorCenter = (pa + pb + pc) / 3f;
+            }
+            if (largest == 0f) throw new InvalidOperationException("No se encontró la textura del piso de la terraza.");
+            for (int i = 0; i < vertices.Length; i++)
+            {
+                Vector3 world = transform.TransformPoint(vertices[i]);
+                if (Mathf.Abs(world.y - 1.6f) < .005f && InStairFootprint(world))
+                    uv[i] = floorUv + new Vector2(world.x - floorCenter.x, world.z - floorCenter.z) * .0002f;
+            }
+            mesh.uv = uv;
+        }
+
+        private static IEnumerable<Plane[]> UnusedStairVolumes()
+        {
+            // Four outer flights led to removed upper floors. Preserve the terrace slab beneath them.
+            foreach (int side in new[] { -1, 1 })
+                foreach (var area in new[] { new Vector4(19.7f, 25.4f, .2f, 4.1f), new Vector4(18.3f, 23.9f, -11.7f, -6.5f) })
+                {
+                    float left = side < 0 ? -area.y : area.x;
+                    float right = side < 0 ? -area.x : area.y;
+                    yield return new[]
+                    {
+                        new Plane(Vector3.right, -left), new Plane(Vector3.left, right),
+                        new Plane(Vector3.forward, -area.z), new Plane(Vector3.back, area.w),
+                        new Plane(Vector3.up, -1.64f)
+                    };
+                }
+        }
+
+        internal static void RemoveUnusedUpperStairs(Transform level)
+        {
+            var floor = level.GetComponentsInChildren<MeshFilter>(true).Single(f => f.name == "FirstLevel");
+            var mesh = StoreAsset(ClipAbove(floor, 2.9f), Level02Builder.GeneratedPath + "/Cut_FirstLevel.asset");
+            floor.sharedMesh = null;
+            floor.sharedMesh = mesh;
+            var collider = floor.GetComponent<MeshCollider>();
+            collider.sharedMesh = null;
+            collider.sharedMesh = mesh;
+        }
+
+        private static void RefreshMeshBuffers(Mesh mesh)
+        {
+            // CopySerialized preserves the asset GUID; explicitly refresh native render buffers too.
+            mesh.vertices = mesh.vertices;
+            mesh.normals = mesh.normals;
+            mesh.uv = mesh.uv;
+            for (int i = 0; i < mesh.subMeshCount; i++) mesh.SetTriangles(mesh.GetTriangles(i), i);
+            mesh.RecalculateBounds();
+            mesh.UploadMeshData(false);
         }
 
         private static List<List<Vertex>> SubtractVolume(List<Vertex> polygon, Plane[] volume, Transform transform)
