@@ -175,6 +175,21 @@ namespace Overdrive.Enemies
 
         public void SetHunting(bool hunting) => Hunting = hunting;
 
+        /// <summary>
+        /// Ha visto morir a otro enemigo: se alerta (!), corre hacia el cadáver y desde entonces
+        /// queda en guardia: si te ve, te detecta al instante.
+        /// </summary>
+        public void WitnessDeath(Vector3 position)
+        {
+            Hunting = true;
+            if (IsInCombat) return;
+            Suspicion = 1f;
+            LastKnownPlayerPosition = position;
+            sinceSeen = 0f;
+            State = AIState.Chase;
+            reactionLeft = settings.reactionTime;
+        }
+
         /// <summary>Estado interno completo, para rebobinar.</summary>
         public readonly struct Snapshot
         {

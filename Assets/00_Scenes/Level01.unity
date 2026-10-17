@@ -4686,6 +4686,7 @@ GameObject:
   - component: {fileID: 997003030}
   - component: {fileID: 997003032}
   - component: {fileID: 997003033}
+  - component: {fileID: 997003034}
   m_Layer: 0
   m_Name: Systems
   m_TagString: Untagged
@@ -4736,6 +4737,7 @@ MonoBehaviour:
   weapons: {fileID: 1095807300}
   level: {fileID: 997003031}
   rewinder: {fileID: 997003033}
+  score: {fileID: 997003034}
 --- !u!114 &997003031
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4798,6 +4800,21 @@ MonoBehaviour:
   interval: 0.1
   window: 5
   maxUses: 3
+--- !u!114 &997003034
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 997003027}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: df00415ab99e3704a98d07a69c3c36be, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Overdrive.Scoring.ScoreKeeper
+  level: {fileID: 997003031}
+  rewinder: {fileID: 997003033}
+  popupDuration: 1.7
 --- !u!1001 &1011921181
 PrefabInstance:
   m_ObjectHideFlags: 0

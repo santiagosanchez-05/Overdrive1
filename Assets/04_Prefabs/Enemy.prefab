@@ -121,6 +121,7 @@ MonoBehaviour:
   viewHalfAngle: 55
   proximity: 1.5
   eyeHeight: 1.6
+  witnessRadius: 4
   walkSpeed: 2.2
   chaseSpeed: 5
   turnSpeed: 540

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Overdrive.Combat;
 using Overdrive.Core;
 using Overdrive.Enemies;
@@ -21,6 +22,11 @@ namespace Overdrive.EditorTools
             c.Check(WeaponDefinition.Smg.MaxAmmo == 30 && WeaponDefinition.Smg.Automatic && WeaponDefinition.Smg.Pellets == 1,
                 "El subfusil es automático con 30 balas");
             c.Check(WeaponDefinition.Smg.UseInterval < WeaponDefinition.Shotgun.UseInterval, "El subfusil dispara más rápido que la escopeta");
+            c.Check(WeaponDefinition.Shotgun.ProjectileRange < WeaponDefinition.Smg.ProjectileRange * 0.5f,
+                "Los perdigones de la escopeta llegan mucho menos lejos que las balas del subfusil");
+            c.Check(WeaponDefinition.Shotgun.ProjectileRange > WeaponDefinition.Shotgun.EnemyAttackRange &&
+                    WeaponDefinition.Smg.ProjectileRange > WeaponDefinition.Smg.EnemyAttackRange,
+                "Las balas llegan más lejos que la distancia desde la que disparan los enemigos");
             c.Check(LevelMap.WeaponFor('b') == WeaponType.Bat && LevelMap.WeaponFor('K') == WeaponType.Knife &&
                     LevelMap.WeaponFor('s') == WeaponType.Shotgun && LevelMap.WeaponFor('M') == WeaponType.Smg,
                 "Las letras del mapa corresponden a sus armas");
@@ -128,6 +134,8 @@ namespace Overdrive.EditorTools
                 int pellets = shotgun.TryFire(weapons.ShotOrigin, player.transform.forward, Faction.Player, spawned);
                 c.Check(pellets == WeaponDefinition.Shotgun.Pellets && spawned.Count == pellets,
                     $"La escopeta genera {WeaponDefinition.Shotgun.Pellets} perdigones (generó {spawned.Count})");
+                c.Check(spawned.All(b => Mathf.Approximately(b.Flight.MaxDistance, WeaponDefinition.Shotgun.ProjectileRange)),
+                    "Los perdigones desaparecen al alcance de la escopeta");
                 c.Check(shotgun.State.Ammo == 5, "Cada disparo gasta un cartucho");
                 c.Check(noises == 1 && Mathf.Approximately(lastNoiseRadius, WeaponDefinition.Shotgun.NoiseRadius),
                     "El disparo hace ruido con el radio del arma");

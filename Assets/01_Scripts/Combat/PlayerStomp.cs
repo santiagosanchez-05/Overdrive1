@@ -43,7 +43,7 @@ namespace Overdrive.Combat
                 float dy = position.y - enemyPosition.y;
                 if (dy < -0.5f || dy > 2.5f) continue;
                 if (MeleeTargeting.FlatDistance(position, enemyPosition) > radius) continue;
-                if (enemy.ReceiveKnockdown()) count++;
+                if (enemy.ReceiveKnockdown(KnockdownCause.Stomp)) count++;
             }
             return count;
         }

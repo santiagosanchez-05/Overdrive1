@@ -33,6 +33,12 @@ namespace Overdrive.Enemies
         /// <summary>Se dispara cuando muere cualquier enemigo.</summary>
         public static event Action<Enemy> AnyDied;
 
+        /// <summary>Muerte de cualquier enemigo y cómo murió (para la puntuación).</summary>
+        public static event Action<Enemy, KillCause> AnyKilled;
+
+        /// <summary>Derribo de cualquier enemigo y cómo se le derribó (para la puntuación).</summary>
+        public static event Action<Enemy, KnockdownCause> AnyKnockedDown;
+
         public CombatState State => state;
         public Posture Posture => state.Posture;
         public bool IsDead => state.IsDead;
@@ -56,20 +62,21 @@ namespace Overdrive.Enemies
         }
 
         /// <summary>Puñetazo o arma lanzada: derriba sin matar.</summary>
-        public bool ReceiveKnockdown()
+        public bool ReceiveKnockdown(KnockdownCause cause = KnockdownCause.Punch)
         {
             if (!state.KnockDown(knockdownDuration)) return false;
             DropWeapon();
             ApplyPosture();
             CameraShake.Shake(0.25f);
+            AnyKnockedDown?.Invoke(this, cause);
             return true;
         }
 
         /// <summary>Golpe con arma o disparo: mata.</summary>
-        public bool ReceiveLethalHit()
+        public bool ReceiveLethalHit(KillCause cause = KillCause.Other)
         {
             if (!state.Kill()) return false;
-            OnKilled();
+            OnKilled(cause);
             return true;
         }
 
@@ -80,7 +87,7 @@ namespace Overdrive.Enemies
         public bool CompleteFinish()
         {
             if (!state.Finish()) return false;
-            OnKilled();
+            OnKilled(KillCause.Finisher);
             return true;
         }
 
@@ -108,13 +115,14 @@ namespace Overdrive.Enemies
             for (int i = 0; i < enemies.Count; i++) buffer.Add(enemies[i].AsTarget());
         }
 
-        private void OnKilled()
+        private void OnKilled(KillCause cause)
         {
             DropWeapon();
             ApplyPosture();
             BloodSpawner.SpawnAt(transform.position, 1.2f);
             CameraShake.Shake(0.35f);
             AnyDied?.Invoke(this);
+            AnyKilled?.Invoke(this, cause);
         }
 
         private void ApplyPosture()

@@ -62,7 +62,7 @@ namespace Overdrive.Combat
 
             var ai = enemy.GetComponent<EnemyAI>();
             if (ai != null && ai.IsUnawareOf(transform.position))
-                return enemy.ReceiveLethalHit() ? enemy : null;
+                return enemy.ReceiveLethalHit(KillCause.Backstab) ? enemy : null;
             return enemy.ReceiveKnockdown() ? enemy : null;
         }
 

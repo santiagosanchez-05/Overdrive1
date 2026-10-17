@@ -13,9 +13,8 @@ namespace Overdrive.EditorTools
     /// <summary>Crea o actualiza los materiales URP y los prefabs del juego.</summary>
     internal static class AssetFactory
     {
-        public const string Root = "Assets/_Project";
-        public const string MaterialsPath = Root + "/Materials";
-        public const string PrefabsPath = Root + "/Prefabs";
+        public const string MaterialsPath = "Assets/05_Materials";
+        public const string PrefabsPath = "Assets/04_Prefabs";
         public const string PlayerPrefabPath = PrefabsPath + "/Player.prefab";
         public const string EnemyPrefabPath = PrefabsPath + "/Enemy.prefab";
         public const string BulletPrefabPath = PrefabsPath + "/Bullet.prefab";
