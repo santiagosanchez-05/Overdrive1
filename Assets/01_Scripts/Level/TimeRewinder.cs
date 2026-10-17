@@ -44,6 +44,9 @@ namespace Overdrive.Level
             }
         }
 
+        /// <summary>Al cargar una partida guardada.</summary>
+        public void SetUsesLeft(int uses) => usesLeft = Mathf.Clamp(uses, 0, maxUses);
+
         private RewindBuffer<object[]> Buffer => buffer ??= new RewindBuffer<object[]>(RewindBuffer<object[]>.CapacityFor(window, interval));
 
         /// <summary>Muerto, con usos y con algo grabado.</summary>

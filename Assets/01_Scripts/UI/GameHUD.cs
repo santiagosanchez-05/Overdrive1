@@ -30,7 +30,7 @@ namespace Overdrive.UI
 
         private void OnGUI()
         {
-            if (level == null) return;
+            if (level == null || GameInput.Blocked) return; // en pausa manda el menú
             EnsureStyles();
 
             WeaponItem current = weapons != null ? weapons.Current : null;

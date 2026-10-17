@@ -1,4 +1,7 @@
 using System.Collections;
+using System.Collections.Generic;
+using Overdrive.Core;
+using Overdrive.Level;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
@@ -15,6 +18,8 @@ namespace Overdrive.UI
     {
         [Header("Botones principales (en orden)")]
         public NeonMenuButton playButton;
+        [Tooltip("Solo aparece si hay una partida guardada.")]
+        public NeonMenuButton continueButton;
         public NeonMenuButton settingsButton;
         public NeonMenuButton levelsButton;
         public NeonMenuButton quitButton;
@@ -30,6 +35,7 @@ namespace Overdrive.UI
 
         [Header("Ajustes")]
         public Slider volumeSlider;
+        public Slider musicSlider;
         public Toggle fullscreenToggle;
 
         [Header("Escena")]
@@ -40,16 +46,22 @@ namespace Overdrive.UI
         public float entranceDuration = 0.4f;
         public float entranceStagger = 0.08f;
         public float panelFade = 0.25f;
+        public float buttonSpacing = 118f;
 
         private CanvasGroup _current;
         private NeonMenuButton _returnTo;
         private bool _busy;
 
-        private NeonMenuButton[] Main => new[] { playButton, settingsButton, levelsButton, quitButton };
+        private NeonMenuButton[] main;
 
         private void Start()
         {
+            Time.timeScale = 1f;
+            GameInput.Blocked = false;
+            LayoutMainButtons(continueButton != null && SaveSystem.HasSave);
+
             playButton.Clicked += _ => LoadScene(gameScene);
+            if (continueButton) continueButton.Clicked += _ => Continue();
             settingsButton.Clicked += b => OpenPanel(settingsPanel, b);
             levelsButton.Clicked += b => OpenPanel(levelsPanel, b);
             quitButton.Clicked += _ => Quit();
@@ -62,9 +74,13 @@ namespace Overdrive.UI
 
             if (volumeSlider)
             {
-                volumeSlider.SetValueWithoutNotify(PlayerPrefs.GetFloat("volume", 1f));
-                AudioListener.volume = volumeSlider.value;
-                volumeSlider.onValueChanged.AddListener(v => { AudioListener.volume = v; PlayerPrefs.SetFloat("volume", v); });
+                volumeSlider.SetValueWithoutNotify(AudioPrefs.Master);
+                volumeSlider.onValueChanged.AddListener(v => AudioPrefs.Master = v);
+            }
+            if (musicSlider)
+            {
+                musicSlider.SetValueWithoutNotify(AudioPrefs.Music);
+                musicSlider.onValueChanged.AddListener(v => AudioPrefs.Music = v);
             }
             if (fullscreenToggle)
             {
@@ -96,7 +112,7 @@ namespace Overdrive.UI
         private IEnumerator Entrance()
         {
             _busy = true;
-            NeonMenuButton[] buttons = Main;
+            NeonMenuButton[] buttons = main;
             var groups = new CanvasGroup[buttons.Length];
             var basePos = new Vector2[buttons.Length];
             for (int i = 0; i < buttons.Length; i++)
@@ -127,6 +143,45 @@ namespace Overdrive.UI
             mainGroup.interactable = true;
             _busy = false;
             Select(playButton);
+        }
+
+        /// <summary>Coloca en columna los botones visibles (CONTINUAR va bajo JUGAR) y enlaza la navegación.</summary>
+        private void LayoutMainButtons(bool showContinue)
+        {
+            var list = new List<NeonMenuButton> { playButton };
+            if (continueButton)
+            {
+                continueButton.gameObject.SetActive(showContinue);
+                if (showContinue) list.Add(continueButton);
+            }
+            list.Add(settingsButton);
+            list.Add(levelsButton);
+            list.Add(quitButton);
+            main = list.ToArray();
+
+            Vector2 top = ((RectTransform)playButton.transform).anchoredPosition;
+            for (int i = 0; i < main.Length; i++)
+            {
+                var rt = (RectTransform)main[i].transform;
+                rt.anchoredPosition = new Vector2(top.x, top.y - i * buttonSpacing);
+                var nav = new Navigation
+                {
+                    mode = Navigation.Mode.Explicit,
+                    selectOnUp = main[(i - 1 + main.Length) % main.Length].GetComponent<Button>(),
+                    selectOnDown = main[(i + 1) % main.Length].GetComponent<Button>(),
+                };
+                main[i].GetComponent<Button>().navigation = nav;
+            }
+        }
+
+        private void Continue()
+        {
+            _busy = true;
+            if (!SaveSystem.Continue())
+            {
+                _busy = false;
+                Debug.LogWarning("No se pudo cargar la partida guardada.");
+            }
         }
 
         private static CanvasGroup Group(Component c)
