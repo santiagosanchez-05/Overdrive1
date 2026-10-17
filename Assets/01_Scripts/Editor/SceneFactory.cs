@@ -46,6 +46,13 @@ namespace Overdrive.EditorTools
         public const string BriefcaseName = "Briefcase";
         public const string ReinforcementsName = "Reinforcements";
         public const float SlabThickness = 0.3f;
+        public const string ExitBeamName = "ExitBeam";
+        public const float ExitBeamHeight = 6f;
+        public const string PropsName = "Props";
+        public const string HaloName = "Halo";
+        public const float PropWallGap = 0.03f;
+        public const string DecorName = "Decor";
+        public const string AmbienceName = "Ambience";
         public const string NavMeshPath = ScenesPath + "/Level01_NavMesh.asset";
         public const int PatrolCells = 4;
 
@@ -71,6 +78,11 @@ namespace Overdrive.EditorTools
             for (int i = 1; i < layout.Floors.Length; i++) BuildUpperFloor(level.transform, layout.Floors[i]);
             BuildStairs(level.transform, layout);
             BuildExit(level.transform, ground);
+            BuildProps(level.transform, ground);
+            for (int i = 1; i < layout.Floors.Length; i++)
+                BuildProps(level.transform.Find(FloorRootName(i)), layout.Floors[i]);
+            AdoptDecor(scene, level);
+            BuildAmbience(level.transform, layout);
             BakeNavMesh(level);
 
             GameObject door = EnsureDoor(scene, ground);
@@ -239,13 +251,21 @@ namespace Overdrive.EditorTools
                 map.BlockCenter(b) + new Vector3(0f, WallHeight * 0.5f, 0f),
                 new Vector3(b.Width * map.CellSize, WallHeight, b.Height * map.CellSize),
                 Quaternion.identity);
-            BuilderUtil.SetMaterial(door, AssetFactory.Mat(AssetFactory.MatDoor));
+            BuilderUtil.SetMaterial(door, AssetFactory.Mat(AssetFactory.MatDoorDissolve));
 
             var obstacle = BuilderUtil.EnsureComponent<NavMeshObstacle>(door);
             obstacle.shape = NavMeshObstacleShape.Box;
             obstacle.center = Vector3.zero;
             obstacle.size = Vector3.one;
             obstacle.carving = true;
+            obstacle.enabled = true;
+            door.GetComponent<Collider>().enabled = true;
+
+            // Al llegar los refuerzos se disuelve con borde brillante (shader Overdrive/NoteDissolve).
+            var dissolve = BuilderUtil.EnsureComponent<DoorDissolve>(door);
+            BuilderUtil.SetRef(dissolve, "doorRenderer", door.GetComponent<Renderer>());
+            BuilderUtil.SetRef(dissolve, "doorCollider", door.GetComponent<Collider>());
+            BuilderUtil.SetRef(dissolve, "obstacle", obstacle);
             return door;
         }
 
@@ -347,6 +367,222 @@ namespace Overdrive.EditorTools
             BuilderUtil.SetRef(zone, "zoneRenderer", exit.GetComponent<Renderer>());
             BuilderUtil.SetRef(zone, "lockedMaterial", AssetFactory.Mat(AssetFactory.MatExitLocked));
             BuilderUtil.SetRef(zone, "openMaterial", AssetFactory.Mat(AssetFactory.MatExit));
+
+            // Haz de luz verde (shader Overdrive/LightBeam) que se enciende al abrirse la salida.
+            // Es hermano del suelo de la salida (no hijo) para no heredar su escala aplanada.
+            GameObject beam = BuilderUtil.EnsurePrimitiveChild(level, ExitBeamName, PrimitiveType.Cylinder, false);
+            float diameter = Mathf.Min(block.Width, block.Height) * map.CellSize * 0.8f;
+            // La tapa inferior del cilindro queda bajo el suelo: si no, se ve como un disco verde sólido.
+            BuilderUtil.SetLocal(beam,
+                map.BlockCenter(block) + new Vector3(0f, ExitBeamHeight * 0.5f - 0.1f, 0f),
+                new Vector3(diameter, ExitBeamHeight * 0.5f, diameter),
+                Quaternion.identity);
+            BuilderUtil.SetMaterial(beam, AssetFactory.Mat(AssetFactory.MatExitBeam));
+            var beamRenderer = beam.GetComponent<Renderer>();
+            beamRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            beamRenderer.receiveShadows = false;
+            beam.SetActive(false);
+            BuilderUtil.SetRef(zone, "beam", beam);
+        }
+
+        /// <summary>¿Es la raíz de una instancia de un prefab de Mnostva_Art (los muebles de interiores)?</summary>
+        public static bool IsDecorInstance(GameObject go)
+        {
+            if (!PrefabUtility.IsOutermostPrefabInstanceRoot(go)) return false;
+            GameObject source = PrefabUtility.GetCorrespondingObjectFromSource(go);
+            string path = source != null ? AssetDatabase.GetAssetPath(source) : null;
+            return path != null && path.StartsWith(AssetFactory.DecorRoot + "/");
+        }
+
+        /// <summary>
+        /// Muebles colocados a mano (por el equipo) en la raíz de la escena: se mueven, sin cambiar su posición,
+        /// bajo Level/Decor o Level/FloorN/Decor. Así entran en el NavMesh (los enemigos los rodean en vez de
+        /// atravesarlos) y los del piso de arriba se ocultan con su piso.
+        /// </summary>
+        private static void AdoptDecor(Scene scene, GameObject level)
+        {
+            foreach (GameObject root in scene.GetRootGameObjects())
+            {
+                if (!IsDecorInstance(root)) continue;
+                int floor = Floors.IndexOf(PropBounds(root).min.y);
+                Transform parent = floor == 0 ? level.transform : level.transform.Find(FloorRootName(floor));
+                if (parent == null) parent = level.transform;
+                Transform decor = BuilderUtil.EnsureChild(parent, DecorName).transform;
+                root.transform.SetParent(decor, true);
+            }
+        }
+
+        public static Transform FloorParent(Transform level, int floor) =>
+            floor == 0 ? level : level.Find(FloorRootName(floor));
+
+        /// <summary>Posición en el mundo de una luz de ambiente (centro de su celda, a ras del suelo de su piso).</summary>
+        public static Vector3 AmbientBase(LevelLayout layout, AmbientLight light)
+        {
+            LevelMap map = layout.Floors[light.Floor];
+            return new Vector3(light.Col * map.CellSize, map.BaseY, -light.Row * map.CellSize);
+        }
+
+        /// <summary>
+        /// Luces de ambiente oscuras: halos (Overdrive/Aura) colgando o apoyados en las mesas y columnas de luz
+        /// (Overdrive/LightBeam) que caen del techo. Sin colliders. Van bajo Level/Ambience o Level/FloorN/Ambience.
+        /// </summary>
+        private static void BuildAmbience(Transform level, LevelLayout layout)
+        {
+            Physics.SyncTransforms();
+            var expected = new Dictionary<Transform, HashSet<string>>();
+            foreach (AmbientLight light in layout.Ambience)
+            {
+                Transform container = BuilderUtil.EnsureChild(FloorParent(level, light.Floor), AmbienceName).transform;
+                if (!expected.TryGetValue(container, out HashSet<string> names)) expected[container] = names = new HashSet<string>();
+                names.Add(light.Name);
+
+                Vector3 floorPoint = AmbientBase(layout, light);
+                Material mat = AssetFactory.Mat(AssetFactory.AmbientMaterial(light.Kind));
+                GameObject go;
+                if (light.IsBeam)
+                {
+                    // Cilindro boca abajo: el shader brilla en su base local, que así queda arriba (luz que cae del techo).
+                    go = BuilderUtil.EnsurePrimitiveChild(container, light.Name, PrimitiveType.Cylinder, false);
+                    float diameter = light.Kind == AmbientKind.BeamViolet ? 2.4f : 1.4f;
+                    BuilderUtil.SetLocal(go, floorPoint + Vector3.up * (light.Height * 0.5f),
+                        new Vector3(diameter, light.Height * 0.5f, diameter), Quaternion.Euler(180f, 0f, 0f));
+                    BuilderUtil.SetMaterial(go, mat);
+                    var r = go.GetComponent<Renderer>();
+                    r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                    r.receiveShadows = false;
+                }
+                else
+                {
+                    go = AssetFactory.EnsureHalo(container, light.Name, mat);
+                    float y = floorPoint.y + light.Height;
+                    if (light.Kind == AmbientKind.Ember)
+                    {
+                        // Apoyada sobre lo que haya debajo (una mesa): primer collider bajo el punto.
+                        Vector3 from = floorPoint + Vector3.up * 2.5f;
+                        y = Physics.Raycast(from, Vector3.down, out RaycastHit hit, 3f, ~0, QueryTriggerInteraction.Ignore)
+                            ? hit.point.y + 0.12f
+                            : floorPoint.y + 0.9f;
+                    }
+                    BuilderUtil.SetLocal(go, new Vector3(floorPoint.x, y, floorPoint.z), Vector3.one, Quaternion.identity);
+                }
+            }
+
+            // Borra luces que ya no están en la lista.
+            foreach (LevelMap map in layout.Floors)
+            {
+                Transform container = FloorParent(level, map.FloorIndex)?.Find(AmbienceName);
+                if (container == null) continue;
+                expected.TryGetValue(container, out HashSet<string> names);
+                for (int i = container.childCount - 1; i >= 0; i--)
+                {
+                    GameObject child = container.GetChild(i).gameObject;
+                    if (names == null || !names.Contains(child.name)) Object.DestroyImmediate(child);
+                }
+            }
+        }
+
+        public static string PropName(PropCatalog.Entry entry, int col, int row) => $"Prop_{entry.Prefab}_c{col}_r{row}";
+
+        /// <summary>
+        /// Muebles del mapa (dígitos 0-9): un prop de Mnostva_Art por celda, escalado a su tamaño de catálogo
+        /// y pegado a la pared de esa celda. Van bajo Level (o FloorN) para entrar en el NavMesh y ocultarse con su piso.
+        /// </summary>
+        private static void BuildProps(Transform parent, LevelMap map)
+        {
+            Transform props = BuilderUtil.EnsureChild(parent, PropsName).transform;
+            var expected = new HashSet<string>();
+
+            foreach (var (col, row, c) in map.Cells())
+            {
+                if (!PropCatalog.IsProp(c)) continue;
+                PropCatalog.Entry entry = PropCatalog.Get(c);
+                string name = PropName(entry, col, row);
+                expected.Add(name);
+
+                Transform existing = props.Find(name);
+                GameObject go;
+                if (existing != null)
+                {
+                    go = existing.gameObject;
+                }
+                else
+                {
+                    var prefab = AssetDatabase.LoadAssetAtPath<GameObject>($"{AssetFactory.PropsPath}/{entry.Prefab}.prefab");
+                    if (prefab == null) throw new System.InvalidOperationException($"No se encontró el prop {entry.Prefab} en {AssetFactory.PropsPath}.");
+                    go = (GameObject)PrefabUtility.InstantiatePrefab(prefab, props);
+                }
+                go.name = name;
+                PlaceProp(go, map, col, row, entry);
+
+                if (entry.HasHalo)
+                {
+                    GameObject halo = AssetFactory.EnsureHalo(go.transform, HaloName, AssetFactory.Mat(AssetFactory.MatAuraNeonPink));
+                    Bounds b = PropBounds(go);
+                    halo.transform.position = new Vector3(b.center.x, b.max.y + 0.25f, b.center.z);
+                    halo.transform.rotation = Quaternion.identity;
+                }
+            }
+
+            for (int i = props.childCount - 1; i >= 0; i--)
+            {
+                GameObject child = props.GetChild(i).gameObject;
+                if (!expected.Contains(child.name)) Object.DestroyImmediate(child);
+            }
+        }
+
+        /// <summary>Caja de los renderers del prop, sin contar su halo.</summary>
+        public static Bounds PropBounds(GameObject prop)
+        {
+            bool any = false;
+            var bounds = new Bounds(prop.transform.position, Vector3.zero);
+            foreach (Renderer r in prop.GetComponentsInChildren<Renderer>(true))
+            {
+                if (r.gameObject.name == HaloName) continue;
+                if (!any) { bounds = r.bounds; any = true; }
+                else bounds.Encapsulate(r.bounds);
+            }
+            return bounds;
+        }
+
+        private static void PlaceProp(GameObject go, LevelMap map, int col, int row, PropCatalog.Entry entry)
+        {
+            go.transform.localScale = Vector3.one;
+            go.transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
+            Bounds natural = PropBounds(go);
+
+            // De frente al centro de la sala (espalda contra la pared) y con el lado largo paralelo a la pared.
+            var (dc, dr) = map.WallSideOf(col, row);
+            float yaw = dr == -1 ? 180f : dr == 1 ? 0f : dc == -1 ? 90f : dc == 1 ? -90f : 0f;
+            bool modelLongAlongX = natural.size.x >= natural.size.z;
+            bool quarterTurn = Mathf.Abs(Mathf.Repeat(yaw, 180f) - 90f) < 1f;
+            bool longAlongX = quarterTurn ? !modelLongAlongX : modelLongAlongX;
+            bool wantAlongX = dc == 0; // pared norte/sur (o ninguna): lado largo a lo largo de X
+            if (longAlongX != wantAlongX) yaw += 90f;
+
+            float longest = Mathf.Max(natural.size.x, natural.size.z);
+            float scale = longest > 0.0001f ? entry.Footprint / longest : 1f;
+            go.transform.localScale = Vector3.one * scale;
+            go.transform.rotation = Quaternion.Euler(0f, yaw, 0f);
+            Bounds b = PropBounds(go);
+
+            // Pegado a la pared: el borde de la caja toca el borde de la celda junto a la pared.
+            var toWall = new Vector3(dc, 0f, -dr);
+            float depth = dc != 0 ? b.size.x : b.size.z;
+            float push = Mathf.Max(0f, map.CellSize * 0.5f - depth * 0.5f - PropWallGap);
+            Vector3 cell = map.CellToWorld(col, row);
+            Vector3 target = cell + toWall * push;
+            go.transform.position += new Vector3(target.x - b.center.x, map.BaseY - b.min.y, target.z - b.center.z);
+
+            // En una esquina, el lado largo no debe meterse en la pared perpendicular: se desliza a lo largo de la pared.
+            b = PropBounds(go);
+            float half = map.CellSize * 0.5f;
+            var slide = Vector3.zero;
+            if (map.IsWall(col - 1, row)) slide.x = Mathf.Max(slide.x, cell.x - half + PropWallGap - b.min.x);
+            if (map.IsWall(col + 1, row)) slide.x = Mathf.Min(slide.x, cell.x + half - PropWallGap - b.max.x);
+            // Fila anterior = norte = +Z.
+            if (map.IsWall(col, row - 1)) slide.z = Mathf.Min(slide.z, cell.z + half - PropWallGap - b.max.z);
+            if (map.IsWall(col, row + 1)) slide.z = Mathf.Max(slide.z, cell.z - half + PropWallGap - b.min.z);
+            go.transform.position += slide;
         }
 
         /// <summary>Sistemas del nivel: reinicio, progreso/victoria, sangre y HUD.</summary>

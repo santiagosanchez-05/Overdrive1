@@ -25,6 +25,7 @@ namespace Overdrive.EditorTools
             LevelLayout map = Level01Map.Create();
 
             AssetFactory.EnsureMaterials();
+            AssetFactory.EnsureShaderMaterials();
             AssetFactory.EnsureBulletPrefab();
             AssetFactory.EnsureBloodPrefab();
             AssetFactory.EnsureBriefcasePrefab();

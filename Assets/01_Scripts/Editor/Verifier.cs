@@ -49,6 +49,11 @@ namespace Overdrive.EditorTools
             VerifyFloorsSimulation(c, layout);
             VerifyStealthLogic(c);
             VerifyStealthSimulation(c);
+            VerifyShadersAndMaterials(c);
+            VerifyDecorScene(c, layout);
+            VerifyNothingBlocksKeyCells(c, layout);
+            VerifyDecorAndAmbience(c, layout);
+            VerifyDecorSimulation(c);
             VerifyRewindLogic(c);
             VerifyRewindScene(c);
             // Último: modifica la escena abierta (no se guarda).
@@ -60,8 +65,16 @@ namespace Overdrive.EditorTools
 
         private static void VerifyAssets(Checker c)
         {
-            foreach (var (name, _, _) in AssetFactory.MaterialDefs)
-                c.NotNull(AssetFactory.Mat(name), $"Falta el material M_{name}");
+            foreach (var (name, _, emission) in AssetFactory.MaterialDefs)
+            {
+                Material m = AssetFactory.Mat(name);
+                c.NotNull(m, $"Falta el material M_{name}");
+                if (m == null || emission <= 0f || m.shader.name != "Universal Render Pipeline/Lit") continue;
+                // Sin un flag emisivo, URP quita _EMISSION al validar el material y se pierde el neón.
+                c.Check(m.IsKeywordEnabled("_EMISSION") &&
+                        (m.globalIlluminationFlags & MaterialGlobalIlluminationFlags.AnyEmissive) != 0,
+                    $"M_{name}: el neón (emisión) sobrevive a la validación de URP");
+            }
 
             var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(AssetFactory.PlayerPrefabPath);
             c.NotNull(prefab, "Falta el prefab Player");

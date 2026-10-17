@@ -47,6 +47,186 @@ namespace Overdrive.EditorTools
         public const string MatDoor = "Door";
         public const string MatBriefcase = "Briefcase";
 
+        // Materiales con los shaders de Assets/05_Materials/Shaders (adaptados de VrProject).
+        public const string MatBulletTrail = "BulletTrail";
+        public const string MatThrowTrail = "ThrowTrail";
+        public const string MatAuraBriefcase = "AuraBriefcase";
+        public const string MatAuraNeonPink = "AuraNeonPink";
+        public const string MatExitBeam = "ExitBeam";
+        public const string MatDoorDissolve = "DoorDissolve";
+        // Ambiente oscuro.
+        public const string MatAuraCrimson = "AuraCrimson";
+        public const string MatAuraViolet = "AuraViolet";
+        public const string MatAuraEmber = "AuraEmber";
+        public const string MatBeamViolet = "BeamViolet";
+        public const string MatBeamCrimson = "BeamCrimson";
+
+        public static string AmbientMaterial(AmbientKind kind)
+        {
+            switch (kind)
+            {
+                case AmbientKind.HaloCrimson: return MatAuraCrimson;
+                case AmbientKind.HaloViolet: return MatAuraViolet;
+                case AmbientKind.Ember: return MatAuraEmber;
+                case AmbientKind.BeamViolet: return MatBeamViolet;
+                case AmbientKind.BeamCrimson: return MatBeamCrimson;
+                default: throw new ArgumentOutOfRangeException(nameof(kind), kind, null);
+            }
+        }
+
+        public const string ShaderTrail = "Overdrive/Trail";
+        public const string ShaderAura = "Overdrive/Aura";
+        public const string ShaderLightBeam = "Overdrive/LightBeam";
+        public const string ShaderDissolve = "Overdrive/NoteDissolve";
+        public const string ShaderWall = "Overdrive/Wall Surface";
+
+        /// <summary>Props de interiores de Jhael.</summary>
+        public const string DecorRoot = Root + "/Mnostva_Art";
+        public const string PropsPath = DecorRoot + "/Prefabs";
+
+        /// <summary>Material, shader y cómo configurarlo.</summary>
+        public static readonly (string name, string shader, Action<Material> setup)[] ShaderMaterialDefs =
+        {
+            (MatBulletTrail, ShaderTrail, m =>
+            {
+                m.SetColor("_Color", new Color(1f, 0.85f, 0.3f));
+                m.SetFloat("_GlowIntensity", 4f);
+            }),
+            (MatThrowTrail, ShaderTrail, m =>
+            {
+                m.SetColor("_Color", new Color(0.8f, 0.95f, 1f));
+                m.SetFloat("_GlowIntensity", 2.5f);
+            }),
+            (MatAuraBriefcase, ShaderAura, m =>
+            {
+                m.SetColor("_Color", new Color(1f, 0.7f, 0.1f));
+                m.SetFloat("_GlowIntensity", 3.5f);
+                m.SetFloat("_Size", 2.2f);
+                m.SetFloat("_PulseSpeed", 2.5f);
+                m.SetFloat("_PulseAmount", 0.15f);
+            }),
+            (MatAuraNeonPink, ShaderAura, m =>
+            {
+                m.SetColor("_Color", PropCatalog.NeonPink);
+                m.SetFloat("_GlowIntensity", 2.5f);
+                m.SetFloat("_Size", 3f);
+                m.SetFloat("_PulseSpeed", 0.6f);
+                m.SetFloat("_PulseAmount", 0.06f);
+            }),
+            (MatExitBeam, ShaderLightBeam, m =>
+            {
+                m.SetColor("_Color", new Color(0.1f, 1f, 0.35f));
+                m.SetFloat("_GlowIntensity", 2.5f);
+                m.SetFloat("_FadeHeight", 1f);
+                m.SetFloat("_FresnelPower", 2f);
+            }),
+            // Ambiente oscuro: colores apagados y latidos lentos; con mezcla aditiva dan un brillo tenue.
+            (MatAuraCrimson, ShaderAura, m =>
+            {
+                m.SetColor("_Color", new Color(0.4f, 0f, 0.06f));
+                m.SetFloat("_GlowIntensity", 1.4f);
+                m.SetFloat("_CoreWhiteness", 0f);
+                m.SetFloat("_CoreSharpness", 8f);
+                m.SetFloat("_HaloStrength", 0.7f);
+                m.SetFloat("_Size", 3.5f);
+                m.SetFloat("_PulseSpeed", 0.3f);
+                m.SetFloat("_PulseAmount", 0.15f);
+            }),
+            (MatAuraViolet, ShaderAura, m =>
+            {
+                m.SetColor("_Color", new Color(0.22f, 0.04f, 0.42f));
+                m.SetFloat("_GlowIntensity", 2.5f);
+                m.SetFloat("_CoreWhiteness", 0f);
+                m.SetFloat("_Size", 4.5f);
+                m.SetFloat("_PulseSpeed", 0.2f);
+                m.SetFloat("_PulseAmount", 0.1f);
+            }),
+            (MatAuraEmber, ShaderAura, m =>
+            {
+                m.SetColor("_Color", new Color(0.75f, 0.15f, 0.02f));
+                m.SetFloat("_GlowIntensity", 3f);
+                m.SetFloat("_CoreWhiteness", 0.3f);
+                m.SetFloat("_Size", 1f);
+                m.SetFloat("_PulseSpeed", 4f);
+                m.SetFloat("_PulseAmount", 0.25f);
+            }),
+            (MatBeamViolet, ShaderLightBeam, m =>
+            {
+                m.SetColor("_Color", new Color(0.3f, 0.06f, 0.6f));
+                m.SetFloat("_GlowIntensity", 1.4f);
+                m.SetFloat("_FadeHeight", 1f);
+                m.SetFloat("_FresnelPower", 2f);
+            }),
+            (MatBeamCrimson, ShaderLightBeam, m =>
+            {
+                m.SetColor("_Color", new Color(0.55f, 0.03f, 0.1f));
+                m.SetFloat("_GlowIntensity", 1.2f);
+                m.SetFloat("_FadeHeight", 1f);
+                m.SetFloat("_FresnelPower", 2f);
+            }),
+            (MatDoorDissolve, ShaderDissolve, m =>
+            {
+                m.SetColor("_Color", new Color(1f, 0.35f, 0.05f));
+                m.SetFloat("_GlowIntensity", 1.6f);
+                m.SetColor("_EdgeColor", new Color(1f, 0.9f, 0.4f));
+                m.SetFloat("_EdgeWidth", 0.1f);
+                m.SetFloat("_NoiseScale", 6f);
+                m.SetFloat("_DissolveAmount", DoorDissolve.ClosedAmount);
+            }),
+        };
+
+        /// <summary>Crea o actualiza los materiales que usan los shaders propios del proyecto.</summary>
+        public static void EnsureShaderMaterials()
+        {
+            BuilderUtil.EnsureFolder(MaterialsPath);
+            foreach (var (name, shaderName, setup) in ShaderMaterialDefs)
+            {
+                Shader shader = Shader.Find(shaderName);
+                if (shader == null) throw new InvalidOperationException($"No se encontró el shader '{shaderName}'.");
+                string path = MaterialPath(name);
+                Material mat = AssetDatabase.LoadAssetAtPath<Material>(path);
+                bool created = mat == null;
+                if (created) mat = new Material(shader);
+                else if (mat.shader != shader) continue; // cambiado a mano por alguien del equipo: no se toca
+                setup(mat);
+                if (created) AssetDatabase.CreateAsset(mat, path);
+                else EditorUtility.SetDirty(mat);
+            }
+        }
+
+        /// <summary>Estela fina que se desvanece (shader Overdrive/Trail, que usa el alfa del color del vértice).</summary>
+        private static TrailRenderer EnsureTrail(GameObject root, float time, float width, Material material, bool emitting)
+        {
+            var trail = BuilderUtil.EnsureComponent<TrailRenderer>(root);
+            trail.time = time;
+            trail.minVertexDistance = 0.05f;
+            trail.widthMultiplier = width;
+            trail.widthCurve = AnimationCurve.Linear(0f, 1f, 1f, 0f);
+            var gradient = new Gradient();
+            gradient.SetKeys(
+                new[] { new GradientColorKey(Color.white, 0f), new GradientColorKey(Color.white, 1f) },
+                new[] { new GradientAlphaKey(1f, 0f), new GradientAlphaKey(0f, 1f) });
+            trail.colorGradient = gradient;
+            trail.sharedMaterial = material;
+            trail.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            trail.receiveShadows = false;
+            trail.numCapVertices = 2;
+            trail.emitting = emitting;
+            trail.autodestruct = false;
+            return trail;
+        }
+
+        /// <summary>Quad con halo (shader Overdrive/Aura). El shader lo orienta a cámara y le da el tamaño.</summary>
+        public static GameObject EnsureHalo(Transform parent, string name, Material material)
+        {
+            GameObject halo = BuilderUtil.EnsurePrimitiveChild(parent, name, PrimitiveType.Quad, false);
+            BuilderUtil.SetMaterial(halo, material);
+            var renderer = halo.GetComponent<Renderer>();
+            renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            renderer.receiveShadows = false;
+            return halo;
+        }
+
         /// <summary>Nombre, color base e intensidad de emisión (0 = sin emisión).</summary>
         public static readonly (string name, Color color, float emission)[] MaterialDefs =
         {
@@ -55,7 +235,7 @@ namespace Overdrive.EditorTools
             (MatPlayer, new Color(1.00f, 0.85f, 0.10f), 0.3f),
             (MatPlayerDetail, Color.white, 0.5f),
             (MatExit, new Color(0.10f, 1.00f, 0.30f), 1.5f),
-            (MatEnemy, new Color(1.00f, 0.15f, 0.25f), 0.4f),
+            (MatEnemy, new Color(0.85f, 0.08f, 0.15f), 0.15f),
             (MatEnemyDetail, new Color(0.15f, 0.05f, 0.05f), 0f),
             (MatEnemyDead, new Color(0.35f, 0.02f, 0.05f), 0f),
             (MatWeaponMelee, new Color(1.00f, 0.50f, 0.10f), 0.8f),
@@ -83,6 +263,10 @@ namespace Overdrive.EditorTools
                 GameObject handle = BuilderUtil.EnsurePrimitiveChild(root.transform, "Handle", PrimitiveType.Cube, false);
                 BuilderUtil.SetLocal(handle, new Vector3(0f, 0.09f, 0.24f), new Vector3(0.22f, 0.06f, 0.06f), Quaternion.identity);
                 BuilderUtil.SetMaterial(handle, Mat(MatWeaponDark));
+
+                GameObject glow = EnsureHalo(root.transform, "Glow", Mat(MatAuraBriefcase));
+                BuilderUtil.SetLocal(glow, new Vector3(0f, 0.35f, 0f), Vector3.one, Quaternion.identity);
+                BuilderUtil.SetRef(root.GetComponent<BriefcasePickup>(), "glow", glow);
             });
         }
 
@@ -158,11 +342,14 @@ namespace Overdrive.EditorTools
             BuilderUtil.EnsureFolder(PrefabsPath);
             return BuilderUtil.EditPrefab(BulletPrefabPath, "Bullet", root =>
             {
-                BuilderUtil.EnsureComponent<Projectile>(root);
+                var projectile = BuilderUtil.EnsureComponent<Projectile>(root);
                 GameObject model = BuilderUtil.EnsurePrimitiveChild(root.transform, "Model", PrimitiveType.Cube, false);
                 BuilderUtil.SetLocal(model, Vector3.zero, new Vector3(0.1f, 0.1f, 0.45f), Quaternion.identity);
                 BuilderUtil.SetMaterial(model, Mat(MatBullet));
                 model.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+
+                TrailRenderer trail = EnsureTrail(root, 0.07f, 0.09f, Mat(MatBulletTrail), true);
+                BuilderUtil.SetRef(projectile, "trail", trail);
             });
         }
 
@@ -180,6 +367,8 @@ namespace Overdrive.EditorTools
                     so.FindProperty("mode").enumValueIndex = (int)WeaponItem.Mode.Ground;
                     so.FindProperty("projectilePrefab").objectReferenceValue =
                         WeaponDefinition.Get(type).IsMelee ? null : bullet;
+                    // Estela solo mientras vuela: empieza apagada.
+                    so.FindProperty("trail").objectReferenceValue = EnsureTrail(root, 0.18f, 0.16f, Mat(MatThrowTrail), false);
                     so.ApplyModifiedPropertiesWithoutUndo();
 
                     GameObject model = BuilderUtil.EnsureChild(root.transform, "Model");
@@ -220,12 +409,15 @@ namespace Overdrive.EditorTools
                 {
                     mat.EnableKeyword("_EMISSION");
                     mat.SetColor("_EmissionColor", color * emission);
-                    mat.globalIlluminationFlags = MaterialGlobalIlluminationFlags.None;
+                    // URP (BaseShaderGUI.SetMaterialKeywords) solo deja _EMISSION si hay un flag emisivo:
+                    // con None, Unity apagaba el neón cada vez que validaba el material al abrirlo o renderizarlo.
+                    mat.globalIlluminationFlags = MaterialGlobalIlluminationFlags.RealtimeEmissive;
                 }
                 else
                 {
                     mat.DisableKeyword("_EMISSION");
                     mat.SetColor("_EmissionColor", Color.black);
+                    mat.globalIlluminationFlags = MaterialGlobalIlluminationFlags.EmissiveIsBlack;
                 }
 
                 if (created) AssetDatabase.CreateAsset(mat, path);
