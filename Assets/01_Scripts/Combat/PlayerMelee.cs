@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Overdrive.CameraRig;
+using Overdrive.Core;
 using Overdrive.Enemies;
 using UnityEngine;
 
@@ -54,11 +55,13 @@ namespace Overdrive.Combat
             cooldownLeft = cooldown;
             punchVisualLeft = punchVisualTime;
             CameraShake.Shake(0.1f);
+            GameSounds.Play(Sound.Swing);
 
             Enemy.CollectTargets(candidates, targets);
             int index = MeleeTargeting.FindPunchTarget(transform.position, transform.forward, targets, range, halfAngle);
             if (index < 0) return null;
             Enemy enemy = candidates[index];
+            GameSounds.Play(Sound.Punch);
 
             var ai = enemy.GetComponent<EnemyAI>();
             if (ai != null && ai.IsUnawareOf(transform.position))

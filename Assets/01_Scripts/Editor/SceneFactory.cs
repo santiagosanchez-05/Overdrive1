@@ -793,6 +793,8 @@ namespace Overdrive.EditorTools
             BuilderUtil.SetRef(score, "level", manager);
             BuilderUtil.SetRef(score, "rewinder", rewinder);
 
+            SoundFactory.EnsureGameSounds(systems);
+
             var hud = BuilderUtil.EnsureComponent<GameHUD>(systems);
             BuilderUtil.SetRef(hud, "weapons", player.GetComponent<PlayerWeapons>());
             BuilderUtil.SetRef(hud, "level", manager);

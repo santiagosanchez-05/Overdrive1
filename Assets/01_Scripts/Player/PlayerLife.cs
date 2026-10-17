@@ -25,6 +25,7 @@ namespace Overdrive.Player
             ApplyPose();
             BloodSpawner.SpawnAt(transform.position, 1.2f);
             CameraShake.Shake(0.5f);
+            GameSounds.Play(Sound.PlayerDeath);
             Died?.Invoke();
             return true;
         }
