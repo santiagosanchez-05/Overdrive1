@@ -98,6 +98,8 @@ namespace Overdrive.EditorTools
             EnsureCamera(scene, player);
 
             EnsureSystems(scene, level, player, briefcase, wave);
+            MenuBuilder.AddPauseMenu(scene);
+            MenuBuilder.AddLevelMusic(scene);
 
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene);

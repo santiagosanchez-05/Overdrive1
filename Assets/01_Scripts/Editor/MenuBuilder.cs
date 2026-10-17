@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Overdrive.Core;
 using Overdrive.UI;
 using TMPro;
 using UnityEditor;
@@ -26,6 +27,7 @@ namespace Overdrive.EditorTools
         private const string BackgroundPath = "Assets/06_Images/MenuImage.png";
         private const string UiDir = "Assets/06_Images/UI";
         private const string AudioDir = "Assets/07_Audio";
+        private const string LevelScenePath = "Assets/00_Scenes/Level01.unity";
 
         // Geometría del sprite del botón (px). El rect del botón mide lo mismo que la textura.
         private const int W = 720, H = 136, Pad = 24, Slant = 16, StripesW = 84;
@@ -95,31 +97,35 @@ namespace Overdrive.EditorTools
             column.sizeDelta = new Vector2(W, Spacing * 4);
             column.anchoredPosition = new Vector2(48f, 110f);
 
-            string[] labels = { "JUGAR", "AJUSTES", "SELECCIÓN DE NIVELES", "SALIR DEL JUEGO" };
-            Sprite[] icons = { s.play, s.gear, s.bars, s.exit };
-            var mainButtons = new NeonMenuButton[4];
-            for (int i = 0; i < 4; i++)
+            // CONTINUAR va bajo JUGAR; el controlador lo oculta (y sube el resto) si no hay partida guardada.
+            string[] labels = { "JUGAR", "CONTINUAR", "AJUSTES", "SELECCIÓN DE NIVELES", "SALIR DEL JUEGO" };
+            Sprite[] icons = { s.play, s.resume, s.gear, s.bars, s.exit };
+            var mainButtons = new NeonMenuButton[labels.Length];
+            for (int i = 0; i < labels.Length; i++)
                 mainButtons[i] = CreateButton(column, labels[i], icons[i], new Vector2(W / 2f, (1.5f - i) * Spacing), s, audio, hover, click);
             WireVertical(mainButtons.Select(b => (Selectable)b.GetComponent<Button>()).ToArray());
 
             // Panel de ajustes.
-            var settings = CreatePanel(canvasGo.transform, "SettingsPanel", "AJUSTES", s);
-            var volume = CreateSlider(settings, "VOLUMEN", new Vector2(0f, 60f));
-            var fullscreen = CreateToggle(settings, "PANTALLA COMPLETA", new Vector2(0f, -30f));
-            var backSettings = CreateButton(settings, "VOLVER", s.back, new Vector2(0f, -150f), s, audio, hover, click, true);
-            WireVertical(new Selectable[] { volume, fullscreen, backSettings.GetComponent<Button>() });
+            var settings = CreatePanel(canvasGo.transform, "SettingsPanel", "AJUSTES", 640f);
+            var volume = CreateSlider(settings, "VOLUMEN", "VolumeSlider", new Vector2(0f, 120f));
+            var music = CreateSlider(settings, "MÚSICA", "MusicSlider", new Vector2(0f, 40f));
+            var fullscreen = CreateToggle(settings, "PANTALLA COMPLETA", new Vector2(0f, -40f));
+            var backSettings = CreateButton(settings, "VOLVER", s.back, new Vector2(0f, -190f), s, audio, hover, click, true);
+            WireVertical(new Selectable[] { volume, music, fullscreen, backSettings.GetComponent<Button>() });
 
             // Panel de selección de niveles.
-            var levels = CreatePanel(canvasGo.transform, "LevelsPanel", "SELECCIÓN DE NIVELES", s);
+            var levels = CreatePanel(canvasGo.transform, "LevelsPanel", "SELECCIÓN DE NIVELES");
             var level01 = CreateButton(levels, "NIVEL 01", s.play, new Vector2(0f, 40f), s, audio, hover, click, true);
             var backLevels = CreateButton(levels, "VOLVER", s.back, new Vector2(0f, -150f), s, audio, hover, click, true);
             WireVertical(new Selectable[] { level01.GetComponent<Button>(), backLevels.GetComponent<Button>() });
 
             var controller = canvasGo.AddComponent<MainMenuController>();
             controller.playButton = mainButtons[0];
-            controller.settingsButton = mainButtons[1];
-            controller.levelsButton = mainButtons[2];
-            controller.quitButton = mainButtons[3];
+            controller.continueButton = mainButtons[1];
+            controller.settingsButton = mainButtons[2];
+            controller.levelsButton = mainButtons[3];
+            controller.quitButton = mainButtons[4];
+            controller.buttonSpacing = Spacing;
             controller.mainGroup = mainGroup;
             controller.settingsPanel = settings.GetComponent<CanvasGroup>();
             controller.levelsPanel = levels.GetComponent<CanvasGroup>();
@@ -127,14 +133,136 @@ namespace Overdrive.EditorTools
             controller.levelButtons = new[] { level01 };
             controller.levelScenes = new[] { "Level01" };
             controller.volumeSlider = volume;
+            controller.musicSlider = music;
             controller.fullscreenToggle = fullscreen;
             controller.gameScene = "Level01";
 
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene);
             EnsureBuildSettings();
+
+            // El menú de pausa vive en Level01.
+            var level = EditorSceneManager.OpenScene(LevelScenePath, OpenSceneMode.Single);
+            AddPauseMenu(level);
+            AddLevelMusic(level);
+            EditorSceneManager.SaveScene(level);
+            EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
+
             AssetDatabase.SaveAssets();
-            Debug.Log("[MenuBuilder] Escena Menu construida.");
+            Debug.Log("[MenuBuilder] Escena Menu y menú de pausa construidos.");
+        }
+
+        /// <summary>
+        /// Añade (o rehace) el menú de pausa en una escena de juego: REANUDAR, GUARDAR PARTIDA,
+        /// volumen de la música y MENÚ PRINCIPAL. No guarda la escena.
+        /// </summary>
+        public static void AddPauseMenu(UnityEngine.SceneManagement.Scene scene)
+        {
+            Sprites s = EnsureSprites();
+            AudioClip hover = EnsureClip("UI_Hover.wav", 2400f, 0.035f, 0.25f);
+            AudioClip click = EnsureClip("UI_Click.wav", 1250f, 0.09f, 0.5f);
+
+            foreach (GameObject root in scene.GetRootGameObjects())
+                if (root.name == "PauseMenu") UnityEngine.Object.DestroyImmediate(root);
+
+            bool hasEventSystem = scene.GetRootGameObjects().Any(r => r.GetComponentInChildren<EventSystem>(true) != null);
+            if (!hasEventSystem)
+            {
+                var es = new GameObject("EventSystem", typeof(EventSystem), typeof(InputSystemUIInputModule));
+                es.GetComponent<InputSystemUIInputModule>().AssignDefaultActions();
+                EditorSceneManager.MoveGameObjectToScene(es, scene);
+            }
+
+            GameObject canvasGo = CreateCanvas("PauseMenu", 50);
+            EditorSceneManager.MoveGameObjectToScene(canvasGo, scene);
+            var audio = new GameObject("UIAudio", typeof(AudioSource)).GetComponent<AudioSource>();
+            audio.playOnAwake = false;
+            audio.ignoreListenerPause = true;
+            audio.transform.SetParent(canvasGo.transform, false);
+
+            var panel = CreatePanel(canvasGo.transform, "PausePanel", "PAUSA", 660f);
+            var status = SmallLabel(panel, "", new Vector2(0f, 185f));
+            status.rectTransform.sizeDelta = new Vector2(820, 40);
+            status.alignment = TextAlignmentOptions.Center;
+            status.fontSize = 24;
+            status.name = "Status";
+            var resume = CreateButton(panel, "REANUDAR", s.play, new Vector2(0f, 105f), s, audio, hover, click, true);
+            var save = CreateButton(panel, "GUARDAR PARTIDA", s.save, new Vector2(0f, -5f), s, audio, hover, click, true);
+            var music = CreateSlider(panel, "MÚSICA", "MusicSlider", new Vector2(0f, -100f));
+            var menu = CreateButton(panel, "MENÚ PRINCIPAL", s.exit, new Vector2(0f, -205f), s, audio, hover, click, true);
+            WireVertical(new Selectable[] { resume.GetComponent<Button>(), save.GetComponent<Button>(), music, menu.GetComponent<Button>() });
+
+            var controller = canvasGo.AddComponent<PauseMenuController>();
+            controller.panel = panel.GetComponent<CanvasGroup>();
+            controller.resumeButton = resume;
+            controller.saveButton = save;
+            controller.menuButton = menu;
+            controller.musicSlider = music;
+            controller.status = status;
+            controller.menuScene = "Menu";
+            panel.gameObject.SetActive(false);
+            EditorSceneManager.MarkSceneDirty(scene);
+        }
+
+        [MenuItem("TopDown/Añadir menú de pausa a Level01")]
+        public static void BuildPauseMenu()
+        {
+            if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+            if (!EnsureTmpResources()) return;
+            var level = EditorSceneManager.OpenScene(LevelScenePath, OpenSceneMode.Single);
+            AddPauseMenu(level);
+            AddLevelMusic(level);
+            EditorSceneManager.SaveScene(level);
+        }
+
+        /// <summary>Pista de música de cada nivel (nombre de escena → archivo en 07_Audio).</summary>
+        private static readonly Dictionary<string, string> LevelMusic = new Dictionary<string, string>
+        {
+            { "Level01", "DurantePartida.mp3" },
+            { "Level02", "DurantePartida_Nvl2.mp3" },
+        };
+
+        /// <summary>
+        /// Añade (o rehace) el objeto "Music" del nivel: AudioSource en bucle con la pista del nivel y
+        /// <see cref="MusicVolume"/>, que aplica el ajuste de volumen de música. No guarda la escena.
+        /// </summary>
+        public static void AddLevelMusic(UnityEngine.SceneManagement.Scene scene)
+        {
+            foreach (GameObject root in scene.GetRootGameObjects())
+                if (root.name == "Music") UnityEngine.Object.DestroyImmediate(root);
+            if (!LevelMusic.TryGetValue(scene.name, out string file)) return;
+            var clip = AssetDatabase.LoadAssetAtPath<AudioClip>($"{AudioDir}/{file}");
+            if (clip == null)
+            {
+                Debug.LogWarning($"[MenuBuilder] No se encontró la música {AudioDir}/{file}.");
+                return;
+            }
+
+            var go = new GameObject("Music", typeof(AudioSource), typeof(MusicVolume));
+            EditorSceneManager.MoveGameObjectToScene(go, scene);
+            var source = go.GetComponent<AudioSource>();
+            source.clip = clip;
+            source.loop = true;
+            source.playOnAwake = true;
+            source.spatialBlend = 0f;
+            source.priority = 0;
+            source.volume = 0.7f;
+            EditorSceneManager.MarkSceneDirty(scene);
+        }
+
+        private static GameObject CreateCanvas(string name, int sortingOrder)
+        {
+            var go = new GameObject(name, typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
+            go.layer = LayerMask.NameToLayer("UI");
+            var canvas = go.GetComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvas.sortingOrder = sortingOrder;
+            var scaler = go.GetComponent<CanvasScaler>();
+            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution = new Vector2(1920, 1080);
+            scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
+            scaler.matchWidthOrHeight = 1f;
+            return go;
         }
 
         // ---------------------------------------------------------------- UI
@@ -246,7 +374,7 @@ namespace Overdrive.EditorTools
             return rt;
         }
 
-        private static RectTransform CreatePanel(Transform parent, string name, string title, Sprites s)
+        private static RectTransform CreatePanel(Transform parent, string name, string title, float height = 560f)
         {
             var rt = NewUI(name, parent);
             Stretch(rt);
@@ -254,7 +382,7 @@ namespace Overdrive.EditorTools
             AddImage(rt, "Dim", null, new Color(0, 0, 0, 0.55f)).raycastTarget = true;
 
             var box = NewUI("Box", rt);
-            box.sizeDelta = new Vector2(900, 560);
+            box.sizeDelta = new Vector2(900, height);
             var boxImg = box.gameObject.AddComponent<Image>();
             boxImg.color = Fill;
             var outline = box.gameObject.AddComponent<Outline>();
@@ -263,7 +391,7 @@ namespace Overdrive.EditorTools
 
             var titleRt = NewUI("Title", rt);
             titleRt.sizeDelta = new Vector2(820, 80);
-            titleRt.anchoredPosition = new Vector2(0, 200);
+            titleRt.anchoredPosition = new Vector2(0, height / 2f - 80f);
             var t = titleRt.gameObject.AddComponent<TextMeshProUGUI>();
             t.text = title;
             t.fontSize = 46;
@@ -290,13 +418,13 @@ namespace Overdrive.EditorTools
             return l;
         }
 
-        private static Slider CreateSlider(RectTransform panel, string text, Vector2 pos)
+        private static Slider CreateSlider(RectTransform panel, string text, string name, Vector2 pos)
         {
             SmallLabel(panel, text, pos + new Vector2(-230, 0));
             var res = StandardResources();
             var go = DefaultControls.CreateSlider(res);
             go.transform.SetParent(panel, false);
-            go.name = "VolumeSlider";
+            go.name = name;
             var rt = (RectTransform)go.transform;
             rt.sizeDelta = new Vector2(340, 24);
             rt.anchoredPosition = pos + new Vector2(170, 0);
@@ -404,7 +532,7 @@ namespace Overdrive.EditorTools
         private class Sprites
         {
             public Sprite fill, highlight, border, glow, stripes, flash, sweep;
-            public Sprite play, gear, bars, exit, back;
+            public Sprite play, gear, bars, exit, back, resume, save;
         }
 
         private static Sprites EnsureSprites()
@@ -485,6 +613,17 @@ namespace Overdrive.EditorTools
                     bool shaft = x >= 22 && x <= 46 && y >= 29 && y <= 35;
                     bool head = Tri(x, y, new Vector2(44, 20), new Vector2(44, 44), new Vector2(58, 32));
                     return (frame && !gap) || shaft || head;
+                }),
+                resume = Icon("Icon_Resume", (x, y) =>
+                    (x >= 10 && x <= 18 && y >= 10 && y <= 54) || Tri(x, y, new Vector2(26, 10), new Vector2(26, 54), new Vector2(56, 32))),
+                save = Icon("Icon_Save", (x, y) =>
+                {
+                    // Disquete: cuerpo con esquina cortada, etiqueta hueca arriba con una muesca.
+                    bool body = x >= 8 && x <= 56 && y >= 8 && y <= 56 && (x - 48) + (y - 48) <= 8;
+                    bool label = x >= 18 && x <= 46 && y >= 36 && y <= 52;
+                    bool notch = x >= 36 && x <= 42 && y >= 40 && y <= 50;
+                    bool slot = x >= 18 && x <= 46 && y >= 12 && y <= 28 && !(x >= 21 && x <= 43 && y >= 15 && y <= 25);
+                    return (body && !label && !(x >= 21 && x <= 43 && y >= 15 && y <= 25)) || notch || (body && slot);
                 }),
                 back = Icon("Icon_Back", (x, y) => Tri(x, y, new Vector2(48, 10), new Vector2(48, 54), new Vector2(12, 32))),
             };
