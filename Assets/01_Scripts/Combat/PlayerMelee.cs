@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Overdrive.CameraRig;
 using Overdrive.Core;
@@ -25,6 +26,9 @@ namespace Overdrive.Combat
         private bool fistRestCaptured;
 
         public Transform Fist => fist;
+
+        /// <summary>Se lanzó un puñetazo (golpee o no a alguien).</summary>
+        public event Action Punched;
         public bool CanPunch => cooldownLeft <= 0f;
 
         private void Update()
@@ -53,6 +57,7 @@ namespace Overdrive.Combat
         {
             if (!CanPunch) return null;
             cooldownLeft = cooldown;
+            Punched?.Invoke();
             punchVisualLeft = punchVisualTime;
             CameraShake.Shake(0.1f);
             GameSounds.Play(Sound.Swing);

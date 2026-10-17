@@ -45,6 +45,25 @@ namespace Overdrive.EditorTools
                 SetUpperObjectsVisible(scene, false);
                 // Calentamiento: en batch, el primer render puede usar texturas a medio enlazar.
                 cam.Render();
+                // Pose real del modelo animado: en modo edición el Animator no corre solo y en batch la malla con huesos
+                // no se recalcula antes de renderizar, así que se evalúa el Animator y se "hornea" la pose en una malla fija.
+                foreach (Animator animator in UnityEngine.Object.FindObjectsByType<Animator>())
+                {
+                    animator.Rebind();
+                    animator.Update(0.5f);
+                    foreach (SkinnedMeshRenderer skinned in animator.GetComponentsInChildren<SkinnedMeshRenderer>())
+                    {
+                        var baked = new Mesh();
+                        skinned.BakeMesh(baked, true);
+                        var posed = new GameObject(skinned.name + "_Pose");
+                        posed.transform.SetPositionAndRotation(skinned.transform.position, skinned.transform.rotation);
+                        posed.AddComponent<MeshFilter>().sharedMesh = baked;
+                        posed.AddComponent<MeshRenderer>().sharedMaterials = skinned.sharedMaterials;
+                        skinned.enabled = false;
+                    }
+                }
+                Transform player = BuilderUtil.FindRoot(scene, SceneFactory.PlayerName).transform;
+                Shot(cam, rt, dir, "00_jugador", player.position, 6f);
                 Shot(cam, rt, dir, "01_planta_baja_inicio", new Vector3(8f, 0f, -6f), 20f);
                 Shot(cam, rt, dir, "02_planta_baja_norte", new Vector3(32f, 0f, -6f), 20f);
                 Shot(cam, rt, dir, "03_planta_baja_sur", new Vector3(14f, 0f, -24f), 20f);

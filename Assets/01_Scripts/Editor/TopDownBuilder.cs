@@ -30,6 +30,8 @@ namespace Overdrive.EditorTools
             AssetFactory.EnsureBloodPrefab();
             AssetFactory.EnsureBriefcasePrefab();
             AssetFactory.EnsureWeaponPrefabs();
+            PlayerModelFactory.EnsureImports();
+            if (PlayerModelFactory.ModelAvailable) PlayerModelFactory.EnsureController();
             AssetFactory.EnsurePlayerPrefab();
             AssetFactory.EnsureEnemyPrefab();
             SceneFactory.Build(map);

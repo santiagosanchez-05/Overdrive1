@@ -544,6 +544,8 @@ namespace Overdrive.EditorTools
                 BuilderUtil.SetRef(rewind, "finisher", finisher);
                 BuilderUtil.SetRef(rewind, "melee", melee);
                 BuilderUtil.SetRef(rewind, "footsteps", footsteps);
+
+                PlayerModelFactory.EnsureModel(root, body, nose);
             });
         }
 
