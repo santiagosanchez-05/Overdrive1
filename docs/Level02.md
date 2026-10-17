@@ -34,3 +34,5 @@ No se cambiaron Level01, los prefabs compartidos, paquetes ni versión del edito
 Ajuste posterior: GroundProbe reconoce pisos MeshCollider y BoxCollider. La sangre sigue su normal y reduce su tamaño junto a desniveles; se verifican alturas negativas, pendientes y bordes con CheckBloodSurfaces. Resultado en docs/blood-surface-validation.txt.
 
 Los Hanging Neon tienen postes metálicos, bases y abrazaderas en cada anclaje (18 soportes). Se ajustó la separación de los cables para mantener todos los extremos sobre superficies existentes. Herramienta: TopDown → Nivel 02 → Ajustar anclajes de neón.
+
+Se retiraron los cuatro tramos exteriores de escalera que subían hacia plantas eliminadas, integrados en FirstLevel. Sus huellas quedan como piso plano a y=1.6, con textura de terraza y MeshCollider. Las escaleras del recorrido principal se conservan. Herramienta: TopDown → Nivel 02 → Retirar escaleras superiores sin uso. Se volvió a hornear la navegación y CheckRemovedStairs verifica apoyo físico en los cuatro tramos.
