@@ -96,9 +96,11 @@ namespace Overdrive.Level
             if (!CanRewind) return false;
             object[] frame = Buffer.Oldest;
 
-            // Las balas en el aire desaparecen: no forman parte de las instantáneas.
+            // Las balas en el aire desaparecen: no forman parte de las instantáneas. Se desactivan ya,
+            // porque en Play Mode Destroy() es diferido y podrían seguir moviéndose (y matar) este fotograma.
             foreach (Projectile projectile in FindObjectsByType<Projectile>(FindObjectsInactive.Include))
             {
+                projectile.gameObject.SetActive(false);
                 if (Application.isPlaying) Destroy(projectile.gameObject);
                 else DestroyImmediate(projectile.gameObject);
             }

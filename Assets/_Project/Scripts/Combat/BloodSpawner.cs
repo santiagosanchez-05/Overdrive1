@@ -31,7 +31,8 @@ namespace Overdrive.Combat
         public void Restore(object snapshot)
         {
             int keep = (int)snapshot;
-            while (transform.childCount > keep) Remove(transform.GetChild(transform.childCount - 1).gameObject);
+            // Recorrido de longitud fija: en Play Mode Destroy() es diferido y childCount no baja hasta el final del fotograma.
+            for (int i = transform.childCount - 1; i >= keep; i--) Remove(transform.GetChild(i).gameObject);
         }
 
         /// <summary>Mancha grande y un par de salpicaduras alrededor del punto.</summary>
@@ -50,7 +51,9 @@ namespace Overdrive.Combat
                 Vector2 offset = Random.insideUnitCircle * spread * size;
                 SpawnOne(position + new Vector3(offset.x, 0f, offset.y), size * Random.Range(0.3f, 0.6f));
             }
-            while (transform.childCount > maxSplats) Remove(transform.GetChild(0).gameObject);
+            // Borra las más viejas si hay demasiadas (longitud fija, ver Restore).
+            int excess = transform.childCount - maxSplats;
+            for (int i = excess - 1; i >= 0; i--) Remove(transform.GetChild(i).gameObject);
         }
 
         private void SpawnOne(Vector3 position, float size)
@@ -62,8 +65,13 @@ namespace Overdrive.Combat
             splat.transform.localScale = Vector3.one * size;
         }
 
+        /// <summary>
+        /// Quita la mancha. Se desengancha primero para que deje de contar como hija ya mismo,
+        /// aunque en Play Mode Destroy() no la borre hasta el final del fotograma.
+        /// </summary>
         private static void Remove(GameObject go)
         {
+            go.transform.SetParent(null, true);
             if (Application.isPlaying) Destroy(go);
             else DestroyImmediate(go);
         }
