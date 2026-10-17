@@ -64,7 +64,11 @@ namespace Overdrive.Combat
         {
             if (!IsFinishing) return;
             FinisherSequence.Step step = Sequence.Tick(deltaTime);
-            for (int i = 0; i < step.NewHits; i++) CameraShake.Shake(0.2f);
+            for (int i = 0; i < step.NewHits; i++)
+            {
+                CameraShake.Shake(0.2f);
+                GameSounds.Play(Sound.Kick);
+            }
             if (!step.Completed) return;
 
             Enemy finished = target;

@@ -110,10 +110,15 @@ namespace Overdrive.Weapons
                 if (!pressed || !current.State.TryUse()) return false;
                 swingLeft = swingTime;
                 CameraShake.Shake(0.1f);
+                GameSounds.Play(Sound.Swing);
                 Enemy.CollectTargets(enemies, targets);
                 int index = MeleeTargeting.FindPunchTarget(transform.position, transform.forward, targets,
                     def.MeleeRange, def.MeleeHalfAngle, includeDown: true);
-                if (index >= 0 && enemies[index].ReceiveLethalHit(KillCause.Melee)) CameraShake.Shake(def.Shake);
+                if (index >= 0 && enemies[index].ReceiveLethalHit(KillCause.Melee))
+                {
+                    CameraShake.Shake(def.Shake);
+                    GameSounds.Play(def.HitSound);
+                }
                 return true;
             }
 
