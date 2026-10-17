@@ -22,8 +22,8 @@ namespace Overdrive.EditorTools
     /// <summary>Construye la escena Level01 a partir del mapa ASCII.</summary>
     internal static class SceneFactory
     {
-        public const string ScenesPath = AssetFactory.ScenesPath;
-        public const string ScenePath = ScenesPath + "/Level01.unity";
+        public static string ScenesPath => AssetFactory.ScenesPath;
+        public static string ScenePath => ScenesPath + "/Level01.unity";
         public const float WallHeight = 2.5f;
 
         public const string LevelRoot = "Level";
@@ -53,7 +53,7 @@ namespace Overdrive.EditorTools
         public const float PropWallGap = 0.03f;
         public const string DecorName = "Decor";
         public const string AmbienceName = "Ambience";
-        public const string NavMeshPath = ScenesPath + "/Level01_NavMesh.asset";
+        public static string NavMeshPath => ScenesPath + "/Level01_NavMesh.asset";
         public const int PatrolCells = 4;
 
         public static Scene EnsureScene()
@@ -82,6 +82,7 @@ namespace Overdrive.EditorTools
             for (int i = 1; i < layout.Floors.Length; i++)
                 BuildProps(level.transform.Find(FloorRootName(i)), layout.Floors[i]);
             AdoptDecor(scene, level);
+            EnsureDecorColliders(level.transform);
             BuildAmbience(level.transform, layout);
             BakeNavMesh(level);
 
@@ -385,14 +386,59 @@ namespace Overdrive.EditorTools
             BuilderUtil.SetRef(zone, "beam", beam);
         }
 
-        /// <summary>¿Es la raíz de una instancia de un prefab de Mnostva_Art (los muebles de interiores)?</summary>
+        /// <summary>¿Es la raíz de una instancia de un mueble o modelo del equipo (Mnostva_Art, Kenney, NN_Modelos)?</summary>
         public static bool IsDecorInstance(GameObject go)
         {
             if (!PrefabUtility.IsOutermostPrefabInstanceRoot(go)) return false;
             GameObject source = PrefabUtility.GetCorrespondingObjectFromSource(go);
             string path = source != null ? AssetDatabase.GetAssetPath(source) : null;
-            return path != null && path.StartsWith(AssetFactory.DecorRoot + "/");
+            return path != null && AssetFactory.DecorRoots.Any(root => path.StartsWith(root + "/"));
         }
+
+        /// <summary>Más bajo que esto, un mueble es plano (alfombra): se puede pisar y no lleva colisión.</summary>
+        public const float FlatDecorHeight = 0.15f;
+
+        /// <summary>
+        /// Muebles adoptados sin colisión (los modelos de Kenney vienen sin collider): cada malla recibe una caja
+        /// ajustada a su forma, para que bloqueen el paso, las balas y entren en el NavMesh. No se tocan los
+        /// archivos del kit, solo las instancias de la escena. Se excluyen las alfombras (planas) y lo que toque
+        /// la rampa de la escalera, para no bloquear la subida.
+        /// </summary>
+        private static void EnsureDecorColliders(Transform level)
+        {
+            Physics.SyncTransforms();
+            List<Bounds> stairs = level.Cast<Transform>().Where(t => t.name.StartsWith("Stairs"))
+                .Select(t => t.GetComponent<Collider>().bounds).ToList();
+
+            foreach (Transform decor in level.GetComponentsInChildren<Transform>(true).Where(t => t.name == DecorName).ToList())
+            {
+                foreach (Transform item in decor)
+                {
+                    if (!NeedsDecorCollider(item.gameObject, stairs)) continue;
+                    foreach (MeshFilter mf in item.GetComponentsInChildren<MeshFilter>(true))
+                    {
+                        if (mf.sharedMesh == null) continue;
+                        var box = BuilderUtil.EnsureComponent<BoxCollider>(mf.gameObject);
+                        box.center = mf.sharedMesh.bounds.center;
+                        box.size = mf.sharedMesh.bounds.size;
+                    }
+                }
+            }
+        }
+
+        /// <summary>¿Hay que ponerle colisión? Solo si no tiene ya, no es plano y no toca la rampa.</summary>
+        public static bool NeedsDecorCollider(GameObject item, IEnumerable<Bounds> stairs)
+        {
+            bool hasOwn = item.GetComponentsInChildren<Collider>(true).Any(c => !c.isTrigger && !(c is BoxCollider && IsAddedDecorBox(c)));
+            if (hasOwn) return false;
+            Bounds b = PropBounds(item);
+            if (b.size.y < FlatDecorHeight) return false;
+            return !stairs.Any(s => s.Intersects(b));
+        }
+
+        /// <summary>¿Es una caja que añadió el constructor (componente añadido a una instancia de un modelo)?</summary>
+        private static bool IsAddedDecorBox(Collider c) =>
+            PrefabUtility.IsAddedComponentOverride(c);
 
         /// <summary>
         /// Muebles colocados a mano (por el equipo) en la raíz de la escena: se mueven, sin cambiar su posición,
@@ -807,10 +853,20 @@ namespace Overdrive.EditorTools
             List<EditorBuildSettingsScene> scenes = EditorBuildSettings.scenes.ToList();
             // Quita escenas que ya no existen (por ejemplo, la SampleScene de la plantilla, borrada).
             int removed = scenes.RemoveAll(s => string.IsNullOrEmpty(AssetDatabase.GUIDToAssetPath(s.guid.ToString())));
-            if (removed == 0 && scenes.Count > 0 && scenes[0].path == ScenePath && scenes[0].enabled) return;
-            scenes.RemoveAll(s => s.path == ScenePath);
-            scenes.Insert(0, new EditorBuildSettingsScene(ScenePath, true));
-            EditorBuildSettings.scenes = scenes.ToArray();
+            // Level01 tiene que estar y habilitada, pero no se fuerza su orden: el menú principal va antes.
+            int index = scenes.FindIndex(s => s.path == ScenePath);
+            bool changed = removed > 0;
+            if (index < 0)
+            {
+                scenes.Add(new EditorBuildSettingsScene(ScenePath, true));
+                changed = true;
+            }
+            else if (!scenes[index].enabled)
+            {
+                scenes[index] = new EditorBuildSettingsScene(ScenePath, true);
+                changed = true;
+            }
+            if (changed) EditorBuildSettings.scenes = scenes.ToArray();
         }
     }
 }

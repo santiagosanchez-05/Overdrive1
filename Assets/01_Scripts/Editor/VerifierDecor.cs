@@ -157,6 +157,10 @@ namespace Overdrive.EditorTools
             int loose = scene.GetRootGameObjects().Count(SceneFactory.IsDecorInstance);
             c.Check(loose == 0, $"No quedan muebles sueltos en la raíz de la escena (hay {loose})");
 
+            Physics.SyncTransforms();
+            List<Bounds> ramps = level.transform.Cast<Transform>().Where(t => t.name.StartsWith("Stairs"))
+                .Select(t => t.GetComponent<Collider>().bounds).ToList();
+            var walkThrough = new HashSet<GameObject>(); // alfombras y decoración sobre la rampa: se pisan a propósito
             var furniture = new List<(GameObject go, LevelMap map)>();
             foreach (LevelMap map in layout.Floors)
             {
@@ -169,9 +173,17 @@ namespace Overdrive.EditorTools
                     {
                         if (container == SceneFactory.DecorName)
                         {
-                            c.Check(SceneFactory.IsDecorInstance(child.gameObject), $"Decor/{child.name}: es un mueble de Mnostva_Art");
-                            int floor = Core.Floors.IndexOf(SceneFactory.PropBounds(child.gameObject).min.y);
+                            c.Check(SceneFactory.IsDecorInstance(child.gameObject), $"Decor/{child.name}: es un mueble del equipo (Mnostva, Kenney o Modelos)");
+                            Bounds db = SceneFactory.PropBounds(child.gameObject);
+                            int floor = Core.Floors.IndexOf(db.min.y);
                             c.Check(floor == map.FloorIndex, $"Decor/{child.name}: está bajo el piso {map.FloorIndex} y es del piso {floor}");
+
+                            bool flat = db.size.y < SceneFactory.FlatDecorHeight;
+                            bool onRamp = ramps.Any(r => r.Intersects(db));
+                            if (flat || onRamp) walkThrough.Add(child.gameObject);
+                            else
+                                c.Check(child.GetComponentsInChildren<Collider>(true).Any(col2 => !col2.isTrigger),
+                                    $"Decor/{child.name}: tiene colisión (bloquea el paso y las balas)");
                         }
                         furniture.Add((child.gameObject, map));
                     }
@@ -182,6 +194,7 @@ namespace Overdrive.EditorTools
             // Nadie atraviesa los muebles: en el centro de los que están apoyados en el suelo no hay NavMesh.
             foreach (var (go, map) in furniture)
             {
+                if (walkThrough.Contains(go)) continue;
                 Bounds b = SceneFactory.PropBounds(go);
                 bool onFloor = b.min.y < map.BaseY + 0.2f;
                 bool bigEnough = Mathf.Min(b.size.x, b.size.z) >= 0.35f;

@@ -13,16 +13,28 @@ namespace Overdrive.EditorTools
     /// <summary>Crea o actualiza los materiales URP y los prefabs del juego.</summary>
     internal static class AssetFactory
     {
-        // Estructura de carpetas del equipo (00_Scenes, 01_Scripts, 04_Prefabs, 05_Materials, 06_Textures).
+        // Estructura de carpetas del equipo: NN_Scenes, NN_Prefabs, NN_Materials... El número se busca en disco,
+        // así que si el equipo vuelve a renumerar las carpetas el constructor sigue funcionando.
         public const string Root = "Assets";
-        public const string ScenesPath = Root + "/00_Scenes";
-        public const string MaterialsPath = Root + "/05_Materials";
-        public const string PrefabsPath = Root + "/04_Prefabs";
-        public const string PlayerPrefabPath = PrefabsPath + "/Player.prefab";
-        public const string EnemyPrefabPath = PrefabsPath + "/Enemy.prefab";
-        public const string BulletPrefabPath = PrefabsPath + "/Bullet.prefab";
-        public const string BloodPrefabPath = PrefabsPath + "/Blood.prefab";
-        public const string BriefcasePrefabPath = PrefabsPath + "/Briefcase.prefab";
+        public static string ScenesPath => NumberedFolder("Scenes", "00_Scenes");
+        public static string MaterialsPath => NumberedFolder("Materials", "04_Materials");
+        public static string PrefabsPath => NumberedFolder("Prefabs", "03_Prefabs");
+        public static string PlayerPrefabPath => PrefabsPath + "/Player.prefab";
+        public static string EnemyPrefabPath => PrefabsPath + "/Enemy.prefab";
+        public static string BulletPrefabPath => PrefabsPath + "/Bullet.prefab";
+        public static string BloodPrefabPath => PrefabsPath + "/Blood.prefab";
+        public static string BriefcasePrefabPath => PrefabsPath + "/Briefcase.prefab";
+
+        /// <summary>Carpeta "Assets/NN_Nombre" (cualquier número delante), o la indicada si no existe ninguna.</summary>
+        public static string NumberedFolder(string name, string fallback)
+        {
+            foreach (string dir in System.IO.Directory.GetDirectories(Root))
+            {
+                string folder = System.IO.Path.GetFileName(dir);
+                if (System.Text.RegularExpressions.Regex.IsMatch(folder, $@"^\d+_{name}$")) return $"{Root}/{folder}";
+            }
+            return $"{Root}/{fallback}";
+        }
         public const string HandName = "Hand";
 
         public static string WeaponPrefabPath(WeaponType type) => $"{PrefabsPath}/Weapon_{type}.prefab";
@@ -83,6 +95,9 @@ namespace Overdrive.EditorTools
         /// <summary>Props de interiores de Jhael.</summary>
         public const string DecorRoot = Root + "/Mnostva_Art";
         public const string PropsPath = DecorRoot + "/Prefabs";
+
+        /// <summary>Carpetas de muebles y modelos que el equipo coloca a mano en la escena.</summary>
+        public static string[] DecorRoots => new[] { DecorRoot, Root + "/kenney_furniture-kit", NumberedFolder("Modelos", "02_Modelos") };
 
         /// <summary>Material, shader y cómo configurarlo.</summary>
         public static readonly (string name, string shader, Action<Material> setup)[] ShaderMaterialDefs =
