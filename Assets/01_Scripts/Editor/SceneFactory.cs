@@ -22,7 +22,7 @@ namespace Overdrive.EditorTools
     /// <summary>Construye la escena Level01 a partir del mapa ASCII.</summary>
     internal static class SceneFactory
     {
-        public const string ScenesPath = AssetFactory.Root + "/Scenes";
+        public const string ScenesPath = AssetFactory.ScenesPath;
         public const string ScenePath = ScenesPath + "/Level01.unity";
         public const float WallHeight = 2.5f;
 
@@ -569,7 +569,9 @@ namespace Overdrive.EditorTools
         private static void EnsureBuildSettings()
         {
             List<EditorBuildSettingsScene> scenes = EditorBuildSettings.scenes.ToList();
-            if (scenes.Count > 0 && scenes[0].path == ScenePath && scenes[0].enabled) return;
+            // Quita escenas que ya no existen (por ejemplo, la SampleScene de la plantilla, borrada).
+            int removed = scenes.RemoveAll(s => string.IsNullOrEmpty(AssetDatabase.GUIDToAssetPath(s.guid.ToString())));
+            if (removed == 0 && scenes.Count > 0 && scenes[0].path == ScenePath && scenes[0].enabled) return;
             scenes.RemoveAll(s => s.path == ScenePath);
             scenes.Insert(0, new EditorBuildSettingsScene(ScenePath, true));
             EditorBuildSettings.scenes = scenes.ToArray();

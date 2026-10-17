@@ -13,9 +13,11 @@ namespace Overdrive.EditorTools
     /// <summary>Crea o actualiza los materiales URP y los prefabs del juego.</summary>
     internal static class AssetFactory
     {
-        public const string Root = "Assets/_Project";
-        public const string MaterialsPath = Root + "/Materials";
-        public const string PrefabsPath = Root + "/Prefabs";
+        // Estructura de carpetas del equipo (00_Scenes, 01_Scripts, 04_Prefabs, 05_Materials, 06_Textures).
+        public const string Root = "Assets";
+        public const string ScenesPath = Root + "/00_Scenes";
+        public const string MaterialsPath = Root + "/05_Materials";
+        public const string PrefabsPath = Root + "/04_Prefabs";
         public const string PlayerPrefabPath = PrefabsPath + "/Player.prefab";
         public const string EnemyPrefabPath = PrefabsPath + "/Enemy.prefab";
         public const string BulletPrefabPath = PrefabsPath + "/Bullet.prefab";
@@ -207,6 +209,10 @@ namespace Overdrive.EditorTools
                 Material mat = AssetDatabase.LoadAssetAtPath<Material>(path);
                 bool created = mat == null;
                 if (created) mat = new Material(shader);
+
+                // Si alguien del equipo cambió el shader a mano (por ejemplo M_Wall con "Overdrive/Wall Surface"),
+                // el material es suyo: el constructor no lo toca.
+                if (!created && mat.shader != shader) continue;
 
                 mat.SetColor("_BaseColor", color);
                 mat.SetFloat("_Smoothness", 0.15f);

@@ -159,6 +159,14 @@ namespace Overdrive.EditorTools
             EditorBuildSettingsScene[] buildScenes = EditorBuildSettings.scenes;
             c.Check(buildScenes.Length > 0 && buildScenes[0].path == SceneFactory.ScenePath && buildScenes[0].enabled,
                 "Level01 debe ser la primera escena habilitada en Build Settings");
+            foreach (EditorBuildSettingsScene s in buildScenes)
+                c.Check(!string.IsNullOrEmpty(AssetDatabase.GUIDToAssetPath(s.guid.ToString())),
+                    $"Build Settings no debe tener escenas que ya no existen ({s.path})");
+
+            // Las rutas del constructor siguen la estructura de carpetas del equipo.
+            c.Check(AssetDatabase.IsValidFolder(AssetFactory.ScenesPath) && AssetDatabase.IsValidFolder(AssetFactory.PrefabsPath) &&
+                    AssetDatabase.IsValidFolder(AssetFactory.MaterialsPath), "Existen 00_Scenes, 04_Prefabs y 05_Materials");
+            c.Check(!AssetDatabase.IsValidFolder("Assets/_Project"), "No se ha vuelto a crear la estructura antigua Assets/_Project");
 
             foreach (string root in new[] { SceneFactory.LevelRoot, SceneFactory.PlayerName, SceneFactory.EnemiesName, SceneFactory.WeaponsName,
                          SceneFactory.CameraRigName, SceneFactory.SystemsName, SceneFactory.LightName })
