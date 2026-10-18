@@ -50,7 +50,7 @@ namespace Overdrive.EditorTools
 
         // Nombres de todo lo que crea el constructor: se borra y se vuelve a crear en cada construcción.
         private static readonly string[] GeneratedRoots =
-            { GameplayRoot, "Player", "CameraRig", "Enemies", "Boss Reinforcements", "Weapons", "Systems" };
+            { GameplayRoot, "Player", "CameraRig", "Enemies", "Boss Reinforcements", "Boss Final Wave", "Weapons", "Systems" };
 
         /// <summary>Solo vuelve a montar el modelo y las animaciones del Jefe en la escena abierta, sin reconstruir el nivel.</summary>
         [MenuItem("TopDown/Nivel 03/Actualizar modelo y animaciones del Jefe")]
@@ -90,6 +90,8 @@ namespace Overdrive.EditorTools
             var level = new GameObject(GameplayRoot);
             int colliders = AddLoftColliders(loft);
             AddWalkableFloor(level, loft);
+            // Ático del Jefe: una sala grande al lado del loft (el loft es demasiado estrecho para el combate final).
+            var arena = Level03Arena.Build(level.transform, LoftBounds(loft), floorY);
             BakeNavigation(level, loft);
 
             // 2. Puntos de juego sobre el NavMesh.
@@ -105,20 +107,30 @@ namespace Overdrive.EditorTools
             var camera = CreateCamera(player);
 
             var enemies = CreateGuards(player.Life, layout);
-            var wave = CreateBossReinforcements(player.Life, layout);
+            // El Jefe, sus refuerzos y la salida pasan al ático; donde esperaba el Jefe queda el ascensor.
+            Vector3 elevatorSpot = layout.Boss;
+            layout.Boss = arena.Boss;
+            layout.Reinforcements = arena.Rage.ToList();
+            layout.Exit = arena.Exit;
+            var wave = CreateBossReinforcements(player.Life, layout.Reinforcements, "Boss Reinforcements", new[] { WeaponType.Smg, WeaponType.Bat, WeaponType.Knife });
+            var finalWave = CreateBossReinforcements(player.Life, arena.Final, "Boss Final Wave", new[] { WeaponType.Shotgun, WeaponType.Smg });
             var boss = CreateBoss(player.Life, layout, wave);
-            var all = enemies.Concat(new[] { boss }).Concat(wave.Squad.Select(ai => ai.Enemy)).ToArray();
+            boss.transform.rotation = Quaternion.LookRotation(Flat(arena.Start - arena.Boss));
+            ConfigureBossFight(boss, finalWave);
+            var all = enemies.Concat(new[] { boss }).Concat(wave.Squad.Select(ai => ai.Enemy)).Concat(finalWave.Squad.Select(ai => ai.Enemy)).ToArray();
 
             var exit = CreateExit(level.transform, layout);
             CreateSystems(player, camera, all, exit);
+            Level03Arena.BuildElevator(level.transform, elevatorSpot, arena, player.Life, enemies, camera);
             // Vista cenital: el techo y el piso de arriba no tapan al jugador cuando está debajo.
             var cutaway = BuilderUtil.FindRoot(scene, "Systems").AddComponent<LoftCutaway>();
             BuilderUtil.SetRef(cutaway, "player", player.transform);
             BuilderUtil.SetRef(cutaway, "model", loft.transform);
             CreateFloorWeapons(layout);
+            CreateArenaWeapons(arena);
             GiveStartingRevolver(player);
-            FloorLabel(level.transform, "OFICINA DEL JEFE", layout.Start + Flat(layout.Boss - layout.Start).normalized * 2f + Vector3.up * 0.03f,
-                0.7f, new Color(1f, 0.25f, 0.45f), layout.Boss);
+            FloorLabel(level.transform, "OFICINA DEL JEFE", layout.Start + Flat(elevatorSpot - layout.Start).normalized * 2f + Vector3.up * 0.03f,
+                0.7f, new Color(1f, 0.25f, 0.45f), elevatorSpot);
 
             MenuBuilder.AddPauseMenu(scene);
             MenuBuilder.AddLevelMusic(scene);
@@ -218,6 +230,7 @@ namespace Overdrive.EditorTools
             NavMeshBuilder.CollectSources(level.transform, ~0, NavMeshCollectGeometry.PhysicsColliders, 0, new List<NavMeshBuildMarkup>(), floorSources);
             sources.AddRange(floorSources);
             Bounds bounds = LoftBounds(loft);
+            foreach (var c in level.GetComponentsInChildren<Collider>(true)) bounds.Encapsulate(c.bounds); // también el ático
             bounds.Expand(4f);
             var baked = NavMeshBuilder.BuildNavMeshData(settings, sources, bounds, Vector3.zero, Quaternion.identity);
             if (baked == null) throw new InvalidOperationException("El horneado del NavMesh de Level03 no produjo datos.");
@@ -344,6 +357,24 @@ namespace Overdrive.EditorTools
                 taken.Add(best.Value);
             }
 
+            // Si arriba no caben todos, el resto en la planta baja, lejos de la entrada (que no ataquen nada más empezar).
+            var groundOptions = groundRoomy.Where(p => Vector3.Distance(p, layout.Start) >= safe * 1.5f).ToList();
+            while (layout.Guards.Count < GuardCount)
+            {
+                Vector3? best = null;
+                float bestScore = spacingGuards;
+                foreach (Vector3 p in groundOptions)
+                {
+                    if (!Free(p, spacingGuards)) continue;
+                    float score = placed.Min(q => Vector3.Distance(p, q));
+                    if (score > bestScore) { bestScore = score; best = p; }
+                }
+                if (best == null) break;
+                layout.Guards.Add(best.Value);
+                placed.Add(best.Value);
+                taken.Add(best.Value);
+            }
+
             // Refuerzos de furia: también arriba, cerca del Jefe.
             foreach (Vector3 p in upperRoomy.OrderBy(p => Mathf.Abs(Vector3.Distance(p, layout.Boss) - 2.5f)))
             {
@@ -436,14 +467,15 @@ namespace Overdrive.EditorTools
             return guards.ToArray();
         }
 
-        private static ReinforcementWave CreateBossReinforcements(PlayerLife player, Layout layout)
+        private static ReinforcementWave CreateBossReinforcements(PlayerLife player, List<Vector3> positions, string rootName, WeaponType[] types)
         {
-            var root = new GameObject("Boss Reinforcements");
+            var root = new GameObject(rootName);
             var wave = root.AddComponent<ReinforcementWave>();
             var squad = new List<EnemyAI>();
-            for (int i = 0; i < layout.Reinforcements.Count; i++)
+            string prefix = rootName == "Boss Final Wave" ? "LastGuard_" : "Bodyguard_";
+            for (int i = 0; i < positions.Count; i++)
             {
-                var enemy = CreateEnemy("Bodyguard_" + (i + 1), root.transform, player, layout.Reinforcements[i], i == 0 ? WeaponType.Smg : WeaponType.Bat);
+                var enemy = CreateEnemy(prefix + (i + 1), root.transform, player, positions[i], types[i % types.Length]);
                 squad.Add(enemy.GetComponent<EnemyAI>());
                 enemy.gameObject.SetActive(false); // entran cuando el Jefe se enfurece
             }
@@ -472,6 +504,47 @@ namespace Overdrive.EditorTools
             BuilderUtil.SetRef(armor, "rageWave", wave);
             BuilderUtil.SetRef(armor, "player", player);
             return boss;
+        }
+
+        /// <summary>
+        /// Jefe del ático: más vida (la sala da para un combate largo), visión para toda la sala, embestidas, oleada final
+        /// con un cuarto de vida y una luz roja que se enciende en su furia y al avisar de cada embestida.
+        /// </summary>
+        private static void ConfigureBossFight(Enemy boss, ReinforcementWave finalWave)
+        {
+            var ai = boss.GetComponent<EnemyAI>();
+            var aiSo = new SerializedObject(ai);
+            aiSo.FindProperty("viewRange").floatValue = 16f;
+            aiSo.FindProperty("viewHalfAngle").floatValue = 70f;
+            aiSo.ApplyModifiedPropertiesWithoutUndo();
+
+            var light = new GameObject("RageLight").AddComponent<Light>();
+            light.transform.SetParent(boss.transform, false);
+            light.transform.localPosition = new Vector3(0f, 2.6f, 0f);
+            light.type = LightType.Point;
+            light.color = new Color(1f, 0.1f, 0.15f);
+            light.range = 7f;
+            light.intensity = 2.5f;
+            light.shadows = LightShadows.None;
+            light.enabled = false;
+
+            var armor = boss.GetComponent<BossEnemy>();
+            var so = new SerializedObject(armor);
+            so.FindProperty("maxHealth").intValue = 12;
+            so.FindProperty("showBarDistance").floatValue = 30f;
+            so.FindProperty("finalWave").objectReferenceValue = finalWave;
+            so.FindProperty("rageLight").objectReferenceValue = light;
+            so.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        private static void CreateArenaWeapons(Level03Arena.Points arena)
+        {
+            var root = BuilderUtil.FindRoot(SceneManager.GetActiveScene(), "Weapons").transform;
+            foreach (var (pos, type) in arena.Weapons)
+            {
+                var weapon = InstantiatePrefab(AssetFactory.WeaponPrefabPath(type), "Arena_" + type, root);
+                weapon.transform.position = pos + Vector3.up * 0.08f;
+            }
         }
 
         private static Enemy CreateEnemy(string name, Transform parent, PlayerLife player, Vector3 position, WeaponType type)
