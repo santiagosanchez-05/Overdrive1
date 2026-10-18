@@ -22510,15 +22510,15 @@ MonoBehaviour:
     pitchVariation: 0.08
   punch:
     clip: {fileID: 8300000, guid: a9c2ecce97cee0a4b94dd75c576524d5, type: 3}
-    volume: 0.2
+    volume: 0.4
     pitchVariation: 0.08
   batHit:
     clip: {fileID: 8300000, guid: 6c4ae1365efb556418d53da162546230, type: 3}
-    volume: 0.2
+    volume: 0.6
     pitchVariation: 0.08
   knifeHit:
     clip: {fileID: 8300000, guid: ad5a161cea26b704a86864183afa333b, type: 3}
-    volume: 0.2
+    volume: 0.4
     pitchVariation: 0.08
   kick:
     clip: {fileID: 8300000, guid: e3ae0ba49ba940049a05d44a2a72ffd1, type: 3}
