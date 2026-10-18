@@ -35,7 +35,7 @@ namespace Overdrive.Level
 
         private void Start()
         {
-            foreach (Collider c in FindObjectsByType<Collider>(FindObjectsSortMode.None))
+            foreach (Collider c in FindObjectsByType<Collider>(FindObjectsInactive.Exclude))
                 if (StairsName.IsMatch(c.gameObject.name)) stairs.Add(c);
         }
 

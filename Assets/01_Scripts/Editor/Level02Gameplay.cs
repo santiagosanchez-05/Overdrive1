@@ -217,7 +217,7 @@ namespace Overdrive.EditorTools
             BuilderUtil.SetRef(level, "reinforcements", wave);
             var serialized = new SerializedObject(level);
             SerializedProperty nextProp = serialized.FindProperty("nextScene");
-            if (nextProp != null) nextProp.stringValue = "Menu";
+            if (nextProp != null) nextProp.stringValue = "Level03";
             var list = serialized.FindProperty("enemies");
             list.arraySize = enemies.Length;
             for (int i = 0; i < enemies.Length; i++) list.GetArrayElementAtIndex(i).objectReferenceValue = enemies[i];
