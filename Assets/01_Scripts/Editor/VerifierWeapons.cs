@@ -24,6 +24,10 @@ namespace Overdrive.EditorTools
             c.Check(WeaponDefinition.Smg.UseInterval < WeaponDefinition.Shotgun.UseInterval, "El subfusil dispara más rápido que la escopeta");
             c.Check(WeaponDefinition.Shotgun.ProjectileRange < WeaponDefinition.Smg.ProjectileRange * 0.5f,
                 "Los perdigones de la escopeta llegan mucho menos lejos que las balas del subfusil");
+            var enemyForHealth = AssetDatabase.LoadAssetAtPath<GameObject>(AssetFactory.EnemyPrefabPath);
+            float enemyHealth = enemyForHealth != null ? enemyForHealth.GetComponent<Enemy>().MaxHealth : 0f;
+            c.Check(enemyHealth > 0f && WeaponDefinition.Shotgun.Damage * 2f >= enemyHealth,
+                $"Dos perdigones de escopeta bastan para matar a un enemigo normal ({enemyHealth} de vida)");
             c.Check(WeaponDefinition.Shotgun.ProjectileRange > WeaponDefinition.Shotgun.EnemyAttackRange &&
                     WeaponDefinition.Smg.ProjectileRange > WeaponDefinition.Smg.EnemyAttackRange,
                 "Las balas llegan más lejos que la distancia desde la que disparan los enemigos");
@@ -217,8 +221,11 @@ namespace Overdrive.EditorTools
                 c.Check(weapons.Attack(true, true, new[] { standing }) && !standing.IsDead &&
                         Mathf.Approximately(standing.Health, standing.MaxHealth - WeaponDefinition.Bat.Damage),
                     "Simulación: el bate quita vida pero no mata de un golpe");
-                c.Check(!standing.ReceiveDamage(WeaponDefinition.Bat.Damage, true, WeaponDefinition.Bat.HeadKills) && !standing.IsDead,
+                var headTarget = Spawn<Enemy>(enemyPrefab, new Vector3(-1.3f, 0f, 3f), 90f);
+                c.Check(!headTarget.ReceiveDamage(WeaponDefinition.Bat.Damage, true, WeaponDefinition.Bat.HeadKills) && !headTarget.IsDead,
                     "El bate en la cabeza tampoco mata de un golpe");
+                c.Check(headTarget.ReceiveDamage(WeaponDefinition.Bat.Damage, false, WeaponDefinition.Bat.HeadKills) && headTarget.IsDead,
+                    "Dos golpes de bate matan");
                 c.Check(standing.ReceiveDamage(WeaponDefinition.Knife.Damage, true, WeaponDefinition.Knife.HeadKills) && standing.IsDead,
                     "El cuchillo en la cabeza mata de un golpe");
 

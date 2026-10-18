@@ -105,7 +105,7 @@ namespace Overdrive.EditorTools
                 float neck = HitZones.HeadY(e2.transform) - 0.42f;
                 float before = e2.Health;
                 Shoot(gun + new Vector3(3f, 0f, 0f), new Vector3(e2.transform.position.x, neck, e2.transform.position.z), Faction.Player, WeaponDefinition.Smg);
-                c.Check(e2.Health < before && !e2.IsDead, $"Simulación: el pecho alto ({neck:F2} m) también se puede alcanzar");
+                c.Check(e2.IsDead || e2.Health < before, $"Simulación: el pecho alto ({neck:F2} m) también se puede alcanzar");
 
                 // Cuchillo lanzado a la cabeza: mata. Bate lanzado a la cabeza: no.
                 var knifePrefab = AssetDatabase.LoadAssetAtPath<GameObject>(AssetFactory.WeaponPrefabPath(WeaponType.Knife));
