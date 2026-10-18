@@ -275,10 +275,11 @@ namespace Overdrive.Enemies
             barGroup.blocksRaycasts = false;
 
             RectTransform back = NewRect("Back", canvasGo.transform, new Color(0f, 0f, 0f, 0.65f));
-            back.anchorMin = back.anchorMax = new Vector2(0.5f, 1f);
-            back.pivot = new Vector2(0.5f, 1f);
+            // Abajo en el centro: arriba están la puntuación, el combo y el objetivo, y la barra se les encimaba.
+            back.anchorMin = back.anchorMax = new Vector2(0.5f, 0f);
+            back.pivot = new Vector2(0.5f, 0f);
             back.sizeDelta = new Vector2(760f, 26f);
-            back.anchoredPosition = new Vector2(0f, -70f);
+            back.anchoredPosition = new Vector2(0f, 64f);
 
             RectTransform fill = NewRect("Fill", back, new Color(1f, 0.12f, 0.35f));
             fill.anchorMin = Vector2.zero;

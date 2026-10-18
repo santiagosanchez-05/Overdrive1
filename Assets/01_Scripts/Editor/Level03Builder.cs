@@ -132,6 +132,8 @@ namespace Overdrive.EditorTools
             FloorLabel(level.transform, "OFICINA DEL JEFE", layout.Start + Flat(elevatorSpot - layout.Start).normalized * 2f + Vector3.up * 0.03f,
                 0.7f, new Color(1f, 0.25f, 0.45f), elevatorSpot);
 
+            RoofFactory.BuildLevel03(scene); // techo que solo aparece en primera persona
+
             MenuBuilder.AddPauseMenu(scene);
             MenuBuilder.AddLevelMusic(scene);
             StoryFactory.ApplyEnemyLooks(scene);

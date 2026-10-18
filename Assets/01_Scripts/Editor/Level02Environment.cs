@@ -16,10 +16,10 @@ namespace Overdrive.EditorTools
 {
     internal static class Level02Environment
     {
-        private const string ModelPath = "Assets/00_Scenes/huge-nightclub/source/elysium/source/Elysium/Elysium.fbx";
+        internal const string ModelPath = "Assets/00_Scenes/huge-nightclub/source/elysium/source/Elysium/Elysium.fbx";
         // Original entrance is at y=.02 and the centre of the dance floor at z=-39.16.
         private const float Scale = 0.8f;
-        private static readonly string[] OmittedGroups = { "LowerLevel_Group", "SecondLevel_Group", "ThirdLevel_Group", "VIPLoungeGroup01", "VIPLoungeGroup02", "VIPLoungeGroup03", "VIPLoungeGroup04", "VIPLoungeGroup05", "Holo" };
+        internal static readonly string[] OmittedGroups = { "LowerLevel_Group", "SecondLevel_Group", "ThirdLevel_Group", "VIPLoungeGroup01", "VIPLoungeGroup02", "VIPLoungeGroup03", "VIPLoungeGroup04", "VIPLoungeGroup05", "Holo" };
 
         public static GameObject Build(Transform level)
         {
@@ -49,6 +49,9 @@ namespace Overdrive.EditorTools
             return environment;
         }
 
+        /// <summary>Techos del modelo original: se quitan de la escena (cámara cenital) y se restauran como techos de primera persona (RoofFactory).</summary>
+        internal static bool IsOverhead(string name) => name.Contains("Ceiling") || name == "EntranceCap" || name == "EntranceInside";
+
         private static void PrepareGeometry(GameObject environment)
         {
             foreach (var filter in environment.GetComponentsInChildren<MeshFilter>(true))
@@ -57,7 +60,7 @@ namespace Overdrive.EditorTools
                 var renderer = filter.GetComponent<MeshRenderer>();
                 bool unusedPlatform = filter.transform.parent.name == "DancePlatform_Group" && name != "Dance_Platform01";
                 bool closedDoor = name.Contains("Door") && !name.Contains("Frame") && !name.StartsWith("WC_Door");
-                bool overhead = name.Contains("Ceiling") || name == "EntranceCap" || name == "EntranceInside";
+                bool overhead = IsOverhead(name);
                 bool unusedUpperDecor = renderer.bounds.min.y > 2.8f;
                 if (unusedPlatform || closedDoor || overhead || unusedUpperDecor || name == "FenchMetal")
                 {
@@ -517,7 +520,7 @@ namespace Overdrive.EditorTools
         }
 
         // Clip triangles rather than discard whole faces, preserving the textured wall below the cut.
-        private static Mesh ClipAbove(MeshFilter filter, float worldHeight)
+        internal static Mesh ClipAbove(MeshFilter filter, float worldHeight)
         {
             Mesh source = filter.sharedMesh;
             var vertices = source.vertices;
