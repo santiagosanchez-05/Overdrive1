@@ -82,6 +82,7 @@ namespace Overdrive.EditorTools
             // 1. Entorno: colisión del loft y NavMesh.
             var level = new GameObject(GameplayRoot);
             int colliders = AddLoftColliders(loft);
+            AddWalkableFloor(level, loft);
             BakeNavigation(level, loft);
 
             // 2. Puntos de juego sobre el NavMesh.
@@ -146,6 +147,42 @@ namespace Overdrive.EditorTools
             return added;
         }
 
+        /// <summary>
+        /// Piso invisible a la altura del suelo del loft. Los suelos de FBX exportados con las normales al revés no son
+        /// caminables para el NavMesh y el CharacterController los atraviesa: esta losa garantiza suelo firme sin tocar el modelo.
+        /// La altura se mide con rayos (contando caras traseras): el impacto más bajo de cada rayo, y la mediana de todos.
+        /// </summary>
+        private static float AddWalkableFloor(GameObject level, GameObject loft)
+        {
+            Bounds b = LoftBounds(loft);
+            Physics.SyncTransforms();
+            bool backfaces = Physics.queriesHitBackfaces;
+            Physics.queriesHitBackfaces = true;
+            var heights = new List<float>();
+            try
+            {
+                for (float x = b.min.x + 0.5f; x < b.max.x; x += 1f)
+                    for (float z = b.min.z + 0.5f; z < b.max.z; z += 1f)
+                    {
+                        var hits = Physics.RaycastAll(new Vector3(x, b.max.y + 1f, z), Vector3.down, b.size.y + 2f, ~0, QueryTriggerInteraction.Ignore)
+                            .Where(h => h.collider.transform.IsChildOf(loft.transform) && h.point.y < b.min.y + b.size.y * 0.4f).ToList();
+                        if (hits.Count > 0) heights.Add(hits.Min(h => h.point.y));
+                    }
+            }
+            finally { Physics.queriesHitBackfaces = backfaces; }
+            heights.Sort();
+            float floorY = heights.Count > 0 ? heights[heights.Count / 2] : b.min.y;
+
+            var floor = new GameObject("WalkFloor");
+            floor.transform.SetParent(level.transform, false);
+            floor.transform.position = new Vector3(b.center.x, floorY - 0.05f, b.center.z);
+            var box = floor.AddComponent<BoxCollider>();
+            box.size = new Vector3(Mathf.Max(1f, b.size.x - 0.2f), 0.1f, Mathf.Max(1f, b.size.z - 0.2f));
+            floor.isStatic = true;
+            Debug.Log($"[Nivel 03] Suelo del loft a y={floorY:0.00} ({heights.Count} rayos). Alto del loft {b.size.y:0.0} m.");
+            return floorY;
+        }
+
         private static void BakeNavigation(GameObject level, GameObject loft)
         {
             var surface = level.AddComponent<NavMeshSurface>();
@@ -161,6 +198,9 @@ namespace Overdrive.EditorTools
 
             var sources = new List<NavMeshBuildSource>();
             NavMeshBuilder.CollectSources(loft.transform, ~0, NavMeshCollectGeometry.PhysicsColliders, 0, new List<NavMeshBuildMarkup>(), sources);
+            var floorSources = new List<NavMeshBuildSource>();
+            NavMeshBuilder.CollectSources(level.transform, ~0, NavMeshCollectGeometry.PhysicsColliders, 0, new List<NavMeshBuildMarkup>(), floorSources);
+            sources.AddRange(floorSources);
             Bounds bounds = LoftBounds(loft);
             bounds.Expand(4f);
             var baked = NavMeshBuilder.BuildNavMeshData(settings, sources, bounds, Vector3.zero, Quaternion.identity);
@@ -168,6 +208,15 @@ namespace Overdrive.EditorTools
             surface.RemoveData();
             surface.navMeshData = Level02Environment.StoreAsset(baked, DataPath + "/Level03_NavMesh.asset");
             surface.AddData();
+
+            var tri = NavMesh.CalculateTriangulation();
+            float area = 0f;
+            for (int i = 0; i + 2 < tri.indices.Length; i += 3)
+            {
+                Vector3 a = tri.vertices[tri.indices[i]], c = tri.vertices[tri.indices[i + 1]], d = tri.vertices[tri.indices[i + 2]];
+                area += Vector3.Cross(c - a, d - a).magnitude * 0.5f;
+            }
+            Debug.Log($"[Nivel 03] NavMesh: {area:0} m² caminables ({sources.Count} colliders).");
         }
 
         private static Bounds LoftBounds(GameObject loft)
@@ -205,7 +254,7 @@ namespace Overdrive.EditorTools
                         if (NavMesh.SamplePosition(new Vector3(x, y, z), out var hit, 0.6f, NavMesh.AllAreas) && IsRoomy(hit.position))
                             candidates.Add(hit.position);
             candidates = candidates.Distinct(new NearComparer(0.3f)).ToList();
-            if (candidates.Count < 20) throw new InvalidOperationException($"El loft casi no tiene suelo navegable ({candidates.Count} puntos). ¿Es demasiado pequeño para el jugador?");
+            if (candidates.Count < 12) throw new InvalidOperationException($"El loft casi no tiene suelo navegable ({candidates.Count} puntos). Revisa en la Console la altura del suelo y los m² del NavMesh.");
 
             // Zona principal: la que más puntos alcanza desde un punto del centro.
             List<Vector3> region = null;
@@ -271,7 +320,7 @@ namespace Overdrive.EditorTools
         }
 
         /// <summary>Hay sitio para un personaje: el borde del NavMesh está a más de 0.6 m.</summary>
-        private static bool IsRoomy(Vector3 p) => Openness(p) > 0.6f;
+        private static bool IsRoomy(Vector3 p) => Openness(p) > 0.45f;
 
         private static float Openness(Vector3 p) =>
             NavMesh.FindClosestEdge(p, out var edge, NavMesh.AllAreas) ? edge.distance : 0f;
