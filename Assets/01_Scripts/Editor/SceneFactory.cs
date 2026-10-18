@@ -110,6 +110,32 @@ namespace Overdrive.EditorTools
             EnsureBuildSettings();
         }
 
+        /// <summary>
+        /// Recoloca solo los muebles del mapa (Level/Props y Level/FloorN/Props), sus colliders y el NavMesh,
+        /// sin tocar enemigos, jugador, luces ni el resto de la escena.
+        /// </summary>
+        [MenuItem("TopDown/Nivel 01/Actualizar muebles")]
+        public static void RefreshProps()
+        {
+            LevelLayout layout = Level01Map.Create();
+            if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+            Scene scene = EnsureScene();
+            GameObject level = scene.GetRootGameObjects().FirstOrDefault(r => r.name == LevelRoot);
+            if (level == null)
+            {
+                Debug.LogError("[Nivel 01] No hay objeto Level en la escena. Usa TopDown/Construir nivel.");
+                return;
+            }
+            BuildProps(level.transform, layout.Ground);
+            for (int i = 1; i < layout.Floors.Length; i++)
+                BuildProps(level.transform.Find(FloorRootName(i)), layout.Floors[i]);
+            EnsureDecorColliders(level.transform);
+            BakeNavMesh(level);
+            EditorSceneManager.MarkSceneDirty(scene);
+            EditorSceneManager.SaveScene(scene);
+            Debug.Log("[Nivel 01] Muebles actualizados y NavMesh horneado.");
+        }
+
         private static void EnsureLighting(Scene scene)
         {
             GameObject lightGo = BuilderUtil.EnsureRoot(scene, LightName);

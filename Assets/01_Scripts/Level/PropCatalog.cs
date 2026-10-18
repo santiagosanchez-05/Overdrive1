@@ -41,9 +41,15 @@ namespace Overdrive.Level
             new Entry('7', "Storage_Box_2", 1.0f, NoHalo),
             new Entry('8', "Plant_1", 0.7f, NoHalo),
             new Entry('9', "Lamp", 0.6f, NeonPink),
+            // Letras: más mobiliario para ambientar las salas.
+            new Entry('h', "Chair", 0.7f, NoHalo),
+            new Entry('n', "Cabinet_2", 1.2f, NoHalo),
+            new Entry('p', "Plant_2", 0.8f, NoHalo),
+            new Entry('y', "Vinyl_Player", 0.9f, NeonPink),
+            new Entry('f', "Flower", 0.5f, NoHalo),
         };
 
-        public static bool IsProp(char c) => c >= '0' && c <= '9';
+        public static bool IsProp(char c) => Array.Exists(Entries, e => e.Code == c);
 
         public static Entry Get(char code)
         {
