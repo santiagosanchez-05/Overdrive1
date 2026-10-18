@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Overdrive.CameraRig;
 using Overdrive.Combat;
@@ -32,6 +33,9 @@ namespace Overdrive.Weapons
         public PlayerLife Life => life;
         public PlayerFinisher Finisher => finisher;
         public PlayerMelee Melee => melee;
+
+        /// <summary>Se dio un golpe con un arma cuerpo a cuerpo (golpee o no a alguien).</summary>
+        public event Action<WeaponType> Swung;
 
         /// <summary>Los disparos y lanzamientos salen del centro del cuerpo, nunca desde dentro de una pared.</summary>
         public Vector3 ShotOrigin => transform.position + Vector3.up;
@@ -109,16 +113,14 @@ namespace Overdrive.Weapons
             {
                 if (!pressed || !current.State.TryUse()) return false;
                 swingLeft = swingTime;
+                Swung?.Invoke(def.Type);
                 CameraShake.Shake(0.1f);
-                GameSounds.Play(Sound.Swing);
+                // Cada golpe con el arma suena a esa arma (bate o cuchillo), acierte o no.
+                GameSounds.Play(def.HitSound);
                 Enemy.CollectTargets(enemies, targets);
                 int index = MeleeTargeting.FindPunchTarget(transform.position, transform.forward, targets,
                     def.MeleeRange, def.MeleeHalfAngle, includeDown: true);
-                if (index >= 0 && enemies[index].ReceiveLethalHit(KillCause.Melee))
-                {
-                    CameraShake.Shake(def.Shake);
-                    GameSounds.Play(def.HitSound);
-                }
+                if (index >= 0 && enemies[index].ReceiveLethalHit(KillCause.Melee)) CameraShake.Shake(def.Shake);
                 return true;
             }
 

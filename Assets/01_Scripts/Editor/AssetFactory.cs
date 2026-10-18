@@ -544,6 +544,8 @@ namespace Overdrive.EditorTools
                 BuilderUtil.SetRef(rewind, "finisher", finisher);
                 BuilderUtil.SetRef(rewind, "melee", melee);
                 BuilderUtil.SetRef(rewind, "footsteps", footsteps);
+
+                PlayerModelFactory.EnsureModel(root, body, nose);
             });
         }
 
@@ -557,7 +559,7 @@ namespace Overdrive.EditorTools
                 collider.height = 1.8f;
                 collider.radius = 0.4f;
 
-                var (body, _) = EnsureCharacterBody(root, Mat(MatEnemy), Mat(MatEnemyDetail));
+                var (body, nose) = EnsureCharacterBody(root, Mat(MatEnemy), Mat(MatEnemyDetail));
 
                 var enemy = BuilderUtil.EnsureComponent<Enemy>(root);
                 BuilderUtil.SetRef(enemy, "body", body.transform);
@@ -579,6 +581,8 @@ namespace Overdrive.EditorTools
                 var ai = BuilderUtil.EnsureComponent<EnemyAI>(root);
                 BuilderUtil.SetRef(ai, "enemy", enemy);
                 BuilderUtil.SetRef(ai, "agent", agent);
+
+                CharacterFactory.EnsureEnemyModels(root, body.GetComponent<Renderer>(), nose.GetComponent<Renderer>());
             });
         }
 

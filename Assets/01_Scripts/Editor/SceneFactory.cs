@@ -96,6 +96,8 @@ namespace Overdrive.EditorTools
             BriefcasePickup briefcase = EnsureBriefcase(scene, layout, life);
             ReinforcementWave wave = EnsureReinforcements(scene, ground, door, life);
             EnsureCamera(scene, player);
+            StoryFactory.EnsureLevel01(scene, ground);
+            StoryFactory.ApplyEnemyLooks(scene);
 
             EnsureSystems(scene, level, player, briefcase, wave);
             MenuBuilder.AddPauseMenu(scene);
@@ -761,6 +763,10 @@ namespace Overdrive.EditorTools
             BuilderUtil.SetRef(manager, "exit", level.transform.Find(ExitName).GetComponent<ExitZone>());
             BuilderUtil.SetRef(manager, "briefcase", briefcase);
             BuilderUtil.SetRef(manager, "reinforcements", wave);
+            var mgrSo = new SerializedObject(manager);
+            SerializedProperty nextProp = mgrSo.FindProperty("nextScene");
+            if (nextProp != null) nextProp.stringValue = "Level02";
+            mgrSo.ApplyModifiedPropertiesWithoutUndo();
 
             var visibility = BuilderUtil.EnsureComponent<FloorVisibility>(systems);
             BuilderUtil.SetRef(visibility, "player", player.transform);

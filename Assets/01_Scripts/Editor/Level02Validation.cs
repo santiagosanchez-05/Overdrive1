@@ -27,8 +27,12 @@ namespace Overdrive.EditorTools
             Require(camera != null && camera.Target != null && camera.Aim != null && camera.Cam != null, "Falta la cámara de juego conectada.");
             Require(Find<Collider>().Any(c => c.enabled && !(c is CharacterController)), "El escenario no tiene colisiones.");
             Require(level != null && level.Enemies.Length > 0, "Falta LevelManager con enemigos iniciales.");
+            Require(level != null && level.NextScene == "Menu", "LevelManager en Level02 debe tener nextScene = 'Menu'.");
             Require(level != null && level.Briefcase != null && level.Exit != null && level.Reinforcements != null, "Faltan maletín, refuerzos o salida.");
             Require(Find<TimeRewinder>().Length == 1 && Find<GameHUD>().Length == 1 && Find<PauseMenuController>().Length == 1, "Faltan rebobinado, HUD o pausa.");
+            Require(Find<Overdrive.Core.GameSounds>().Length == 1, "Falta GameSounds en Systems.");
+            Require(Find<PlayerAnimator>().Length == 1 && Find<EnemyVisual>().Length >= 14 && Find<Overdrive.Story.NpcDialogue>().Length >= 1,
+                "Faltan los modelos animados del jugador, de los enemigos o Nina con su diálogo.");
             if (player != null)
             {
                 Require(Mathf.Approximately(player.MoveSpeed, 10f), "La velocidad no coincide con la instancia de Level01 (10).");

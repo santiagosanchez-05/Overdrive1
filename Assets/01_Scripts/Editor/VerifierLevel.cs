@@ -66,6 +66,7 @@ namespace Overdrive.EditorTools
                 c.Check(manager.Enemies.Length == sceneEnemies.Length && manager.Enemies.Length == 10 &&
                         manager.Enemies.All(e => e != null) && manager.Enemies.Distinct().Count() == 10,
                     $"LevelManager debe conocer a los 10 enemigos (conoce {manager.Enemies.Length})");
+                c.Check(manager.NextScene == "Level02", "LevelManager debe tener nextScene = 'Level02'");
             }
 
             var hud = systems.GetComponent<GameHUD>();
@@ -201,6 +202,13 @@ namespace Overdrive.EditorTools
                 c.NotNull(spawner, "Hay un BloodSpawner en la escena");
                 if (spawner != null)
                 {
+                    // La sangre solo se pega a suelo de verdad (caja o malla): suelo de prueba bajo los dos cadáveres.
+                    GameObject testFloor = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                    created.Add(testFloor);
+                    testFloor.transform.position = basePos + new Vector3(2.5f, -0.5f, -10f);
+                    testFloor.transform.localScale = new Vector3(16f, 1f, 10f);
+                    Physics.SyncTransforms();
+
                     int before = spawner.SplatCount;
                     var e4 = Make(enemyPrefab, new Vector3(0f, 0f, -10f)).GetComponent<Enemy>();
                     e4.ReceiveLethalHit();

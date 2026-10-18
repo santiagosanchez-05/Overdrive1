@@ -3,12 +3,13 @@ using Overdrive.Enemies;
 using Overdrive.Player;
 using Overdrive.Weapons;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace Overdrive.Level
 {
     /// <summary>
     /// Cuenta los enemigos vivos, vigila el maletín, lanza los refuerzos, abre la salida
-    /// y detecta la victoria o la derrota.
+    /// y detecta la victoria o la derrota. Permite avanzar a la siguiente escena al completar el nivel.
     /// </summary>
     public class LevelManager : MonoBehaviour, IRewindable
     {
@@ -17,10 +18,13 @@ namespace Overdrive.Level
         [SerializeField] private Enemy[] enemies = new Enemy[0];
         [SerializeField] private BriefcasePickup briefcase;
         [SerializeField] private ReinforcementWave reinforcements;
+        [SerializeField] private string nextScene;
 
         private readonly LevelProgress progress = new LevelProgress();
+        private float completedTime;
 
         public LevelProgress Progress => progress;
+        public string NextScene => nextScene;
         public PlayerLife Player => player;
         public ExitZone Exit => exit;
         public Enemy[] Enemies => enemies;
@@ -30,10 +34,33 @@ namespace Overdrive.Level
         public object Capture() => progress.State;
 
         /// <summary>Rebobinar: vuelve al estado guardado (de "perdido" a "jugando").</summary>
-        public void Restore(object snapshot) => progress.Restore((LevelState)snapshot);
+        public void Restore(object snapshot)
+        {
+            completedTime = 0f;
+            progress.Restore((LevelState)snapshot);
+        }
 
         private void Start() => Evaluate();
-        private void Update() => Evaluate();
+        private void Update()
+        {
+            Evaluate();
+
+            if (progress.State == LevelState.Complete)
+            {
+                completedTime += Time.unscaledDeltaTime;
+                if (completedTime >= 0.5f && (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Return) || Input.GetMouseButtonDown(0)))
+                {
+                    string target = string.IsNullOrEmpty(nextScene) ? "Menu" : nextScene;
+                    Time.timeScale = 1f;
+                    GameInput.Blocked = false;
+                    SceneManager.LoadScene(target);
+                }
+            }
+            else
+            {
+                completedTime = 0f;
+            }
+        }
 
         /// <summary>Recalcula el estado del nivel. Público para simularlo en el editor.</summary>
         public LevelState Evaluate()
