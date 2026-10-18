@@ -133,6 +133,8 @@ namespace Overdrive.EditorTools
             Scene scene = SceneManager.GetSceneByPath(ScenePath);
             Level02Gameplay.Build(scene, BuilderUtil.FindRoot(scene, "Level"));
             EditorSceneManager.SaveScene(scene);
+            StoryFactory.EnsureLevel02(); // modelos de los enemigos según su arma y Nina en la entrada
+            scene = SceneManager.GetSceneByPath(ScenePath);
             AddBuildSettings();
             ConnectMenu();
             SceneManager.SetActiveScene(scene);

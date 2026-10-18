@@ -64,7 +64,7 @@ namespace Overdrive.EditorTools
         }
 
         /// <summary>Humanoid con avatar propio; las animaciones quedan en el sitio y a la altura original.</summary>
-        private static void EnsureHumanoid(string path, bool animation, bool loop)
+        internal static void EnsureHumanoid(string path, bool animation, bool loop)
         {
             var importer = (ModelImporter)AssetImporter.GetAtPath(path);
             bool dirty = false;

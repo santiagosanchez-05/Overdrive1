@@ -33,8 +33,12 @@ namespace Overdrive.EditorTools
             PlayerModelFactory.EnsureImports();
             if (PlayerModelFactory.ModelAvailable) PlayerModelFactory.EnsureController();
             AssetFactory.EnsurePlayerPrefab();
+            CharacterFactory.EnsureImports();
             AssetFactory.EnsureEnemyPrefab();
+            CharacterFactory.EnsureNinaPrefab();
             SceneFactory.Build(map);
+            StoryFactory.EnsureLevel02();
+            EditorSceneManager.OpenScene(SceneFactory.ScenePath, OpenSceneMode.Single);
             AssetDatabase.SaveAssets();
 
             Checker checker = Verifier.Run(map);

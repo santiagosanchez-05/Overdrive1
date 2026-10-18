@@ -55,6 +55,7 @@ namespace Overdrive.EditorTools
             VerifyDecorAndAmbience(c, layout);
             VerifyLedCables(c, layout);
             VerifyPlayerModel(c);
+            VerifyCharacters(c, layout);
             VerifyDecorSimulation(c);
             VerifyRewindLogic(c);
             VerifyRewindScene(c);

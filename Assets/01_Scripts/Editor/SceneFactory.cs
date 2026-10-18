@@ -96,6 +96,8 @@ namespace Overdrive.EditorTools
             BriefcasePickup briefcase = EnsureBriefcase(scene, layout, life);
             ReinforcementWave wave = EnsureReinforcements(scene, ground, door, life);
             EnsureCamera(scene, player);
+            StoryFactory.EnsureLevel01(scene, ground);
+            StoryFactory.ApplyEnemyLooks(scene);
 
             EnsureSystems(scene, level, player, briefcase, wave);
             MenuBuilder.AddPauseMenu(scene);
