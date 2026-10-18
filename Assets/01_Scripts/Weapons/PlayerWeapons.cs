@@ -21,6 +21,8 @@ namespace Overdrive.Weapons
         [SerializeField] private PlayerMelee melee;
         [SerializeField] private float pickupRadius = 1.6f;
         [SerializeField] private float swingTime = 0.15f;
+        [Tooltip("Arma con la que empieza el nivel (opcional). Se equipa al empezar.")]
+        [SerializeField] private WeaponItem startingWeapon;
 
         private readonly List<MeleeTargeting.Target> targets = new List<MeleeTargeting.Target>();
         private readonly List<WeaponItem> grounded = new List<WeaponItem>();
@@ -43,9 +45,14 @@ namespace Overdrive.Weapons
         private Vector3 AimDirection => aim != null ? aim.ShotDirection(ShotOrigin) : transform.forward;
 
         /// <summary>Los disparos y lanzamientos salen del centro del cuerpo, nunca desde dentro de una pared.</summary>
-        public Vector3 ShotOrigin => transform.position + Vector3.up;
+        public Vector3 ShotOrigin => transform.position + Vector3.up * transform.lossyScale.y;
 
         private void Awake() => aim = GetComponent<PlayerAim>();
+
+        private void Start()
+        {
+            if (current == null && startingWeapon != null) Equip(startingWeapon);
+        }
 
         private void Update()
         {

@@ -45,7 +45,7 @@ namespace Overdrive.UI
             EnsureStyles();
 
             WeaponItem current = weapons != null ? weapons.Current : null;
-            string weaponText = HudText.Weapon(current != null ? current.Definition : null, current != null ? current.State.Ammo : 0);
+            string weaponText = HudText.Weapon(current != null ? current.Definition : null, current != null ? current.State.Ammo : 0, current != null ? current.Capacity : 0);
             float margin = 20f * scale;
             float lineHeight = 44f * scale;
 

@@ -29,6 +29,8 @@ namespace Overdrive.Weapons
         [SerializeField] private float throwMaxDistance = 12f;
         [SerializeField] private float throwRadius = 0.25f;
         [SerializeField] private float groundHeight = 0.08f;
+        [Tooltip("Balas con las que empieza esta arma concreta. 0 = las de su tipo (WeaponDefinition.MaxAmmo).")]
+        [SerializeField] private int startAmmo;
         [SerializeField] private float spinSpeed = 900f;
         [Tooltip("Estela mientras vuela tras lanzarla (shader Overdrive/Trail).")]
         [SerializeField] private TrailRenderer trail;
@@ -46,7 +48,17 @@ namespace Overdrive.Weapons
 
         public WeaponType Type => type;
         public WeaponDefinition Definition => WeaponDefinition.Get(type);
-        public WeaponState State => state ??= new WeaponState(Definition);
+        public WeaponState State => state ??= CreateState();
+
+        /// <summary>Balas de un cargador lleno de esta arma (las suyas propias o las de su tipo).</summary>
+        public int Capacity => startAmmo > 0 ? startAmmo : Definition.MaxAmmo;
+
+        private WeaponState CreateState()
+        {
+            var created = new WeaponState(Definition);
+            if (startAmmo > 0 && !created.IsMelee) created.Restore(startAmmo, 0f);
+            return created;
+        }
         public Mode CurrentMode => mode;
         public bool IsOnGround => mode == Mode.Ground;
         public Projectile ProjectilePrefab => projectilePrefab;

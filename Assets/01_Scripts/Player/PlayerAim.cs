@@ -12,6 +12,9 @@ namespace Overdrive.Player
         [SerializeField] private Camera aimCamera;
         [SerializeField] private PlayerLife life;
 
+        /// <summary>Radio alrededor del jugador (a escala 1) en el que el ratón no lo gira.</summary>
+        public const float AimDeadZone = 0.45f;
+
         public Vector3 AimPoint { get; private set; }
         public bool HasAim { get; private set; }
         public Camera AimCamera => aimCamera;
@@ -35,6 +38,11 @@ namespace Overdrive.Player
             AimPoint = point;
 
             if (life != null && life.IsDead) return;
+            // Con el ratón casi encima del jugador (p. ej. en el centro de la pantalla al empezar) no se gira:
+            // cualquier temblor del cursor le haría dar vueltas sin parar.
+            Vector3 flat = point - transform.position;
+            flat.y = 0f;
+            if (flat.magnitude < AimDeadZone * transform.lossyScale.x) return;
             if (AimMath.TryGetFlatLookRotation(transform.position, point, out Quaternion rotation))
                 transform.rotation = rotation;
         }
