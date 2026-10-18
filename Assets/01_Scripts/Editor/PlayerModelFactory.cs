@@ -17,7 +17,14 @@ namespace Overdrive.EditorTools
     {
         public const string ModelName = "Model";
         /// <summary>Escala del modelo: la cabeza a la altura de la antigua cápsula (1.8 m), que desde arriba se lea igual de grande.</summary>
-        public const float ModelScale = 2.0f;
+        /// <summary>
+        /// Tamaño de todos los personajes respecto a una persona real (~1.8 m): algo exagerados para que se lean bien
+        /// desde la cámara cenital, sobre todo en el club del nivel 2, de muebles grandes. Jugador, enemigos y Nina
+        /// usan el mismo factor para medir igual. Las colisiones no cambian (el juego se juega igual).
+        /// </summary>
+        public const float CharacterScale = 1.3f;
+        /// <summary>Escala del modelo del jugador: 2.0 lo deja a tamaño real; por encima, el factor de personajes.</summary>
+        public const float ModelScale = 2.0f * CharacterScale;
         public const string MaterialName = "PlayerModel";
         public const string LightName = "PlayerLight";
         /// <summary>Brillo propio de la textura: el nivel es muy oscuro y sin esto no se ven los detalles del personaje.</summary>
@@ -282,6 +289,21 @@ namespace Overdrive.EditorTools
             {
                 Object.DestroyImmediate(temp);
             }
+        }
+
+        /// <summary>
+        /// Quita en una escena una escala puesta a mano al modelo del jugador: el modelo mide lo que dice el prefab
+        /// (como los enemigos). Con otra escala la mano, y con ella la boca del arma, queda a otra altura.
+        /// </summary>
+        public static bool RevertModelScaleOverride(GameObject player)
+        {
+            Transform model = player != null ? player.transform.Find(ModelName) : null;
+            if (model == null) return false;
+            var so = new SerializedObject(model);
+            SerializedProperty scale = so.FindProperty("m_LocalScale");
+            if (!scale.prefabOverride) return false;
+            PrefabUtility.RevertPropertyOverride(scale, InteractionMode.AutomatedAction);
+            return true;
         }
 
         /// <summary>Monta el modelo animado dentro del prefab y oculta la cápsula (que sigue para la lógica de muerte y el puño).</summary>

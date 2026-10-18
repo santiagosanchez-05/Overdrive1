@@ -222,6 +222,42 @@ namespace Overdrive.EditorTools
                     "El arma cuerpo a cuerpo también mata a un derribado");
                 c.Check(bat.State.Ready == false && !bat.State.IsEmpty, "El bate no gasta munición");
 
+                // --- Escopeta a quemarropa: con el enemigo pegado, la bala no nace al otro lado de él ---
+                weapons.Throw();
+                player.transform.rotation = Quaternion.identity;
+                WeaponItem pointBlankGun = SpawnWeapon(WeaponType.Shotgun, new Vector3(0f, 0f, 60f));
+                weapons.Equip(pointBlankGun);
+                var pointBlank = Spawn<Enemy>(enemyPrefab, new Vector3(0f, 0f, 0.85f), 180f);
+                Physics.SyncTransforms();
+                Vector3 origin = pointBlankGun.ShotOriginFrom(weapons.ShotOrigin);
+                c.Check(Vector3.Distance(origin, weapons.ShotOrigin) < 0.001f,
+                    "A quemarropa la bala sale del cuerpo, no de la boca del arma (que queda dentro o detrás del enemigo)");
+                DestroyAllProjectiles();
+                c.Check(weapons.Attack(true, true, new[] { pointBlank }), "La escopeta dispara a quemarropa");
+                StepProjectiles(Object.FindObjectsByType<Projectile>(FindObjectsInactive.Include).ToList());
+                c.Check(pointBlank.IsDead, "Simulación: la escopeta mata a un enemigo pegado al jugador");
+                pointBlank.gameObject.SetActive(false);
+                Physics.SyncTransforms();
+                c.Check(Vector3.Distance(pointBlankGun.ShotOriginFrom(weapons.ShotOrigin), weapons.ShotOrigin) > 0.1f,
+                    "Sin nadie delante, la bala sale de la boca del arma");
+                DestroyAllProjectiles();
+
+                // --- Mano alta (animación o modelo más grande): en vista cenital la bala va a la altura del pecho ---
+                if (!ViewMode.FirstPerson)
+                {
+                    weapons.Hand.position += Vector3.up * 1.4f;
+                    var tallTarget = Spawn<Enemy>(enemyPrefab, new Vector3(0f, 0f, 4f), 180f);
+                    Physics.SyncTransforms();
+                    float height = weapons.FireOrigin().y - player.transform.position.y;
+                    c.Check(height > 0.5f && height < 1.5f, $"En vista cenital la bala sale a la altura del pecho ({height:F2} m), aunque la mano esté alta");
+                    pointBlankGun.State.Tick(1f);
+                    c.Check(weapons.Attack(true, true, new[] { tallTarget }), "Dispara con la mano alta");
+                    StepProjectiles(Object.FindObjectsByType<Projectile>(FindObjectsInactive.Include).ToList());
+                    c.Check(tallTarget.IsDead, "Simulación: con la mano alta la bala no pasa por encima del enemigo (muere de un disparo)");
+                    weapons.Hand.position -= Vector3.up * 1.4f;
+                    DestroyAllProjectiles();
+                }
+
                 // --- Balas enemigas: matan al jugador y no a otros enemigos ---
                 var ally = Spawn<Enemy>(enemyPrefab, new Vector3(-3f, 0f, 0f), 90f);
                 Physics.SyncTransforms();
@@ -238,6 +274,35 @@ namespace Overdrive.EditorTools
                 DestroyAllProjectiles();
                 foreach (GameObject go in created)
                     if (go != null) Object.DestroyImmediate(go);
+            }
+        }
+
+        /// <summary>Los modelos de las armas miden su longitud de juego (exagerada para que se lean desde la cámara).</summary>
+        private static void VerifyWeaponModelSizes(Checker c)
+        {
+            foreach (WeaponType type in System.Enum.GetValues(typeof(WeaponType)))
+            {
+                if (!WeaponModelFactory.TryGetWeapon(type, out WeaponModelFactory.Spec spec)) continue;
+                var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(AssetFactory.WeaponPrefabPath(type));
+                if (prefab == null) continue;
+                var copy = Object.Instantiate(prefab, new Vector3(-900f, 0f, -900f), Quaternion.identity);
+                try
+                {
+                    Renderer[] renderers = copy.GetComponentsInChildren<Renderer>()
+                        .Where(r => r.transform.name == WeaponModelFactory.MeshName || r.transform.GetComponentsInParent<Transform>().Any(t => t.name == WeaponModelFactory.MeshName))
+                        .ToArray();
+                    if (renderers.Length == 0) continue;
+                    Bounds b = renderers[0].bounds;
+                    foreach (Renderer r in renderers) b.Encapsulate(r.bounds);
+                    float length = Mathf.Max(b.size.x, b.size.y, b.size.z);
+                    float expected = WeaponModelFactory.RealLength(type) * WeaponModelFactory.WeaponGameScale;
+                    c.Check(Mathf.Abs(length - expected) < expected * 0.15f,
+                        $"{type}: el modelo mide {length:F2} m (longitud de juego {expected:F2} m, x{WeaponModelFactory.WeaponGameScale} la real)");
+                }
+                finally
+                {
+                    Object.DestroyImmediate(copy);
+                }
             }
         }
 

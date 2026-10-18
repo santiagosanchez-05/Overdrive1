@@ -14,38 +14,38 @@ namespace Overdrive.Level
         public static readonly string[] GroundRows =
         {
             "##################################",
-            "#9......#...1......#5..........67#",
+            "#9......#p..1.h2h.9#5..h2h..1..67#",
             "#.//////#..........#.............#",
             "#.//////#..........#.............#",
-            "#..................#.............#",
+            "#.................f#.............#",
             "#..........m.......#......k......#",
             "#.P.B.V.#..........#.............#",
-            "#......8#.........2#.............#",
+            "#h.....8#y.......h2#n8........2hp#",
             "####..#######..#########..########",
             "#............................DRR.#",
             "#............................DRR.#",
             "######..##########..######..######",
+            "#1.h......p#p.1.......9#p.....2h9#",
             "#..........#...........#.........#",
-            "#..........#...........#.........#",
-            "#..........#.....s.....#....m....#",
+            "#f.........#.....s.....#....m....#",
             "#................................#",
             "#...s......................b.....#",
             "#..........#...........#.........#",
             "#..........#...........#......XX.#",
-            "#..........#34........2#......XX.#",
+            "#9.h2h....n#34..h2h..h2#1.....XX.#",
             "##################################",
         };
 
         public static readonly string[] UpperRows =
         {
             "        ##########################",
-            "        #.........#..............#",
+            "        #p..1....9#.h2h.........p#",
             "        ......k...#.........C....#",
             "        ..........#..............#",
             "        #..OO............OO......#",
             "        #..OO............OO......#",
             "        #......b..#..........m...#",
-            "        #5.......2#.....s........#",
+            "        #5......h2#y....s.......8#",
             "        ##########################",
             "                                  ",
             "                                  ",
@@ -96,6 +96,21 @@ namespace Overdrive.Level
         {
             Ambience = Ambience,
             LedCables = LedCables,
+            Doorways = Doorways,
+        };
+
+        /// <summary>
+        /// Puertas batientes en los huecos de 2 celdas (3 m) entre las salas y el pasillo, y entre salas.
+        /// Cerradas tapan la vista y paran las balas; se abren al pasar el jugador o un enemigo.
+        /// </summary>
+        public static readonly Doorway[] Doorways =
+        {
+            // Pared norte del pasillo (fila 8): sala inicial, sala del sofá y sala de las cajas.
+            new Doorway(0, 4, 8, false), new Doorway(0, 13, 8, false), new Doorway(0, 24, 8, false),
+            // Pared sur del pasillo (fila 11): salas del sur.
+            new Doorway(0, 6, 11, false), new Doorway(0, 18, 11, false), new Doorway(0, 26, 11, false),
+            // Entre la sala inicial y la del sofá, y entre las tres salas del sur.
+            new Doorway(0, 8, 4, true), new Doorway(0, 11, 15, true), new Doorway(0, 23, 15, true),
         };
 
         /// <summary>

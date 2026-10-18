@@ -14,6 +14,7 @@ namespace Overdrive.Level
 
         /// <summary>Cables de LEDs del nivel (ver <see cref="LedCable"/>).</summary>
         public LedCable[] LedCables { get; set; } = new LedCable[0];
+        public Doorway[] Doorways { get; set; } = new Doorway[0];
 
         public LevelLayout(params LevelMap[] floors)
         {

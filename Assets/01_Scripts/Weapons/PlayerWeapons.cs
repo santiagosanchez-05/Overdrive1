@@ -133,10 +133,22 @@ namespace Overdrive.Weapons
 
             bool trigger = def.Automatic ? held : pressed;
             if (!trigger) return false;
-            // La bala sale de la boca del arma, hacia la mira.
-            Vector3 origin = current.ShotOriginFrom(ShotOrigin);
+            Vector3 origin = FireOrigin();
             Vector3 direction = aim != null ? aim.ShotDirection(origin) : transform.forward;
             return current.TryFire(origin, direction, Faction.Player) > 0;
+        }
+
+        /// <summary>
+        /// Desde dónde sale la bala: la boca del arma, hacia la mira. En vista cenital el disparo es horizontal,
+        /// así que va a la altura del cuerpo (pecho de los enemigos) y no a la de la mano: con la mano alta
+        /// (animación o un modelo más grande) las balas pasarían por encima de las cabezas.
+        /// </summary>
+        public Vector3 FireOrigin()
+        {
+            if (current == null) return ShotOrigin;
+            Vector3 origin = current.ShotOriginFrom(ShotOrigin);
+            if (!ViewMode.FirstPerson) origin.y = ShotOrigin.y;
+            return origin;
         }
 
         private void UpdateSwingVisual(float deltaTime)

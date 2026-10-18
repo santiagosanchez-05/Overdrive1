@@ -21,6 +21,8 @@ namespace Overdrive.EditorTools
             VerifyEnemyModelsPrefab(c);
             VerifyEnemyPoseSimulation(c);
             VerifyEnemyLooksInScene(c, SceneManager.GetActiveScene(), "Nivel 1");
+            c.Near(StoryFactory.CameraDistance(SceneManager.GetActiveScene()), StoryFactory.Level01CameraDistance,
+                "Nivel 1: distancia de cámara para que los personajes se vean bien");
             VerifyNina(c, layout);
             VerifyDialogueSimulation(c);
             VerifyLevel02Characters(c);
@@ -105,7 +107,7 @@ namespace Overdrive.EditorTools
                     animator.Update(0.3f);
                     Transform head = animator.GetBoneTransform(HumanBodyBones.Head);
                     float standing = head.position.y - enemyGo.transform.position.y;
-                    c.Check(standing > 1.4f && standing < 2.0f, $"{name} de pie: cabeza a {standing:F2} m (como el jugador)");
+                    c.Check(standing > 1.4f * PlayerModelFactory.CharacterScale && standing < 2.0f * PlayerModelFactory.CharacterScale, $"{name} de pie: cabeza a {standing:F2} m (como el jugador)");
                     animator.SetFloat(EnemyVisual.SpeedParam, 1f);
                     float drift = 0f;
                     for (int i = 0; i < 20; i++)
@@ -115,12 +117,12 @@ namespace Overdrive.EditorTools
                         d.y = 0f;
                         drift = Mathf.Max(drift, d.magnitude);
                     }
-                    c.Check(drift < 0.5f, $"{name} corre en el sitio ({drift:F2} m)");
+                    c.Check(drift < 0.5f * PlayerModelFactory.CharacterScale, $"{name} corre en el sitio ({drift:F2} m)");
                     animator.SetFloat(EnemyVisual.SpeedParam, 0f);
                     animator.SetBool(EnemyVisual.DownParam, true);
                     for (int i = 0; i < 80; i++) animator.Update(0.05f);
                     float down = head.position.y - enemyGo.transform.position.y;
-                    c.Check(down < 0.7f, $"{name} derribado: cae al suelo (cabeza a {down:F2} m)");
+                    c.Check(down < 0.7f * PlayerModelFactory.CharacterScale, $"{name} derribado: cae al suelo (cabeza a {down:F2} m)");
                 }
             }
             finally
@@ -165,7 +167,7 @@ namespace Overdrive.EditorTools
                     copyAnimator.Rebind();
                     copyAnimator.Update(0.3f);
                     float head = copyAnimator.GetBoneTransform(HumanBodyBones.Head).position.y - copy.transform.position.y;
-                    c.Check(head > 1.4f && head < 1.8f, $"Nina mide como el resto de personajes (cabeza a {head:F2} m)");
+                    c.Check(head > 1.4f * PlayerModelFactory.CharacterScale && head < 1.8f * PlayerModelFactory.CharacterScale, $"Nina mide como el resto de personajes (cabeza a {head:F2} m)");
                 }
                 finally
                 {
@@ -239,6 +241,11 @@ namespace Overdrive.EditorTools
             try
             {
                 VerifyEnemyLooksInScene(c, scene, "Nivel 2");
+                var doors = scene.GetRootGameObjects().SelectMany(r => r.GetComponentsInChildren<Overdrive.Level.SwingDoor>(true)).ToArray();
+                c.Check(doors.Length >= 2 && doors.All(d => d.Width > 1f && d.IsClosed),
+                    $"Nivel 2: hay puertas batientes en los marcos ({doors.Length}: {string.Join(", ", doors.Select(d => $"{d.name} {d.Width:F1} m"))})");
+                c.Near(StoryFactory.CameraDistance(scene), StoryFactory.Level02CameraDistance,
+                    "Nivel 2: la cámara está más cerca (el club es enorme y los personajes se veían diminutos)");
                 GameObject nina = scene.GetRootGameObjects().FirstOrDefault(r => r.name == StoryFactory.NinaName);
                 c.NotNull(nina, "Nivel 2: Nina está en el club");
                 GameObject player = scene.GetRootGameObjects().FirstOrDefault(r => r.CompareTag("Player"));

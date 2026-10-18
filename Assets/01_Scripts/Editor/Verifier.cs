@@ -36,6 +36,7 @@ namespace Overdrive.EditorTools
             VerifyCombatSimulation(c);
             VerifyWeaponLogic(c);
             VerifyWeaponSimulation(c);
+            VerifyWeaponModelSizes(c);
             VerifyAIAssets(c);
             VerifyAIScene(c, layout);
             VerifyAILogic(c, layout);
@@ -56,6 +57,7 @@ namespace Overdrive.EditorTools
             VerifyLedCables(c, layout);
             VerifyPlayerModel(c);
             VerifyCharacters(c, layout);
+            VerifyDoors(c, layout);
             VerifyDecorSimulation(c);
             VerifyRewindLogic(c);
             VerifyRewindScene(c);

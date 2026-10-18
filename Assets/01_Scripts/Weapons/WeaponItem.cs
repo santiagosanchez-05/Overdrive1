@@ -54,15 +54,23 @@ namespace Overdrive.Weapons
         public Transform Muzzle => muzzle;
 
         /// <summary>
-        /// Desde dónde sale la bala: la boca del arma si no hay una pared entre el cuerpo y ella;
-        /// si la hay (arma metida en la pared), desde el cuerpo, para no disparar a través del muro.
+        /// Desde dónde sale la bala: la boca del arma si entre el cuerpo y ella no hay nada.
+        /// Si hay una pared (arma metida en el muro) o un enemigo pegado (disparo a quemarropa), desde el cuerpo:
+        /// así no se dispara a través del muro y la bala no nace al otro lado del enemigo que tienes delante.
         /// </summary>
-        public Vector3 ShotOriginFrom(Vector3 body)
+        public Vector3 ShotOriginFrom(Vector3 body, Faction owner = Faction.Player)
         {
             if (muzzle == null || mode != Mode.Held) return body;
             Vector3 tip = muzzle.position;
-            return Overdrive.Enemies.LineOfSight.IsClear(body, tip, null) ? tip : body;
+            Vector3 delta = tip - body;
+            float distance = delta.magnitude;
+            if (distance < 0.001f) return body;
+            bool blocked = ProjectileCast.TryCast(body, delta / distance, distance, PointBlankRadius, owner, out _);
+            return blocked ? body : tip;
         }
+
+        /// <summary>Grosor del barrido cuerpo-boca: algo más que una bala, para no "saltarse" a quien roza el cañón.</summary>
+        public const float PointBlankRadius = 0.12f;
         public TrailRenderer Trail => trail;
 
         /// <summary>La estela solo se ve mientras el arma vuela.</summary>

@@ -78,6 +78,7 @@ namespace Overdrive.Core
         private static GameSounds active;
         private AudioSource[] sources;
         private int next;
+        private float sfxVolume = 1f;
 
         public static GameSounds Active => active;
 
@@ -120,11 +121,27 @@ namespace Overdrive.Core
             }
         }
 
-        private void OnEnable() => active = this;
+        private void OnEnable()
+        {
+            active = this;
+            sfxVolume = AudioPrefs.Sfx;
+            AudioPrefs.SfxChanged += OnSfxChanged;
+        }
 
         private void OnDisable()
         {
             if (active == this) active = null;
+            AudioPrefs.SfxChanged -= OnSfxChanged;
+        }
+
+        /// <summary>El ajuste "Efectos" del menú: escala también lo que ya está sonando.</summary>
+        private void OnSfxChanged(float value)
+        {
+            float ratio = sfxVolume > 0f ? value / sfxVolume : 0f;
+            sfxVolume = value;
+            if (sources == null) return;
+            foreach (AudioSource source in sources)
+                if (source.isPlaying) source.volume = ratio > 0f ? source.volume * ratio : 0f;
         }
 
         private void PlayLocal(Sound sound)
@@ -135,7 +152,7 @@ namespace Overdrive.Core
             next = (next + 1) % sources.Length;
             source.Stop();
             source.clip = entry.clip;
-            source.volume = entry.volume;
+            source.volume = entry.volume * sfxVolume;
             source.pitch = 1f + Random.Range(-entry.pitchVariation, entry.pitchVariation);
             source.Play();
         }

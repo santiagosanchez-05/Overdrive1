@@ -59,9 +59,19 @@ namespace Overdrive.EditorTools
                     Transform enemy = group.OrderBy(e => e.name).First().transform;
                     Shot(cam, rt, dir, "00_enemigo_" + group.Key, enemy.position, 4.5f);
                 }
-                Shot(cam, rt, dir, "01_planta_baja_inicio", new Vector3(8f, 0f, -6f), 20f);
+                // Una puerta batiente cerrada y abierta (como al pasar alguien por el pasillo).
+                var door = UnityEngine.Object.FindObjectsByType<Overdrive.Level.SwingDoor>().OrderBy(d => d.name).FirstOrDefault();
+                if (door != null)
+                {
+                    Shot(cam, rt, dir, "12_puerta_cerrada", door.transform.position, 7f);
+                    var visitor = new[] { door.transform.position + door.transform.forward * 1f };
+                    for (int i = 0; i < 10; i++) door.Tick(0.05f, visitor);
+                    Shot(cam, rt, dir, "12_puerta_abierta", door.transform.position, 7f);
+                    for (int i = 0; i < 60; i++) door.Tick(0.05f, new Vector3[0]);
+                }
+                Shot(cam, rt, dir, "01_planta_baja_inicio", new Vector3(8f, 0f, -6f), StoryFactory.Level01CameraDistance);
                 Shot(cam, rt, dir, "02_planta_baja_norte", new Vector3(32f, 0f, -6f), 20f);
-                Shot(cam, rt, dir, "03_planta_baja_sur", new Vector3(14f, 0f, -24f), 20f);
+                Shot(cam, rt, dir, "03_planta_baja_sur", new Vector3(14f, 0f, -24f), StoryFactory.Level01CameraDistance);
                 exit.SetOpen(true);
                 Shot(cam, rt, dir, "04_salida_abierta", new Vector3(42f, 0f, -25f), 20f);
                 exit.SetOpen(false);
@@ -133,6 +143,9 @@ namespace Overdrive.EditorTools
             {
                 cam.Render();
                 PoseAnimators();
+                // Vista general como en el juego (misma distancia de cámara) en la entrada y en la zona de combate.
+                Shot(cam, rt, dir, "09_nivel2_entrada", Level02Gameplay.Start, StoryFactory.Level02CameraDistance);
+                Shot(cam, rt, dir, "09_nivel2_combate", new Vector3(-10f, 0f, 0f), StoryFactory.Level02CameraDistance);
                 GameObject nina = BuilderUtil.FindRoot(scene, StoryFactory.NinaName);
                 if (nina != null) Shot(cam, rt, dir, "10_nivel2_nina", nina.transform.position, 6f);
                 foreach (var group in UnityEngine.Object.FindObjectsByType<Overdrive.Enemies.Enemy>()

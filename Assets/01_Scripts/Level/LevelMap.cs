@@ -14,7 +14,7 @@ namespace Overdrive.Level
     ///   / escalera (rampa que sube hacia el este hasta el piso de arriba)
     ///   ' ' sin suelo (fuera del piso)   O hueco en el suelo por el que se cae al piso de abajo
     ///   C maletín   D puerta cerrada hasta que llegan los refuerzos   R punto de entrada de un refuerzo
-    ///   0-9 muebles (ver <see cref="PropCatalog"/>), pegados a la pared más cercana
+    ///   0-9 y h n p y f muebles (ver <see cref="PropCatalog"/>), pegados a la pared más cercana
     /// </summary>
     public sealed class LevelMap
     {

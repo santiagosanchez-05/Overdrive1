@@ -36,6 +36,7 @@ namespace Overdrive.UI
         [Header("Ajustes")]
         public Slider volumeSlider;
         public Slider musicSlider;
+        public Slider sfxSlider;
         public Toggle fullscreenToggle;
 
         [Header("Escena")]
@@ -81,6 +82,11 @@ namespace Overdrive.UI
             {
                 musicSlider.SetValueWithoutNotify(AudioPrefs.Music);
                 musicSlider.onValueChanged.AddListener(v => AudioPrefs.Music = v);
+            }
+            if (sfxSlider)
+            {
+                sfxSlider.SetValueWithoutNotify(AudioPrefs.Sfx);
+                sfxSlider.onValueChanged.AddListener(v => AudioPrefs.Sfx = v);
             }
             if (fullscreenToggle)
             {

@@ -19,7 +19,7 @@ namespace Overdrive.EditorTools
         public static string AnimationsPath => PlayerModelFactory.AnimationsPath;
 
         /// <summary>Altura del modelo en su pose de referencia, la misma que el jugador (~1.8 m de pie en reposo).</summary>
-        public const float TargetBindHeight = 2.2f;
+        public const float TargetBindHeight = 2.2f * PlayerModelFactory.CharacterScale;
         public static readonly Color Emission = new Color(0.35f, 0.35f, 0.35f);
 
         // ---- Enemigos: un modelo por arma ----
@@ -184,7 +184,7 @@ namespace Overdrive.EditorTools
         // ---- Modelos dentro de los prefabs ----
 
         /// <summary>Altura del hueso de la cabeza de pie, la misma que la del jugador (~1.65 m).</summary>
-        public const float TargetHeadHeight = 1.65f;
+        public const float TargetHeadHeight = 1.65f * PlayerModelFactory.CharacterScale;
 
         /// <summary>
         /// Escala para que el personaje mida como el jugador: por la altura del hueso de la cabeza en su pose humanoide

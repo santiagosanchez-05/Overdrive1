@@ -17,6 +17,30 @@ namespace Overdrive.EditorTools
         public const string NinaName = "Nina";
         public const string Level02Path = "Assets/00_Scenes/Level02.unity";
 
+        /// <summary>
+        /// Distancia de la cámara cenital por nivel: la casa del nivel 1 es pequeña; el club del nivel 2 es enorme y,
+        /// con la cámara igual de lejos, los personajes se veían diminutos. Más cerca, se ven grandes y con detalle.
+        /// </summary>
+        public const float Level01CameraDistance = 17f;
+        public const float Level02CameraDistance = 13f;
+
+        public static void SetCameraDistance(Scene scene, float distance)
+        {
+            foreach (var cam in scene.GetRootGameObjects().SelectMany(r => r.GetComponentsInChildren<Overdrive.CameraRig.TopDownCamera>(true)))
+            {
+                var so = new SerializedObject(cam);
+                so.FindProperty("distance").floatValue = distance;
+                so.ApplyModifiedPropertiesWithoutUndo();
+                cam.ApplyCameraOffset(); // la cámara guardada en la escena ya a la nueva distancia
+            }
+        }
+
+        public static float CameraDistance(Scene scene)
+        {
+            var cam = scene.GetRootGameObjects().SelectMany(r => r.GetComponentsInChildren<Overdrive.CameraRig.TopDownCamera>(true)).FirstOrDefault();
+            return cam != null ? new SerializedObject(cam).FindProperty("distance").floatValue : 0f;
+        }
+
         /// <summary>Celda de Nina en el nivel 1: rincón suroeste de la sala inicial, a un paso del jugador y fuera del paso.</summary>
         public static readonly Vector2Int Level01Cell = new Vector2Int(1, 7);
 
@@ -92,6 +116,10 @@ namespace Overdrive.EditorTools
             Scene scene = EditorSceneManager.OpenScene(Level02Path, OpenSceneMode.Single);
             RemoveOldNpcs(scene);
             ApplyEnemyLooks(scene);
+            foreach (GameObject root in scene.GetRootGameObjects().Where(r => r.CompareTag("Player")))
+                PlayerModelFactory.RevertModelScaleOverride(root);
+            SetCameraDistance(scene, Level02CameraDistance);
+            DoorFactory.BuildFrameDoors(scene);
             GameObject player = scene.GetRootGameObjects().FirstOrDefault(r => r.CompareTag("Player"));
             // Nina ya colocada no cuenta como obstáculo al buscar su sitio (si no, cambiaría de sitio en cada construcción).
             GameObject previous = BuilderUtil.FindRoot(scene, NinaName);

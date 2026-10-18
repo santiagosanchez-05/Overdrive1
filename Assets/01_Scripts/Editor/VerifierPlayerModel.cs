@@ -23,6 +23,18 @@ namespace Overdrive.EditorTools
             VerifyPlayerController(c);
             VerifyPlayerModelPrefab(c);
             VerifyPlayerPoseSimulation(c);
+            VerifyPlayerModelInScene(c);
+        }
+
+        /// <summary>En la escena el modelo del jugador mide lo que dice el prefab (sin escalas puestas a mano).</summary>
+        private static void VerifyPlayerModelInScene(Checker c)
+        {
+            GameObject player = BuilderUtil.FindRoot(UnityEngine.SceneManagement.SceneManager.GetActiveScene(), SceneFactory.PlayerName);
+            Transform model = player != null ? player.transform.Find(PlayerModelFactory.ModelName) : null;
+            if (model == null) return;
+            var scale = new SerializedObject(model).FindProperty("m_LocalScale");
+            c.Check(!scale.prefabOverride && Mathf.Abs(model.localScale.x - PlayerModelFactory.ModelScale) < 0.001f,
+                $"Nivel 1: el modelo del jugador mide como en el prefab, igual que los enemigos (escala {model.localScale.x:F2})");
         }
 
         private static void VerifyPlayerAnimLogic(Checker c)
@@ -138,7 +150,7 @@ namespace Overdrive.EditorTools
                 Transform head = animator.GetBoneTransform(HumanBodyBones.Head);
                 Transform hips = animator.GetBoneTransform(HumanBodyBones.Hips);
                 float headHeight = head.position.y - player.transform.position.y;
-                c.Check(headHeight > 1.6f && headHeight < 1.9f, $"De pie, la cabeza queda a la altura de la cápsula ({headHeight:F2} m)");
+                c.Check(headHeight > 1.6f * PlayerModelFactory.CharacterScale && headHeight < 1.9f * PlayerModelFactory.CharacterScale, $"De pie, la cabeza queda a la altura de la cápsula ({headHeight:F2} m)");
 
                 Vector3 shoulders = animator.GetBoneTransform(HumanBodyBones.RightUpperArm).position -
                                     animator.GetBoneTransform(HumanBodyBones.LeftUpperArm).position;
@@ -156,21 +168,21 @@ namespace Overdrive.EditorTools
                     d.y = 0f;
                     maxDrift = Mathf.Max(maxDrift, d.magnitude);
                 }
-                c.Check(maxDrift < 0.45f, $"Corre en el sitio, sin alejarse del jugador ({maxDrift:F2} m)");
+                c.Check(maxDrift < 0.45f * PlayerModelFactory.CharacterScale, $"Corre en el sitio, sin alejarse del jugador ({maxDrift:F2} m)");
                 c.Check(Vector3.Distance(hips.position, standingHips) > 0.01f || maxDrift > 0.01f, "La animación de correr mueve el cuerpo");
 
                 animator.SetFloat(PlayerAnimator.MoveParam, 0f);
                 animator.SetBool(PlayerAnimator.DeadParam, true);
                 for (int i = 0; i < 60; i++) animator.Update(0.05f);
                 float deadHead = head.position.y - player.transform.position.y;
-                c.Check(deadHead < 0.6f, $"Al morir el modelo cae al suelo (cabeza a {deadHead:F2} m)");
+                c.Check(deadHead < 0.6f * PlayerModelFactory.CharacterScale, $"Al morir el modelo cae al suelo (cabeza a {deadHead:F2} m)");
 
                 animator.SetBool(PlayerAnimator.DeadParam, false);
                 animator.Play(PlayerAnimator.LocomotionState, 0, 0f);
                 animator.Update(0f);
                 animator.Update(0.1f);
                 float revivedHead = head.position.y - player.transform.position.y;
-                c.Check(revivedHead > 1.3f, $"Al rebobinar vuelve a estar de pie al instante ({revivedHead:F2} m)");
+                c.Check(revivedHead > 1.3f * PlayerModelFactory.CharacterScale, $"Al rebobinar vuelve a estar de pie al instante ({revivedHead:F2} m)");
             }
             finally
             {

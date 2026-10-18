@@ -190,7 +190,7 @@ MonoBehaviour:
   controller: {fileID: 650247359578819848}
   life: {fileID: 7982732997962180055}
   moveSpeed: 7
-  sneakSpeed: 3.2
+  sneakSpeed: 5
   gravity: 25
   groundStick: 6
 --- !u!114 &8763644904668813282
@@ -327,9 +327,9 @@ MonoBehaviour:
   melee: {fileID: 3209719595741885290}
   finisher: {fileID: 5781536501737919570}
   damping: 0.08
-  runClipSpeed: 4.4356585
-  backClipSpeed: 1.1391889
-  gunRunClipSpeed: 3.808648
+  runClipSpeed: 5.766352
+  backClipSpeed: 1.4809451
+  gunRunClipSpeed: 4.9512424
 --- !u!1 &1885037976511885489
 GameObject:
   m_ObjectHideFlags: 0
@@ -589,15 +589,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: 0fffeee7b948d184aa0a1f8e863216c7, type: 3}
       propertyPath: m_LocalScale.x
-      value: 2
+      value: 2.6
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 0fffeee7b948d184aa0a1f8e863216c7, type: 3}
       propertyPath: m_LocalScale.y
-      value: 2
+      value: 2.6
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 0fffeee7b948d184aa0a1f8e863216c7, type: 3}
       propertyPath: m_LocalScale.z
-      value: 2
+      value: 2.6
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 0fffeee7b948d184aa0a1f8e863216c7, type: 3}
       propertyPath: m_LocalPosition.x

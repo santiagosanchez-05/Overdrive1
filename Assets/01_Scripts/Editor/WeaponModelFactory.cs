@@ -67,9 +67,32 @@ namespace Overdrive.EditorTools
             { WeaponType.Revolver, new Spec("BalaRevolver.fbx", "Bala_Revolver_basecolor.PNG", 0.25f, 0.5f, Kind.ThinTip) },
         };
 
-        public static bool TryGetWeapon(WeaponType type, out Spec spec) => Weapons.TryGetValue(type, out spec) && Available(spec);
+        /// <summary>
+        /// Escala de juego: las longitudes de arriba son las reales, pero vistas desde la cámara cenital, en la mano
+        /// de personajes de ~1.8 m, se pierden. Se exageran (como en los juegos de vista cenital) para que se lean bien.
+        /// </summary>
+        public const float WeaponGameScale = 1.6f * PlayerModelFactory.CharacterScale; // crecen con los personajes
+        public const float BulletGameScale = 1.5f * PlayerModelFactory.CharacterScale;
 
-        public static bool TryGetBullet(WeaponType type, out Spec spec) => Bullets.TryGetValue(type, out spec) && Available(spec);
+        public static bool TryGetWeapon(WeaponType type, out Spec spec) =>
+            TryGetScaled(Weapons, type, WeaponGameScale, out spec);
+
+        public static bool TryGetBullet(WeaponType type, out Spec spec) =>
+            TryGetScaled(Bullets, type, BulletGameScale, out spec);
+
+        private static bool TryGetScaled(Dictionary<WeaponType, Spec> table, WeaponType type, float scale, out Spec spec)
+        {
+            if (!table.TryGetValue(type, out Spec raw) || !Available(raw))
+            {
+                spec = default;
+                return false;
+            }
+            spec = new Spec(raw.Fbx, raw.Texture, raw.Length * scale, raw.Grip, raw.Shape, raw.Fix, raw.Pca);
+            return true;
+        }
+
+        /// <summary>Longitud real del modelo (sin la escala de juego), para las comprobaciones.</summary>
+        public static float RealLength(WeaponType type) => Weapons.TryGetValue(type, out Spec raw) ? raw.Length : 0f;
 
         private static bool Available(Spec spec) => AssetDatabase.LoadAssetAtPath<GameObject>($"{WeaponsPath}/{spec.Fbx}") != null;
 
