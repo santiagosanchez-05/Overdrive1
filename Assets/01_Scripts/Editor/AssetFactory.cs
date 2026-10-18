@@ -343,6 +343,7 @@ namespace Overdrive.EditorTools
         public static GameObject EnsureBloodPrefab()
         {
             BuilderUtil.EnsureFolder(PrefabsPath);
+            BloodDecalFactory.Ensure(Mat(MatBlood)); // la mancha recorta una salpicadura, no un cuadrado
             return BuilderUtil.EditPrefab(BloodPrefabPath, "Blood", root =>
             {
                 // El quad mira hacia -Z; el BloodSpawner gira la raíz 90° en X para tumbarlo en el suelo.
@@ -463,10 +464,31 @@ namespace Overdrive.EditorTools
                     so.FindProperty("trail").objectReferenceValue = EnsureTrail(root, 0.18f, 0.16f, Mat(MatThrowTrail), false);
                     so.ApplyModifiedPropertiesWithoutUndo();
 
+                    // Punto de agarre: se crea una vez en el origen; si alguien lo mueve en el prefab, se respeta.
+                    if (root.transform.Find("Grip") == null)
+                    {
+                        var grip = new GameObject("Grip").transform;
+                        grip.SetParent(root.transform, false);
+                    }
+                    BuilderUtil.SetRef(item, "grip", root.transform.Find("Grip"));
+
                     GameObject model = BuilderUtil.EnsureChild(root.transform, "Model");
                     if (WeaponModelFactory.TryGetWeapon(type, out WeaponModelFactory.Spec spec))
                     {
-                        WeaponModelFactory.Apply(model.transform, spec, $"WeaponModel_{type}");
+                        Vector3 muzzlePoint = WeaponModelFactory.Apply(model.transform, spec, $"WeaponModel_{type}");
+                        // Boca del arma: de aquí salen las balas (se recalcula con el modelo).
+                        if (!WeaponDefinition.Get(type).IsMelee)
+                        {
+                            Transform muzzle = root.transform.Find("Muzzle");
+                            if (muzzle == null)
+                            {
+                                muzzle = new GameObject("Muzzle").transform;
+                                muzzle.SetParent(root.transform, false);
+                            }
+                            muzzle.localPosition = model.transform.localRotation * muzzlePoint + model.transform.localPosition;
+                            muzzle.localRotation = Quaternion.identity;
+                            BuilderUtil.SetRef(item, "muzzle", muzzle);
+                        }
                         return;
                     }
                     if (model.transform.Find(WeaponModelFactory.MeshName) != null)

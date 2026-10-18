@@ -63,6 +63,7 @@ namespace Overdrive.Enemies
         private bool wasDown;
         private bool wasWinding;
         private Transform handBone;
+        private bool handIsSocket;
         private Vector3 handRest;
         private bool handRestCaptured;
 
@@ -85,7 +86,7 @@ namespace Overdrive.Enemies
                 if (models[i] != null) models[i].SetActive(i == index);
             active = index < models.Length ? models[index] : null;
             animator = active != null ? active.GetComponent<Animator>() : null;
-            handBone = animator != null && animator.isHuman ? animator.GetBoneTransform(HumanBodyBones.RightHand) : null;
+            handBone = HandSocket.Find(animator, out handIsSocket);
             bool hasModel = active != null;
             if (capsuleRenderers != null)
                 foreach (Renderer r in capsuleRenderers)
@@ -122,7 +123,7 @@ namespace Overdrive.Enemies
             wasWinding = winding;
         }
 
-        /// <summary>El arma va en la mano del modelo: el punto Hand sigue la posición de la mano derecha (no su giro).</summary>
+        /// <summary>El arma va en la mano del modelo: el punto Hand sigue al WeaponSocket de la mano derecha (no su giro).</summary>
         private void LateUpdate()
         {
             Transform hand = enemy != null ? enemy.Hand : null;
@@ -133,7 +134,7 @@ namespace Overdrive.Enemies
                 handRestCaptured = true;
             }
             bool follow = enemy.Posture == Posture.Standing;
-            hand.position = follow ? handBone.position + transform.forward * 0.08f : hand.parent.TransformPoint(handRest);
+            hand.position = follow ? HandSocket.GripPosition(handBone, handIsSocket, transform.forward) : hand.parent.TransformPoint(handRest);
         }
     }
 }

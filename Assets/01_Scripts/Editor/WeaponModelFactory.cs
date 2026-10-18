@@ -39,10 +39,12 @@ namespace Overdrive.EditorTools
             /// <summary>Fracción del modelo que queda detrás del origen (la empuñadura en la mano). 0.5 = centrado.</summary>
             public readonly float Grip;
             public readonly Kind Shape;
+            /// <summary>Alinear por el eje principal de la malla (modelos exportados en diagonal). Si es false, por su caja.</summary>
+            public readonly bool Pca;
 
-            public Spec(string fbx, string texture, float length, float grip, Kind shape, Vector3 fix = default)
+            public Spec(string fbx, string texture, float length, float grip, Kind shape, Vector3 fix = default, bool pca = true)
             {
-                Fbx = fbx; Texture = texture; Length = length; Grip = grip; Shape = shape; Fix = fix;
+                Fbx = fbx; Texture = texture; Length = length; Grip = grip; Shape = shape; Fix = fix; Pca = pca;
             }
         }
 
@@ -54,8 +56,8 @@ namespace Overdrive.EditorTools
             { WeaponType.Knife, new Spec("tripo_convert_5b9e13f7-c119-4491-8ffe-740d61fec89a.fbx",
                 "tripo_convert_5b9e13f7-c119-4491-8ffe-740d61fec89a.fbm/Cuchillo_basecolor.PNG", 0.42f, 0.2f, Kind.ThinTip) },
             { WeaponType.Shotgun, new Spec("Escopeta.fbx", "escopeta_basecolor.PNG", 0.95f, 0.3f, Kind.Gun) },
-            { WeaponType.Smg, new Spec("subfusil.fbx", "subfusil_basecolor.PNG", 0.6f, 0.3f, Kind.Gun) },
-            { WeaponType.Revolver, new Spec("Revolver.fbx", "revolver_basecolor.PNG", 0.38f, 0.25f, Kind.Gun) },
+            { WeaponType.Smg, new Spec("subfusil.fbx", "subfusil_basecolor.PNG", 0.6f, 0.45f, Kind.Gun, new Vector3(0f, 180f, 0f)) },
+            { WeaponType.Revolver, new Spec("Revolver.fbx", "revolver_basecolor.PNG", 0.38f, 0.25f, Kind.Gun, default, false) },
         };
 
         private static readonly Dictionary<WeaponType, Spec> Bullets = new Dictionary<WeaponType, Spec>
@@ -75,7 +77,8 @@ namespace Overdrive.EditorTools
         /// Deja en <paramref name="modelRoot"/> solo el modelo indicado (borra primitivas o modelos anteriores),
         /// con su material, apuntando a +Z y con la longitud pedida.
         /// </summary>
-        public static void Apply(Transform modelRoot, Spec spec, string materialName, bool castShadows = true)
+        /// <returns>La boca del arma (centro del extremo delantero) en el espacio de <paramref name="modelRoot"/>.</returns>
+        public static Vector3 Apply(Transform modelRoot, Spec spec, string materialName, bool castShadows = true)
         {
             for (int i = modelRoot.childCount - 1; i >= 0; i--)
                 Object.DestroyImmediate(modelRoot.GetChild(i).gameObject);
@@ -108,41 +111,40 @@ namespace Overdrive.EditorTools
                 r.shadowCastingMode = castShadows ? UnityEngine.Rendering.ShadowCastingMode.On : UnityEngine.Rendering.ShadowCastingMode.Off;
             }
 
-            // Tumbar: el eje más largo del modelo pasa a ser +Z.
-            Bounds b = LocalBounds(mesh.transform, modelRoot);
-            Vector3 size = b.size;
-            Quaternion lie = Quaternion.identity;
-            if (size.x >= size.y && size.x >= size.z) lie = Quaternion.Euler(0f, -90f, 0f);
-            else if (size.y >= size.x && size.y >= size.z) lie = Quaternion.Euler(90f, 0f, 0f);
+            // Los modelos vienen exportados en diagonal: se usa el eje principal real de la malla (PCA de los
+            // vértices), no la caja que la envuelve.
+            // 0) Tumbar: el eje más largo del arma pasa a ser +Z.
+            List<Vector3> pts = Points(mesh.transform, modelRoot);
+            Quaternion lie = spec.Pca ? Quaternion.FromToRotation(MainAxis(pts), Vector3.forward) : BoxLie(BoundsOf(pts).size);
             mesh.transform.localRotation = lie;
 
-            // Girar sobre Z para que el lado ancho quede vertical (la empuñadura cuelga hacia abajo).
-            List<Vector3> pts = Points(mesh.transform, modelRoot);
-            Bounds pb = BoundsOf(pts);
-            Quaternion roll = pb.size.x > pb.size.y ? Quaternion.Euler(0f, 0f, 90f) : Quaternion.identity;
+            // 1) Giro sobre Z: el segundo eje (el alto: empuñadura, cargador, culata) pasa a ser Y.
+            pts = Points(mesh.transform, modelRoot);
+            Vector2 height = MainAxis2D(pts);
+            float angle = 90f - Mathf.Atan2(height.y, height.x) * Mathf.Rad2Deg;
+            Quaternion roll = spec.Pca ? Quaternion.Euler(0f, 0f, angle) : Quaternion.identity;
             mesh.transform.localRotation = roll * lie;
 
-            // Delante / detrás y arriba / abajo según la forma.
+            // 2) Delante / detrás: la punta es el extremo más fino (cañón, filo, bala) o el más grueso (bate).
             pts = Points(mesh.transform, modelRoot);
             Section front = Slice(pts, true), back = Slice(pts, false);
-            bool flip;
-            switch (spec.Shape)
-            {
-                case Kind.Gun: flip = front.Height > back.Height; break;       // la culata es lo más alto
-                case Kind.ThickTip: flip = front.Area < back.Area; break;      // el bate engorda hacia la punta
-                default: flip = front.Area > back.Area; break;                 // filo / punta de bala más finos
-            }
-            Quaternion turn = flip ? Quaternion.Euler(0f, 180f, 0f) : Quaternion.identity;
+            bool tipIsBack = spec.Shape == Kind.ThickTip ? back.Area > front.Area : back.Area < front.Area;
+            Quaternion turn = tipIsBack ? Quaternion.Euler(0f, 180f, 0f) : Quaternion.identity;
             mesh.transform.localRotation = turn * roll * lie;
+            roll = turn * roll; // a partir de aquí "roll" acumula los giros ya aplicados
+            turn = Quaternion.identity;
+            Bounds all, b;
+
+            // 3) Arriba / abajo (armas de fuego): el cañón va pegado a la parte de arriba, y la empuñadura
+            //    y el cargador cuelgan hacia abajo. Si sobresale más por arriba, está boca abajo.
             if (spec.Shape == Kind.Gun)
             {
                 pts = Points(mesh.transform, modelRoot);
+                all = BoundsOf(pts);
                 front = Slice(pts, true);
-                back = Slice(pts, false);
-                // El cañón va arriba: si la empuñadura queda por encima del cañón, está boca abajo.
-                if (back.CenterY > front.CenterY) turn = Quaternion.Euler(0f, 0f, 180f) * turn;
+                if (all.max.y - front.CenterY > front.CenterY - all.min.y) roll = Quaternion.Euler(0f, 0f, 180f) * roll;
             }
-            mesh.transform.localRotation = Quaternion.Euler(spec.Fix) * turn * roll * lie;
+            mesh.transform.localRotation = Quaternion.Euler(spec.Fix) * roll * turn * lie;
 
             // Escalar a la longitud de juego y colocar la empuñadura en el origen.
             b = LocalBounds(mesh.transform, modelRoot);
@@ -151,12 +153,19 @@ namespace Overdrive.EditorTools
             b = LocalBounds(mesh.transform, modelRoot);
             Vector3 anchor = new Vector3(b.center.x, b.center.y, b.min.z + b.size.z * spec.Grip);
             mesh.transform.localPosition -= anchor;
+
+            // Boca: el centro del tercio delantero, en la punta.
+            List<Vector3> tipPts = Points(mesh.transform, modelRoot);
+            Bounds tipAll = BoundsOf(tipPts);
+            float cut = tipAll.max.z - tipAll.size.z * 0.12f;
+            Bounds tip = BoundsOf(tipPts.Where(p => p.z >= cut).ToList());
+            return new Vector3(tip.center.x, tip.center.y, tipAll.max.z);
         }
 
         private readonly struct Section
         {
-            public readonly float Height, Area, CenterY;
-            public Section(Bounds b) { Height = b.size.y; Area = b.size.x * b.size.y; CenterY = b.center.y; }
+            public readonly float Width, Height, Area, CenterY;
+            public Section(Bounds b) { Width = b.size.x; Height = b.size.y; Area = b.size.x * b.size.y; CenterY = b.center.y; }
         }
 
         /// <summary>Tercio delantero (+Z) o trasero del modelo.</summary>
@@ -166,6 +175,53 @@ namespace Overdrive.EditorTools
             float cut = all.size.z / 3f;
             var part = pts.Where(p => front ? p.z >= all.max.z - cut : p.z <= all.min.z + cut).ToList();
             return new Section(part.Count > 0 ? BoundsOf(part) : all);
+        }
+
+        /// <summary>Tumba el modelo para que el lado más largo de su caja quede en Z.</summary>
+        private static Quaternion BoxLie(Vector3 size)
+        {
+            if (size.x >= size.y && size.x >= size.z) return Quaternion.Euler(0f, -90f, 0f);
+            if (size.y >= size.x && size.y >= size.z) return Quaternion.Euler(90f, 0f, 0f);
+            return Quaternion.identity;
+        }
+
+        /// <summary>Eje de mayor dispersión de los puntos (vector propio principal de la covarianza).</summary>
+        private static Vector3 MainAxis(List<Vector3> pts)
+        {
+            Vector3 c = Vector3.zero;
+            foreach (Vector3 p in pts) c += p;
+            c /= Mathf.Max(1, pts.Count);
+            float xx = 0, xy = 0, xz = 0, yy = 0, yz = 0, zz = 0;
+            foreach (Vector3 q in pts)
+            {
+                Vector3 d = q - c;
+                xx += d.x * d.x; xy += d.x * d.y; xz += d.x * d.z;
+                yy += d.y * d.y; yz += d.y * d.z; zz += d.z * d.z;
+            }
+            Vector3 v = new Vector3(1f, 0.7f, 0.4f).normalized;
+            for (int i = 0; i < 64; i++)
+            {
+                v = new Vector3(xx * v.x + xy * v.y + xz * v.z, xy * v.x + yy * v.y + yz * v.z, xz * v.x + yz * v.y + zz * v.z);
+                if (v.sqrMagnitude < 1e-12f) return Vector3.forward;
+                v.Normalize();
+            }
+            return v;
+        }
+
+        /// <summary>Eje de mayor dispersión en el plano XY.</summary>
+        private static Vector2 MainAxis2D(List<Vector3> pts)
+        {
+            Vector2 c = Vector2.zero;
+            foreach (Vector3 p in pts) c += new Vector2(p.x, p.y);
+            c /= Mathf.Max(1, pts.Count);
+            float xx = 0, xy = 0, yy = 0;
+            foreach (Vector3 p in pts)
+            {
+                float dx = p.x - c.x, dy = p.y - c.y;
+                xx += dx * dx; xy += dx * dy; yy += dy * dy;
+            }
+            float theta = 0.5f * Mathf.Atan2(2f * xy, xx - yy);
+            return new Vector2(Mathf.Cos(theta), Mathf.Sin(theta));
         }
 
         private static Bounds BoundsOf(List<Vector3> pts)

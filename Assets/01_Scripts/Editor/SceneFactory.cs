@@ -204,6 +204,8 @@ namespace Overdrive.EditorTools
                 go.transform.localRotation = Quaternion.Euler(0f, 0f, ramp.AngleDegrees);
                 go.transform.localScale = ramp.Scale;
                 BuilderUtil.SetMaterial(go, AssetFactory.Mat(AssetFactory.MatStairs));
+                // Solo colisión: la rampa naranja no se ve, se ven los escalones del decorado.
+                go.GetComponent<Renderer>().enabled = false;
             }
         }
 

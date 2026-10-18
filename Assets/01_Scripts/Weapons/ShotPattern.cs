@@ -26,9 +26,10 @@ namespace Overdrive.Weapons
             return angles;
         }
 
+        /// <summary>Gira la dirección alrededor del eje vertical; si apunta hacia arriba o abajo, mantiene esa inclinación.</summary>
         public static Vector3 Rotate(Vector3 forward, float angle)
         {
-            forward.y = 0f;
+            if (forward.sqrMagnitude < 1e-6f) forward = Vector3.forward;
             return Quaternion.AngleAxis(angle, Vector3.up) * forward.normalized;
         }
     }

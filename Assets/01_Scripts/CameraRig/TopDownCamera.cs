@@ -28,6 +28,9 @@ namespace Overdrive.CameraRig
         {
             // La vista en primera persona (tecla V) vive en el mismo rig.
             if (GetComponent<FirstPersonCamera>() == null) gameObject.AddComponent<FirstPersonCamera>();
+            // Sangre en la pantalla al morir.
+            if (target != null && FindAnyObjectByType<DeathBloodOverlay>() == null)
+                new GameObject("DeathBlood").AddComponent<DeathBloodOverlay>().Init(target.GetComponent<PlayerLife>());
             ApplyCameraOffset();
             SnapToTarget();
         }

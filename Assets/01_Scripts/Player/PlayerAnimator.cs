@@ -76,6 +76,7 @@ namespace Overdrive.Player
         private bool wasDead;
         private bool wasFinishing;
         private Transform handBone;
+        private bool handIsSocket;
         private Vector3 handRest;
         private bool handRestCaptured;
 
@@ -129,7 +130,7 @@ namespace Overdrive.Player
             wasFinishing = finishing;
         }
 
-        /// <summary>El arma va en la mano del modelo: el punto Hand sigue la posición de la mano derecha (no su giro).</summary>
+        /// <summary>El arma va en la mano del modelo: el punto Hand sigue al WeaponSocket de la mano derecha (no su giro).</summary>
         private void LateUpdate()
         {
             Transform hand = weapons != null ? weapons.Hand : null;
@@ -138,10 +139,11 @@ namespace Overdrive.Player
             {
                 handRest = hand.localPosition;
                 handRestCaptured = true;
-                handBone = animator.GetBoneTransform(HumanBodyBones.RightHand);
+                handBone = HandSocket.Find(animator, out handIsSocket);
             }
+            if (Overdrive.Core.ViewMode.FirstPerson) return; // en primera persona el arma la coloca la cámara
             bool follow = handBone != null && (life == null || !life.IsDead);
-            hand.position = follow ? handBone.position + transform.forward * 0.08f : hand.parent.TransformPoint(handRest);
+            hand.position = follow ? HandSocket.GripPosition(handBone, handIsSocket, transform.forward) : hand.parent.TransformPoint(handRest);
         }
 
         private bool IsArmedWithGun()

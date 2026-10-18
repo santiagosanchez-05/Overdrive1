@@ -190,7 +190,6 @@ namespace Overdrive.UI
 
         public void OnSelect(BaseEventData e)
         {
-            if (!IsSelected) Play(hoverClip);
             IsSelected = true;
             if (_sweepT < 0f) StartSweep();
         }

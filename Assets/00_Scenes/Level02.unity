@@ -50645,6 +50645,7 @@ MonoBehaviour:
   bloodPrefab: {fileID: 1957846278608674559, guid: bc350a3cd578b8445886969eff7f05a3, type: 3}
   maxSplats: 200
   spread: 0.6
+  atlasCells: 2
 --- !u!1 &2016139050
 GameObject:
   m_ObjectHideFlags: 0

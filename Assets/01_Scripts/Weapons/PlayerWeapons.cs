@@ -133,7 +133,10 @@ namespace Overdrive.Weapons
 
             bool trigger = def.Automatic ? held : pressed;
             if (!trigger) return false;
-            return current.TryFire(ShotOrigin, AimDirection, Faction.Player) > 0;
+            // La bala sale de la boca del arma, hacia la mira.
+            Vector3 origin = current.ShotOriginFrom(ShotOrigin);
+            Vector3 direction = aim != null ? aim.ShotDirection(origin) : transform.forward;
+            return current.TryFire(origin, direction, Faction.Player) > 0;
         }
 
         private void UpdateSwingVisual(float deltaTime)

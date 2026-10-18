@@ -35,6 +35,7 @@ namespace Overdrive.EditorTools
             AssetFactory.EnsurePlayerPrefab();
             CharacterFactory.EnsureImports();
             AssetFactory.EnsureEnemyPrefab();
+            HandSocketFactory.EnsureAll();
             CharacterFactory.EnsureNinaPrefab();
             SceneFactory.Build(map);
             StoryFactory.EnsureLevel02();

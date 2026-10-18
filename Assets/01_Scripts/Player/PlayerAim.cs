@@ -63,6 +63,15 @@ namespace Overdrive.Player
         /// </summary>
         public Vector3 ShotDirection(Vector3 origin)
         {
+            // Primera persona: directo a lo que hay bajo la mira, también hacia arriba o hacia el suelo.
+            if (ViewMode.FirstPerson && aimCamera != null)
+            {
+                Vector3 look = aimCamera.transform.forward;
+                Vector3 toAim = AimPoint - origin;
+                if (HasAim && toAim.sqrMagnitude > 0.25f && Vector3.Dot(toAim, look) > 0f) return toAim.normalized;
+                return look;
+            }
+
             Vector3 forward = transform.forward;
             if (!HasAim) return forward;
             Vector3 to = AimPoint - origin;

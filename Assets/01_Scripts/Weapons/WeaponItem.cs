@@ -32,6 +32,10 @@ namespace Overdrive.Weapons
         [SerializeField] private float spinSpeed = 900f;
         [Tooltip("Estela mientras vuela tras lanzarla (shader Overdrive/Trail).")]
         [SerializeField] private TrailRenderer trail;
+        [Tooltip("Empty en el punto donde la mano agarra el arma. Al sujetarla, este punto coincide con la mano.")]
+        [SerializeField] private Transform grip;
+        [Tooltip("Empty en la boca del arma: de aquí salen las balas.")]
+        [SerializeField] private Transform muzzle;
 
         private readonly LinearFlight flight = new LinearFlight();
         private WeaponState state;
@@ -46,6 +50,19 @@ namespace Overdrive.Weapons
         public Mode CurrentMode => mode;
         public bool IsOnGround => mode == Mode.Ground;
         public Projectile ProjectilePrefab => projectilePrefab;
+        public Transform Grip => grip;
+        public Transform Muzzle => muzzle;
+
+        /// <summary>
+        /// Desde dónde sale la bala: la boca del arma si no hay una pared entre el cuerpo y ella;
+        /// si la hay (arma metida en la pared), desde el cuerpo, para no disparar a través del muro.
+        /// </summary>
+        public Vector3 ShotOriginFrom(Vector3 body)
+        {
+            if (muzzle == null || mode != Mode.Held) return body;
+            Vector3 tip = muzzle.position;
+            return Overdrive.Enemies.LineOfSight.IsClear(body, tip, null) ? tip : body;
+        }
         public TrailRenderer Trail => trail;
 
         /// <summary>La estela solo se ve mientras el arma vuela.</summary>
@@ -110,8 +127,10 @@ namespace Overdrive.Weapons
             mode = Mode.Held;
             flight.Stop();
             transform.SetParent(hand, false);
-            transform.localPosition = Vector3.zero;
-            transform.localRotation = Quaternion.identity;
+            // El empty Grip queda justo en la mano y con su orientación.
+            Quaternion rotation = grip != null ? Quaternion.Inverse(grip.localRotation) : Quaternion.identity;
+            transform.localRotation = rotation;
+            transform.localPosition = grip != null ? -(rotation * grip.localPosition) : Vector3.zero;
             SetTrail(false);
         }
 

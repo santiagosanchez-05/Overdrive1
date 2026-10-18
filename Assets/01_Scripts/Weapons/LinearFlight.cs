@@ -2,7 +2,10 @@ using UnityEngine;
 
 namespace Overdrive.Weapons
 {
-    /// <summary>Vuelo en línea recta y horizontal con distancia máxima (balas y armas lanzadas).</summary>
+    /// <summary>
+    /// Vuelo en línea recta con distancia máxima (balas y armas lanzadas). Horizontal por defecto;
+    /// las balas disparadas en primera persona conservan la inclinación (apuntar arriba o abajo).
+    /// </summary>
     public sealed class LinearFlight
     {
         public Vector3 Position { get; private set; }
@@ -12,9 +15,9 @@ namespace Overdrive.Weapons
         public float Travelled { get; private set; }
         public bool Active { get; private set; }
 
-        public void Launch(Vector3 position, Vector3 direction, float speed, float maxDistance)
+        public void Launch(Vector3 position, Vector3 direction, float speed, float maxDistance, bool horizontal = true)
         {
-            direction.y = 0f;
+            if (horizontal) direction.y = 0f;
             Position = position;
             Direction = direction.sqrMagnitude > 0f ? direction.normalized : Vector3.forward;
             Speed = speed;

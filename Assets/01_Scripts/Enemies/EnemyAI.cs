@@ -397,8 +397,10 @@ namespace Overdrive.Enemies
         public int FireAt(PlayerLife target, System.Collections.Generic.List<Projectile> spawned = null)
         {
             if (target == null || CurrentWeaponKind != WeaponKind.Ranged) return 0;
-            Vector3 direction = target.transform.position + Vector3.up - ShotOrigin;
-            return enemy.Weapon.TryFire(ShotOrigin, direction, Faction.Enemy, spawned, consumeAmmo: false);
+            Vector3 origin = enemy.Weapon.ShotOriginFrom(ShotOrigin); // boca del arma
+            Vector3 direction = target.transform.position + Vector3.up - origin;
+            direction.y = 0f;
+            return enemy.Weapon.TryFire(origin, direction, Faction.Enemy, spawned, consumeAmmo: false);
         }
 
         private void SetAgentActive(bool active)

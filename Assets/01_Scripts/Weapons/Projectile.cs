@@ -23,7 +23,9 @@ namespace Overdrive.Weapons
         public void Launch(Vector3 origin, Vector3 direction, float speed, Faction owner, float range = 0f)
         {
             Owner = owner;
-            flight.Launch(origin, direction, speed, range > 0f ? range : maxDistance);
+            // Conserva la inclinación: en primera persona se puede disparar hacia arriba o al suelo.
+            // Desde la vista cenital y desde los enemigos la dirección ya llega horizontal.
+            flight.Launch(origin, direction, speed, range > 0f ? range : maxDistance, horizontal: false);
             transform.SetPositionAndRotation(origin, Quaternion.LookRotation(flight.Direction, Vector3.up));
             // La bala se crea en el origen del prefab y se teletransporta: sin esto la estela
             // dibujaría una raya desde (0,0,0) hasta el arma en el primer fotograma.

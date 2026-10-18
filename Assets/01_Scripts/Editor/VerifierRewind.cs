@@ -139,7 +139,7 @@ namespace Overdrive.EditorTools
             List<IRewindable> targets = rewinder.Targets.ToList();
             c.Check(targets.OfType<PlayerRewind>().Count() == 1, "Se graba al jugador");
             c.Check(targets.OfType<EnemyAI>().Count() == 14, $"Se graban los 10 enemigos y los 4 refuerzos ({targets.OfType<EnemyAI>().Count()})");
-            c.Check(targets.OfType<WeaponItem>().Count() == 15, $"Se graban las 15 armas, también las de los refuerzos ({targets.OfType<WeaponItem>().Count()})");
+            c.Check(targets.OfType<WeaponItem>().Count() == 16, $"Se graban las 16 armas (con el revólver del suelo), también las de los refuerzos ({targets.OfType<WeaponItem>().Count()})");
             c.Check(targets.Contains(briefcase) && targets.Contains(wave) && targets.Contains(manager) && targets.Contains(blood),
                 "Se graban el maletín, los refuerzos, el progreso y la sangre");
             c.Check(targets.Contains(score), "Se graba la puntuación");

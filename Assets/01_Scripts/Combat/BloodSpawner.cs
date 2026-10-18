@@ -3,12 +3,19 @@ using UnityEngine;
 
 namespace Overdrive.Combat
 {
-    /// <summary>Manchas de sangre (quads rojos) en el suelo cuando alguien muere.</summary>
+    /// <summary>
+    /// Manchas de sangre en el suelo cuando alguien muere (enemigo o jugador). Cada mancha es un quad con
+    /// M_Blood, que recorta una salpicadura de un atlas 2x2; aquí se elige una de las cuatro al azar.
+    /// </summary>
     public class BloodSpawner : MonoBehaviour, IRewindable
     {
         [SerializeField] private GameObject bloodPrefab;
         [SerializeField] private int maxSplats = 200;
         [SerializeField] private float spread = 0.6f;
+        [Tooltip("Salpicaduras por lado en la textura de M_Blood (atlas 2x2 = 4 manchas distintas).")]
+        [SerializeField] private int atlasCells = 2;
+
+        private static MaterialPropertyBlock block;
 
         private static BloodSpawner instance;
         private int spawned;
@@ -74,6 +81,21 @@ namespace Overdrive.Combat
             spawned++;
             GameObject splat = Instantiate(bloodPrefab, position, rotation, transform);
             splat.transform.localScale = Vector3.one * size;
+            PickVariant(splat);
+        }
+
+        /// <summary>Elige una de las salpicaduras del atlas para esta mancha.</summary>
+        private void PickVariant(GameObject splat)
+        {
+            if (atlasCells <= 1) return;
+            Renderer r = splat.GetComponentInChildren<Renderer>();
+            if (r == null) return;
+            block ??= new MaterialPropertyBlock();
+            r.GetPropertyBlock(block);
+            int cell = Random.Range(0, atlasCells * atlasCells);
+            float s = 1f / atlasCells;
+            block.SetVector("_BaseMap_ST", new Vector4(s, s, (cell % atlasCells) * s, (cell / atlasCells) * s));
+            r.SetPropertyBlock(block);
         }
 
         private static bool FitsSurface(Vector3 center, Quaternion rotation, float size)

@@ -48,7 +48,7 @@ namespace Overdrive.EditorTools
             if (!EnsureTmpResources()) return;
 
             Sprites s = EnsureSprites();
-            AudioClip hover = EnsureClip("UI_Hover.wav", 2400f, 0.035f, 0.25f);
+            AudioClip hover = EnsureHoverClip();
             AudioClip click = EnsureClip("UI_Click.wav", 1250f, 0.09f, 0.5f);
             Sprite background = EnsureBackground();
 
@@ -160,7 +160,7 @@ namespace Overdrive.EditorTools
         public static void AddPauseMenu(UnityEngine.SceneManagement.Scene scene)
         {
             Sprites s = EnsureSprites();
-            AudioClip hover = EnsureClip("UI_Hover.wav", 2400f, 0.035f, 0.25f);
+            AudioClip hover = EnsureHoverClip();
             AudioClip click = EnsureClip("UI_Click.wav", 1250f, 0.09f, 0.5f);
 
             foreach (GameObject root in scene.GetRootGameObjects())
@@ -689,6 +689,47 @@ namespace Overdrive.EditorTools
             imp.textureCompression = TextureImporterCompression.Uncompressed;
             imp.SaveAndReimport();
             return AssetDatabase.LoadAssetAtPath<Sprite>(path);
+        }
+
+        /// <summary>Hover "neón": clic suave + tono brillante que sube + golpe grave corto (110 ms).</summary>
+        private static AudioClip EnsureHoverClip()
+        {
+            Directory.CreateDirectory(AudioDir);
+            string path = $"{AudioDir}/UI_Hover.wav";
+            if (!File.Exists(path))
+            {
+                const int rate = 44100;
+                const float length = 0.11f;
+                var rng = new System.Random(7);
+                int n = (int)(rate * length);
+                var samples = new short[n];
+                for (int i = 0; i < n; i++)
+                {
+                    float t = i / (float)rate;
+                    float attack = 1f - Mathf.Exp(-t / 0.003f);
+                    float phase = 2f * Mathf.PI * (1500f * t + 450f * t * t / length);
+                    float tone = (0.55f * Mathf.Sin(phase) + 0.25f * Mathf.Sin(2f * phase) * Mathf.Exp(-t / 0.015f)) * attack * Mathf.Exp(-t / 0.028f);
+                    float low = 0.35f * Mathf.Sin(2f * Mathf.PI * 180f * t) * Mathf.Exp(-t / 0.04f) * attack;
+                    float click = 0.15f * ((float)rng.NextDouble() * 2f - 1f) * Mathf.Exp(-t / 0.002f);
+                    samples[i] = (short)(Mathf.Clamp((tone + low + click) * 0.5f, -1f, 1f) * short.MaxValue);
+                }
+                WriteWav(path, samples, rate);
+                AssetDatabase.ImportAsset(path);
+            }
+            return AssetDatabase.LoadAssetAtPath<AudioClip>(path);
+        }
+
+        private static void WriteWav(string path, short[] samples, int rate)
+        {
+            int n = samples.Length;
+            using (var bw = new BinaryWriter(File.Create(path)))
+            {
+                bw.Write("RIFF".ToCharArray()); bw.Write(36 + n * 2); bw.Write("WAVE".ToCharArray());
+                bw.Write("fmt ".ToCharArray()); bw.Write(16); bw.Write((short)1); bw.Write((short)1);
+                bw.Write(rate); bw.Write(rate * 2); bw.Write((short)2); bw.Write((short)16);
+                bw.Write("data".ToCharArray()); bw.Write(n * 2);
+                foreach (short sm in samples) bw.Write(sm);
+            }
         }
 
         private static AudioClip EnsureClip(string file, float freq, float length, float gain)

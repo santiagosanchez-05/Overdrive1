@@ -52,6 +52,12 @@ namespace Overdrive.Enemies
         public WeaponItem Weapon => weapon;
 
         private void OnEnable() => all.Add(this);
+
+        // El arma con la que empieza se colocó en el editor sin su punto de agarre (Grip): se vuelve a sujetar bien.
+        private void Start()
+        {
+            if (weapon != null && weapon.CurrentMode == WeaponItem.Mode.Held && weapon.transform.parent == hand) weapon.AttachTo(hand);
+        }
         private void OnDisable() => all.Remove(this);
 
         private void Update() => Tick(Time.deltaTime);
