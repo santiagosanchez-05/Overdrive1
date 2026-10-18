@@ -126,10 +126,12 @@ namespace Overdrive.EditorTools
                 hideFlags = HideFlags.HideInHierarchy,
             };
             AssetDatabase.AddObjectToAsset(tree, controller);
-            tree.AddChild(LoadClip(ClipIdle), new Vector2(0f, 0f));
+            // Quieto: pose fija (sin la animación de idle).
+            AnimationClip stand = EnsureStandClip();
+            tree.AddChild(stand, new Vector2(0f, 0f));
             tree.AddChild(LoadClip(ClipRun), new Vector2(1f, 0f));
             tree.AddChild(LoadClip(ClipRunBack), new Vector2(-1f, 0f));
-            tree.AddChild(LoadClip(ClipIdle), new Vector2(0f, 1f));
+            tree.AddChild(stand, new Vector2(0f, 1f));
             tree.AddChild(LoadClip(ClipRunGun), new Vector2(1f, 1f));
             tree.AddChild(LoadClip(ClipRunBack), new Vector2(-1f, 1f));
 
@@ -156,6 +158,35 @@ namespace Overdrive.EditorTools
             EditorUtility.SetDirty(controller);
             AssetDatabase.SaveAssets();
             return controller;
+        }
+
+        public static string StandClipPath => AnimationsPath + "/Player_Stand.anim";
+
+        /// <summary>
+        /// Pose de pie sin movimiento: el primer fotograma del idle congelado. Sustituye a la animación de idle,
+        /// así el jugador quieto no se balancea.
+        /// </summary>
+        public static AnimationClip EnsureStandClip()
+        {
+            var existing = AssetDatabase.LoadAssetAtPath<AnimationClip>(StandClipPath);
+            if (existing != null) return existing;
+            AnimationClip source = LoadClip(ClipIdle);
+            var clip = new AnimationClip { name = "Player_Stand" };
+            if (source != null)
+            {
+                foreach (EditorCurveBinding binding in AnimationUtility.GetCurveBindings(source))
+                {
+                    AnimationCurve curve = AnimationUtility.GetEditorCurve(source, binding);
+                    if (curve == null) continue;
+                    float value = curve.Evaluate(0f);
+                    AnimationUtility.SetEditorCurve(clip, binding, AnimationCurve.Constant(0f, 1f, value));
+                }
+            }
+            AnimationClipSettings settings = AnimationUtility.GetAnimationClipSettings(clip);
+            settings.loopTime = true;
+            AnimationUtility.SetAnimationClipSettings(clip, settings);
+            AssetDatabase.CreateAsset(clip, StandClipPath);
+            return clip;
         }
 
         private static void AddAttack(AnimatorStateMachine sm, AnimatorState locomotion, string trigger, string file, Vector3 position)
@@ -187,7 +218,10 @@ namespace Overdrive.EditorTools
             if (controller.layers.Length != 1 || !parameters.All(p => controller.parameters.Any(x => x.name == p))) return false;
             ChildAnimatorState[] states = controller.layers[0].stateMachine.states;
             string[] names = { PlayerAnimator.LocomotionState, "Death", PlayerAnimator.Punch, PlayerAnimator.SwingBat, PlayerAnimator.StabKnife };
-            return names.All(n => states.Any(s => s.state.name == n && s.state.motion != null)) &&
+            // Si el árbol aún usa la animación de idle, se rehace (ahora se usa la pose fija).
+            AnimationClip idle = LoadClip(ClipIdle);
+            bool usesIdle = states.Any(s => s.state.motion is BlendTree t && t.children.Any(ch => ch.motion == idle));
+            return !usesIdle && names.All(n => states.Any(s => s.state.name == n && s.state.motion != null)) &&
                    states.Any(s => s.state.name == PlayerAnimator.LocomotionState && s.state.speedParameterActive &&
                                    s.state.speedParameter == PlayerAnimator.StepSpeedParam);
         }

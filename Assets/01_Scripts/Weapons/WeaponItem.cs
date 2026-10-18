@@ -180,7 +180,7 @@ namespace Overdrive.Weapons
             }
             NoiseSystem.Emit(origin, def.NoiseRadius);
             CameraShake.Shake(def.Shake);
-            GameSounds.Play(def.Type == WeaponType.Shotgun ? Sound.Shotgun : Sound.Smg);
+            GameSounds.Play(def.Type == WeaponType.Shotgun ? Sound.Shotgun : Sound.Smg); // revólver: sonido del subfusil
             return angles.Length;
         }
     }

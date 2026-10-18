@@ -164,12 +164,24 @@ namespace Overdrive.EditorTools
             CaptureGameplay();
         }
 
+        [MenuItem("TopDown/Nivel 02/Añadir menú de pausa y música")]
+        public static void AddPauseAndMusic()
+        {
+            if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+            Scene scene = EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
+            MenuBuilder.AddPauseMenu(scene);
+            MenuBuilder.AddLevelMusic(scene);
+            EditorSceneManager.SaveScene(scene);
+        }
+
         [MenuItem("TopDown/Nivel 02/Construir y verificar")]
         public static void Build()
         {
             PrepareEnvironment();
             Scene scene = SceneManager.GetSceneByPath(ScenePath);
             Level02Gameplay.Build(scene, BuilderUtil.FindRoot(scene, "Level"));
+            MenuBuilder.AddPauseMenu(scene);
+            MenuBuilder.AddLevelMusic(scene);
             EditorSceneManager.SaveScene(scene);
             StoryFactory.EnsureLevel02(); // modelos de los enemigos según su arma y Nina en la entrada
             scene = SceneManager.GetSceneByPath(ScenePath);

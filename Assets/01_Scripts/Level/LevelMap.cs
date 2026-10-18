@@ -28,8 +28,8 @@ namespace Overdrive.Level
         public const char Briefcase = 'C';
         public const char Door = 'D';
         public const char Reinforcement = 'R';
-        public const string EnemyChars = "bksm";
-        public const string FloorWeaponChars = "BKSM";
+        public const string EnemyChars = "bksmv";
+        public const string FloorWeaponChars = "BKSMV";
 
         public readonly struct Block
         {
@@ -106,6 +106,7 @@ namespace Overdrive.Level
                 case 'k': return WeaponType.Knife;
                 case 's': return WeaponType.Shotgun;
                 case 'm': return WeaponType.Smg;
+                case 'v': return WeaponType.Revolver;
                 default: throw new ArgumentException($"'{c}' no es una letra de arma.");
             }
         }

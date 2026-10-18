@@ -9,6 +9,7 @@ namespace Overdrive.Weapons
         Knife,
         Shotgun,
         Smg,
+        Revolver,
     }
 
     /// <summary>Datos fijos de cada tipo de arma.</summary>
@@ -80,6 +81,14 @@ namespace Overdrive.Weapons
             EnemyAttackInterval = 0.3f, EnemyAttackRange = 11f,
         };
 
+        public static readonly WeaponDefinition Revolver = new WeaponDefinition
+        {
+            Type = WeaponType.Revolver, DisplayName = "Revólver", IsMelee = false,
+            UseInterval = 0.35f, MaxAmmo = 6, Pellets = 1, SpreadAngle = 2f, Automatic = false,
+            ProjectileSpeed = 55f, ProjectileRange = 30f, NoiseRadius = 14f, Shake = 0.22f,
+            EnemyAttackInterval = 0.9f, EnemyAttackRange = 10f,
+        };
+
         public static WeaponDefinition Get(WeaponType type)
         {
             switch (type)
@@ -88,6 +97,7 @@ namespace Overdrive.Weapons
                 case WeaponType.Knife: return Knife;
                 case WeaponType.Shotgun: return Shotgun;
                 case WeaponType.Smg: return Smg;
+                case WeaponType.Revolver: return Revolver;
                 default: throw new ArgumentOutOfRangeException(nameof(type), type, null);
             }
         }

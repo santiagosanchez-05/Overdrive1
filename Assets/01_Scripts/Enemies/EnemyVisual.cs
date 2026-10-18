@@ -14,7 +14,8 @@ namespace Overdrive.Enemies
             {
                 case WeaponType.Knife: return 1;
                 case WeaponType.Shotgun: return 2;
-                case WeaponType.Smg: return 3;
+                case WeaponType.Smg:
+                case WeaponType.Revolver: return 3;
                 default: return 0;
             }
         }

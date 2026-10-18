@@ -22,6 +22,10 @@ namespace Overdrive.EditorTools
         public static string PlayerPrefabPath => PrefabsPath + "/Player.prefab";
         public static string EnemyPrefabPath => PrefabsPath + "/Enemy.prefab";
         public static string BulletPrefabPath => PrefabsPath + "/Bullet.prefab";
+
+        /// <summary>Bala de cada arma de fuego: el subfusil usa la bala base (Bullet.prefab).</summary>
+        public static string BulletPrefabPathFor(WeaponType type) =>
+            type == WeaponType.Smg ? BulletPrefabPath : $"{PrefabsPath}/Bullet_{type}.prefab";
         public static string BloodPrefabPath => PrefabsPath + "/Blood.prefab";
         public static string BriefcasePrefabPath => PrefabsPath + "/Briefcase.prefab";
 
@@ -396,6 +400,12 @@ namespace Overdrive.EditorTools
                         new Part("Mag", PrimitiveType.Cube, new Vector3(0f, -0.13f, 0.12f), new Vector3(0.06f, 0.16f, 0.08f), Vector3.zero, MatWeaponDark),
                         new Part("Barrel", PrimitiveType.Cube, new Vector3(0f, 0.03f, 0.37f), new Vector3(0.05f, 0.05f, 0.2f), Vector3.zero, MatWeaponDark),
                     };
+                case WeaponType.Revolver:
+                    return new[]
+                    {
+                        new Part("Grip", PrimitiveType.Cube, new Vector3(0f, -0.06f, -0.02f), new Vector3(0.05f, 0.12f, 0.06f), new Vector3(-15f, 0f, 0f), MatWeaponDark),
+                        new Part("Barrel", PrimitiveType.Cube, new Vector3(0f, 0.02f, 0.12f), new Vector3(0.05f, 0.06f, 0.26f), Vector3.zero, MatWeaponGun),
+                    };
                 default:
                     throw new ArgumentOutOfRangeException(nameof(type), type, null);
             }
@@ -403,16 +413,32 @@ namespace Overdrive.EditorTools
 
         public static WeaponType[] AllWeaponTypes => (WeaponType[])Enum.GetValues(typeof(WeaponType));
 
-        public static GameObject EnsureBulletPrefab()
+        public static GameObject EnsureBulletPrefab() => EnsureBulletPrefab(WeaponType.Smg);
+
+        /// <summary>Bala de un arma de fuego: su modelo de 02_Modelos/Weapons, o un cubo si falta.</summary>
+        public static GameObject EnsureBulletPrefab(WeaponType type)
         {
             BuilderUtil.EnsureFolder(PrefabsPath);
-            return BuilderUtil.EditPrefab(BulletPrefabPath, "Bullet", root =>
+            string path = BulletPrefabPathFor(type);
+            string name = System.IO.Path.GetFileNameWithoutExtension(path);
+            return BuilderUtil.EditPrefab(path, name, root =>
             {
                 var projectile = BuilderUtil.EnsureComponent<Projectile>(root);
-                GameObject model = BuilderUtil.EnsurePrimitiveChild(root.transform, "Model", PrimitiveType.Cube, false);
-                BuilderUtil.SetLocal(model, Vector3.zero, new Vector3(0.1f, 0.1f, 0.45f), Quaternion.identity);
-                BuilderUtil.SetMaterial(model, Mat(MatBullet));
-                model.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                Transform old = root.transform.Find("Model");
+                if (WeaponModelFactory.TryGetBullet(type, out WeaponModelFactory.Spec spec))
+                {
+                    if (old != null && old.GetComponent<MeshFilter>() != null) UnityEngine.Object.DestroyImmediate(old.gameObject);
+                    GameObject model = BuilderUtil.EnsureChild(root.transform, "Model");
+                    WeaponModelFactory.Apply(model.transform, spec, $"BulletModel_{type}", false);
+                }
+                else
+                {
+                    if (old != null && old.GetComponent<MeshFilter>() == null) UnityEngine.Object.DestroyImmediate(old.gameObject);
+                    GameObject model = BuilderUtil.EnsurePrimitiveChild(root.transform, "Model", PrimitiveType.Cube, false);
+                    BuilderUtil.SetLocal(model, Vector3.zero, new Vector3(0.1f, 0.1f, 0.45f), Quaternion.identity);
+                    BuilderUtil.SetMaterial(model, Mat(MatBullet));
+                    model.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                }
 
                 TrailRenderer trail = EnsureTrail(root, 0.07f, 0.09f, Mat(MatBulletTrail), true);
                 BuilderUtil.SetRef(projectile, "trail", trail);
@@ -422,9 +448,9 @@ namespace Overdrive.EditorTools
         public static void EnsureWeaponPrefabs()
         {
             BuilderUtil.EnsureFolder(PrefabsPath);
-            var bullet = AssetDatabase.LoadAssetAtPath<GameObject>(BulletPrefabPath).GetComponent<Projectile>();
             foreach (WeaponType type in AllWeaponTypes)
             {
+                Projectile bullet = WeaponDefinition.Get(type).IsMelee ? null : EnsureBulletPrefab(type).GetComponent<Projectile>();
                 BuilderUtil.EditPrefab(WeaponPrefabPath(type), $"Weapon_{type}", root =>
                 {
                     var item = BuilderUtil.EnsureComponent<WeaponItem>(root);
@@ -438,6 +464,13 @@ namespace Overdrive.EditorTools
                     so.ApplyModifiedPropertiesWithoutUndo();
 
                     GameObject model = BuilderUtil.EnsureChild(root.transform, "Model");
+                    if (WeaponModelFactory.TryGetWeapon(type, out WeaponModelFactory.Spec spec))
+                    {
+                        WeaponModelFactory.Apply(model.transform, spec, $"WeaponModel_{type}");
+                        return;
+                    }
+                    if (model.transform.Find(WeaponModelFactory.MeshName) != null)
+                        UnityEngine.Object.DestroyImmediate(model.transform.Find(WeaponModelFactory.MeshName).gameObject);
                     foreach (Part part in WeaponParts(type))
                     {
                         GameObject go = BuilderUtil.EnsurePrimitiveChild(model.transform, part.Name, part.Shape, false);
