@@ -340,7 +340,8 @@ public static class ElysiumMaterialFixer
 
         // Volumen global con bloom para los emisivos (neones, pantallas, letrero).
         var go = GameObject.Find("Elysium_GlobalVolume") ?? new GameObject("Elysium_GlobalVolume");
-        var vol = go.GetComponent<Volume>() ?? go.AddComponent<Volume>();
+        var vol = go.GetComponent<Volume>();
+        if (vol == null) vol = go.AddComponent<Volume>();
         vol.isGlobal = true;
         string profilePath = "Assets/00_Scenes/Level02_VolumeProfile.asset";
         var profile = AssetDatabase.LoadAssetAtPath<VolumeProfile>(profilePath);
