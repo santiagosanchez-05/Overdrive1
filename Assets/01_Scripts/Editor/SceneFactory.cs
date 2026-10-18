@@ -25,7 +25,8 @@ namespace Overdrive.EditorTools
     {
         public static string ScenesPath => AssetFactory.ScenesPath;
         public static string ScenePath => ScenesPath + "/Level01.unity";
-        public const float WallHeight = 2.5f;
+        /// <summary>Alto de las paredes: los personajes miden ~2,4 m (escala 1,3), así que sobran por encima. Por debajo del piso de arriba (4 m).</summary>
+        public const float WallHeight = 3.3f;
 
         public const string LevelRoot = "Level";
         public const string FloorName = "Floor";

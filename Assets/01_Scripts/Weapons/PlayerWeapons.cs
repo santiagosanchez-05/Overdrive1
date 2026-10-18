@@ -154,7 +154,9 @@ namespace Overdrive.Weapons
             if (!trigger) return false;
             Vector3 origin = FireOrigin();
             Vector3 direction = aim != null ? aim.ShotDirection(origin) : transform.forward;
-            return current.TryFire(origin, direction, Faction.Player) > 0;
+            // Las balas del jugador van rectas: sin dispersión en armas de una bala; la escopeta abre su abanico.
+            float spread = def.Pellets > 1 ? 1f : 0f;
+            return current.TryFire(origin, direction, Faction.Player, spreadScale: spread) > 0;
         }
 
         /// <summary>
@@ -165,6 +167,14 @@ namespace Overdrive.Weapons
         public Vector3 FireOrigin()
         {
             if (current == null) return ShotOrigin;
+            // Primera persona: la bala sale del centro de la vista, justo bajo la mira, y va recta hacia ella
+            // (si saliera de la boca del arma, abajo a la derecha, cruzaría la pantalla en diagonal).
+            Camera cam = aim != null ? aim.AimCamera : null;
+            if (ViewMode.FirstPerson && cam != null)
+            {
+                Vector3 eye = cam.transform.position + cam.transform.forward * 0.45f - cam.transform.up * 0.05f;
+                if (Overdrive.Enemies.LineOfSight.IsClear(ShotOrigin, eye, null)) return eye;
+            }
             Vector3 origin = current.ShotOriginFrom(ShotOrigin);
             if (!ViewMode.FirstPerson) origin.y = ShotOrigin.y;
             return origin;

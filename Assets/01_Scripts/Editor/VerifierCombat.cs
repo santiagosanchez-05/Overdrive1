@@ -20,6 +20,7 @@ namespace Overdrive.EditorTools
         {
             VerifyDamageLogic(c);
             VerifyHitZoneSimulation(c);
+            VerifyStraightShots(c);
             VerifyCheckpointSave(c);
         }
 
@@ -71,7 +72,14 @@ namespace Overdrive.EditorTools
                 Physics.SyncTransforms();
                 Transform head = e1.transform.Find(HeadHitbox.ObjectName);
                 Transform body = e1.transform.Find(HeadHitbox.BodyName);
-                c.Check(head != null && body != null, "Cada personaje tiene zona de cabeza y de cuerpo");
+                Transform legs = e1.transform.Find(HeadHitbox.LegsName);
+                c.Check(head != null && body != null && legs != null, "Cada personaje tiene zonas de cabeza, torso y piernas");
+                if (legs != null)
+                {
+                    var legCapsule = legs.GetComponent<CapsuleCollider>();
+                    c.Check(legCapsule.enabled && legCapsule.bounds.min.y - e1.transform.position.y < 0.35f,
+                        "La zona de las piernas llega a los pies");
+                }
                 if (head != null && body != null)
                 {
                     var capsule = body.GetComponent<CapsuleCollider>();
@@ -163,6 +171,33 @@ namespace Overdrive.EditorTools
                     if (go != null) Object.DestroyImmediate(go);
                 foreach (Projectile p in Object.FindObjectsByType<Projectile>(FindObjectsInactive.Include))
                     Object.DestroyImmediate(p.gameObject);
+            }
+        }
+
+        /// <summary>Las balas del jugador con armas de una bala van rectas (sin dispersión); la escopeta abre su abanico.</summary>
+        private static void VerifyStraightShots(Checker c)
+        {
+            var gunPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(AssetFactory.WeaponPrefabPath(WeaponType.Smg));
+            if (gunPrefab == null) return;
+            var gun = Object.Instantiate(gunPrefab).GetComponent<WeaponItem>();
+            var spawned = new List<Projectile>();
+            try
+            {
+                bool straight = true;
+                for (int i = 0; i < 20; i++)
+                {
+                    gun.State.Tick(1f);
+                    spawned.Clear();
+                    gun.TryFire(new Vector3(0f, 500f, 0f), Vector3.forward, Faction.Player, spawned, consumeAmmo: false, spreadScale: 0f);
+                    foreach (Projectile p in spawned)
+                        if (Vector3.Angle(p.Flight.Direction, Vector3.forward) > 0.01f) straight = false;
+                    foreach (Projectile p in spawned) Object.DestroyImmediate(p.gameObject);
+                }
+                c.Check(straight, "Las balas del jugador (subfusil, revólver) van rectas, sin dispersión");
+            }
+            finally
+            {
+                Object.DestroyImmediate(gun.gameObject);
             }
         }
 

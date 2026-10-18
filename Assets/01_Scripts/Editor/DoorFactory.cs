@@ -20,7 +20,8 @@ namespace Overdrive.EditorTools
         public const string LeftHingeName = "Hinge_L";
         public const string RightHingeName = "Hinge_R";
         public const string LeafName = "Leaf";
-        public const float DoorHeight = 2.3f;
+        /// <summary>Alto de las puertas de los mapas por celdas (nivel 1): más que los personajes (~2,4 m).</summary>
+        public const float DoorHeight = 2.9f;
         public const float LeafThickness = 0.08f;
 
         public static string ModelPath => "Assets/kenney_furniture-kit/Models/FBX format/DoubleDoor.fbx";
@@ -122,7 +123,7 @@ namespace Overdrive.EditorTools
         /// <paramref name="across"/> = dirección a través del hueco (el lado de las dos salas), ancho del hueco.
         /// </summary>
         public static SwingDoor EnsureDoor(Transform parent, string name, Vector3 center, Vector3 across, float width,
-            (Mesh left, Mesh right, Material[] leftMats, Material[] rightMats) leaves)
+            (Mesh left, Mesh right, Material[] leftMats, Material[] rightMats) leaves, float height = DoorHeight)
         {
             GameObject door = BuilderUtil.EnsureChild(parent, name);
             across.y = 0f;
@@ -134,8 +135,8 @@ namespace Overdrive.EditorTools
             modifier.ignoreFromBuild = true;
 
             float leafWidth = width * 0.5f;
-            Transform leftHinge = EnsureLeaf(door.transform, LeftHingeName, new Vector3(-width * 0.5f, 0f, 0f), leaves.left, leaves.leftMats, leafWidth);
-            Transform rightHinge = EnsureLeaf(door.transform, RightHingeName, new Vector3(width * 0.5f, 0f, 0f), leaves.right, leaves.rightMats, leafWidth);
+            Transform leftHinge = EnsureLeaf(door.transform, LeftHingeName, new Vector3(-width * 0.5f, 0f, 0f), leaves.left, leaves.leftMats, leafWidth, height);
+            Transform rightHinge = EnsureLeaf(door.transform, RightHingeName, new Vector3(width * 0.5f, 0f, 0f), leaves.right, leaves.rightMats, leafWidth, height);
 
             var swing = BuilderUtil.EnsureComponent<SwingDoor>(door);
             var so = new SerializedObject(swing);
@@ -147,14 +148,14 @@ namespace Overdrive.EditorTools
             return swing;
         }
 
-        private static Transform EnsureLeaf(Transform door, string hingeName, Vector3 hingePos, Mesh mesh, Material[] mats, float leafWidth)
+        private static Transform EnsureLeaf(Transform door, string hingeName, Vector3 hingePos, Mesh mesh, Material[] mats, float leafWidth, float height)
         {
             GameObject hinge = BuilderUtil.EnsureChild(door, hingeName);
             BuilderUtil.SetLocal(hinge, hingePos, Vector3.one, Quaternion.identity);
             GameObject leaf = BuilderUtil.EnsureChild(hinge.transform, LeafName);
             // Un centímetro más larga: cerradas, las dos hojas se solapan en el centro y no queda rendija por la que
             // se vea o pase una bala (no tienen física, así que al girar no chocan entre ellas).
-            BuilderUtil.SetLocal(leaf, Vector3.zero, new Vector3(leafWidth + 0.01f, DoorHeight, LeafThickness), Quaternion.identity);
+            BuilderUtil.SetLocal(leaf, Vector3.zero, new Vector3(leafWidth + 0.01f, height, LeafThickness), Quaternion.identity);
             BuilderUtil.EnsureComponent<MeshFilter>(leaf).sharedMesh = mesh;
             var renderer = BuilderUtil.EnsureComponent<MeshRenderer>(leaf);
             renderer.sharedMaterials = mats;
@@ -215,10 +216,22 @@ namespace Overdrive.EditorTools
             {
                 if (!TryMeasureOpening(frame, out Vector3 center, out Vector3 along, out float width)) continue;
                 string name = "Door_" + frame.name;
-                EnsureDoor(root, name, center, Vector3.Cross(along, Vector3.up), width, leaves);
+                // En marcos de un modelo (nivel 2) la hoja llena el hueco: tan alta como el marco, sin pasarse.
+                float frameHeight = FrameHeight(frame);
+                float height = frameHeight > 0f ? Mathf.Max(2f, frameHeight - 0.08f) : DoorHeight;
+                EnsureDoor(root, name, center, Vector3.Cross(along, Vector3.up), width, leaves, height);
                 names.Add(name);
             }
             RemoveOthers(root, names);
+        }
+
+        private static float FrameHeight(Transform frame)
+        {
+            Renderer[] rs = frame.GetComponentsInChildren<Renderer>();
+            if (rs.Length == 0) return 0f;
+            Bounds b = rs[0].bounds;
+            foreach (Renderer r in rs) b.Encapsulate(r.bounds);
+            return b.size.y;
         }
 
         /// <summary>Centro (a ras de suelo), dirección de la pared y ancho libre del hueco de un marco.</summary>

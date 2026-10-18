@@ -24,6 +24,9 @@ namespace Overdrive.Weapons
 
         private static readonly Comparison<RaycastHit> ByDistance = (a, b) => a.distance.CompareTo(b.distance);
 
+        /// <summary>Distancia tras el primer impacto en la que todavía cuenta atravesar la cabeza del mismo personaje.</summary>
+        public const float HeadPriorityDistance = 0.45f;
+
         public static bool TryCast(Vector3 origin, Vector3 direction, float distance, float radius, Faction owner, out Hit hit)
         {
             hit = default;
@@ -44,6 +47,19 @@ namespace Overdrive.Weapons
                 hit.Player = player;
                 hit.Distance = h.distance;
                 hit.Head = HeadHitbox.IsHead(h.collider);
+                // Si la bala sigue y atraviesa también la cabeza del mismo personaje justo después, es tiro a la cabeza
+                // (al apuntar a la cabeza desde abajo la bala roza antes el cuello o los hombros).
+                if (!hit.Head && (enemy != null || player != null))
+                {
+                    Transform who = enemy != null ? enemy.transform : player.transform;
+                    foreach (RaycastHit other in hits)
+                        if (other.distance <= h.distance + HeadPriorityDistance && HeadHitbox.IsHead(other.collider) &&
+                            other.collider.transform.IsChildOf(who))
+                        {
+                            hit.Head = true;
+                            break;
+                        }
+                }
                 // Si el barrido empieza solapado, Unity devuelve punto cero: usamos el origen.
                 hit.Point = h.distance > 0f ? h.point : origin;
                 return true;

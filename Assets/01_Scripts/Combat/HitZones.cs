@@ -38,9 +38,16 @@ namespace Overdrive.Combat
             return new Vector3(character.position.x, Mathf.Min(HeadY(character), ReachTop(character)), character.position.z);
         }
 
-        /// <summary>Punto al que apuntar para dar en el pecho.</summary>
+        /// <summary>Punto al que apuntar para dar en el pecho: el hueso del pecho si tiene esqueleto.</summary>
         public static Vector3 ChestPoint(Transform character)
         {
+            if (character.Find(HeadHitbox.BodyName) != null)
+                foreach (Animator animator in character.GetComponentsInChildren<Animator>(false))
+                {
+                    if (!animator.isHuman || !animator.isActiveAndEnabled) continue;
+                    Transform chest = animator.GetBoneTransform(HumanBodyBones.Chest) ?? animator.GetBoneTransform(HumanBodyBones.Spine);
+                    if (chest != null) return chest.position;
+                }
             float feet = character.position.y;
             float y = Mathf.Lerp(feet, HeadY(character), 0.6f);
             // Sin zona de cuerpo (aún no ha arrancado), que quede dentro de la cápsula.

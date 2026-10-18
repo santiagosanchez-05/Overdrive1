@@ -295,6 +295,7 @@ namespace Overdrive.EditorTools
             foreach (GameObject root in scene.GetRootGameObjects()) Object.DestroyImmediate(root);
             var level = new GameObject("Level");
             Level02Environment.Build(level.transform);
+            ScaleEnvironment(level.transform);
             ConfigureLighting();
             Level02Environment.BakeNavigation(level);
             EditorSceneManager.SaveScene(scene);
@@ -302,6 +303,88 @@ namespace Overdrive.EditorTools
             InspectNavigation();
             CaptureOverview();
             EditorSceneManager.SaveScene(scene);
+        }
+
+        /// <summary>
+        /// Los personajes están a escala 1,3 y el club se modeló para gente de tamaño normal: paredes y puertas
+        /// se quedaban bajas. Solo las paredes, marcos y puertas crecen en vertical (desde su base); suelos,
+        /// escaleras y escalones no cambian, así que se camina igual. Si una pared tiene otro piso encima, crece
+        /// solo hasta tocarlo.
+        /// </summary>
+        public const float WallScaleY = 1.3f;
+
+        private static void ScaleEnvironment(Transform level)
+        {
+            Physics.SyncTransforms();
+            var done = new System.Collections.Generic.HashSet<Transform>();
+            var renderers = level.GetComponentsInChildren<MeshRenderer>(true)
+                .OrderBy(r => Depth(r.transform)).ToList();
+            int raised = 0;
+            foreach (MeshRenderer r in renderers)
+            {
+                Transform t = r.transform;
+                if (!IsWall(r) || HasAncestorIn(t, done)) continue;
+                if (Vector3.Dot(t.up, Vector3.up) < 0.99f) continue; // solo piezas verticales
+                Bounds b = r.bounds;
+                float extra = b.size.y * (WallScaleY - 1f);
+                // Sin atravesar el piso de arriba: lo que haya encima de la pared (que no sea otra pared).
+                float room = SpaceAbove(b, r);
+                extra = Mathf.Min(extra, room);
+                if (extra < 0.05f) continue;
+                float k = (b.size.y + extra) / b.size.y;
+                Vector3 s = t.localScale;
+                t.localScale = new Vector3(s.x, s.y * k, s.z);
+                Physics.SyncTransforms();
+                float shift = b.min.y - r.bounds.min.y;
+                t.position += Vector3.up * shift; // la base se queda donde estaba
+                done.Add(t);
+                raised++;
+            }
+            Physics.SyncTransforms();
+            Debug.Log($"[Level02] Paredes, marcos y puertas elevados: {raised}.");
+        }
+
+        private static bool IsWall(Renderer r)
+        {
+            string n = r.name.ToLowerInvariant();
+            bool named = n.Contains("wall") || n.Contains("frame") || n.Contains("door") || n.Contains("pared");
+            Bounds b = r.bounds;
+            bool thinTall = b.size.y > 1.6f && Mathf.Min(b.size.x, b.size.z) < 0.8f && Mathf.Max(b.size.x, b.size.z) > 0.3f;
+            bool notFloor = !(n.Contains("floor") || n.Contains("stair") || n.Contains("step") || n.Contains("ramp") || n.Contains("rail"));
+            // Las mallas de una sala entera (paredes + suelo + escalones juntos) no: estirarlas subiría los escalones.
+            bool thin = Mathf.Min(b.size.x, b.size.z) < 1.2f;
+            return notFloor && thin && b.size.y > 1.6f && (named || thinTall);
+        }
+
+        /// <summary>Hueco libre por encima de la pared hasta el siguiente suelo o techo (rayos desde su parte de arriba).</summary>
+        private static float SpaceAbove(Bounds b, Renderer self)
+        {
+            float best = float.MaxValue;
+            for (int i = 0; i < 5; i++)
+            {
+                float u = i == 0 ? 0.5f : (i % 2 == 0 ? 0.15f : 0.85f);
+                float v = i < 3 ? 0.5f : (i == 3 ? 0.15f : 0.85f);
+                Vector3 from = new Vector3(Mathf.Lerp(b.min.x, b.max.x, u), b.max.y + 0.01f, Mathf.Lerp(b.min.z, b.max.z, v));
+                foreach (RaycastHit hit in Physics.RaycastAll(from, Vector3.up, 10f, ~0, QueryTriggerInteraction.Ignore))
+                {
+                    if (hit.collider.transform.IsChildOf(self.transform)) continue;
+                    best = Mathf.Min(best, hit.distance - 0.02f);
+                }
+            }
+            return best;
+        }
+
+        private static int Depth(Transform t)
+        {
+            int d = 0;
+            for (; t.parent != null; t = t.parent) d++;
+            return d;
+        }
+
+        private static bool HasAncestorIn(Transform t, System.Collections.Generic.HashSet<Transform> set)
+        {
+            for (Transform p = t.parent; p != null; p = p.parent) if (set.Contains(p)) return true;
+            return false;
         }
 
         private static void ConfigureLighting()
