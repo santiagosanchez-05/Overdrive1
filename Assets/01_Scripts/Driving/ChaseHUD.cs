@@ -6,9 +6,9 @@ namespace Overdrive.Driving
     /// <summary>Textos del HUD de la persecución (lógica pura, comprobable en el editor).</summary>
     public static class ChaseText
     {
-        public const string Controls = "W/S acelerar y frenar · A/D girar · Espacio freno de mano · Ratón apuntar · Clic izquierdo disparar";
+        public const string Controls = "· A/D girar · Ratón apuntar · Clic izquierdo disparar";
         public const string Won = "Habéis llegado al piso franco";
-        public const string WonHint = "ESPACIO · Continuar";
+        public const string WonHint = "ESPACIO / ENTER · Ver el final";
         public const string Lost = "El coche ha quedado destrozado";
         public const string LostHint = "Presiona R para reiniciar";
 

@@ -388,7 +388,7 @@ namespace Overdrive.EditorTools
             so.FindProperty("dialogue").objectReferenceValue = dialogue;
             so.FindProperty("dealerPrefab").objectReferenceValue = AssetDatabase.LoadAssetAtPath<Car>(VehicleFactory.DealerPrefabPath);
             so.FindProperty("armoredPrefab").objectReferenceValue = AssetDatabase.LoadAssetAtPath<Car>(VehicleFactory.ArmoredPrefabPath);
-            so.FindProperty("nextScene").stringValue = "Menu";
+            so.FindProperty("nextScene").stringValue = "Ending";
             SerializedProperty waves = so.FindProperty("waves");
             waves.arraySize = Waves.Length;
             for (int i = 0; i < Waves.Length; i++)
@@ -549,7 +549,7 @@ namespace Overdrive.EditorTools
             c.Check(level.Player.Rail != null && level.Player.Rail.Road == road && level.Player.Body.isKinematic,
                 "El coche va sobre la carretera, sin física que lo haga girar");
             c.Check(level.Dialogue != null && scene.GetRootGameObjects().SelectMany(r => r.GetComponentsInChildren<ChaseHUD>(true)).Any(), "Hay diálogo de Nina y HUD");
-            c.Check(level.NextScene == "Menu", "Al acabar vuelve al menú");
+            c.Check(level.NextScene == "Ending", "Al acabar continúa al epílogo y los créditos");
             float startAlong = road.Project(level.Player.transform.position, out float lateral);
             c.Check(Mathf.Abs(startAlong - StartAlong) < 1f && Mathf.Abs(lateral) < 0.5f, "El coche empieza en la carretera, al principio");
             var cam = scene.GetRootGameObjects().SelectMany(r => r.GetComponentsInChildren<CarCamera>(true)).FirstOrDefault();
