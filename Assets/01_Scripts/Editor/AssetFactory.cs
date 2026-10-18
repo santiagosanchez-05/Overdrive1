@@ -327,12 +327,16 @@ namespace Overdrive.EditorTools
             return BuilderUtil.EditPrefab(BriefcasePrefabPath, "Briefcase", root =>
             {
                 BuilderUtil.EnsureComponent<BriefcasePickup>(root);
-                GameObject body = BuilderUtil.EnsurePrimitiveChild(root.transform, "Body", PrimitiveType.Cube, false);
-                BuilderUtil.SetLocal(body, new Vector3(0f, 0.09f, 0f), new Vector3(0.6f, 0.18f, 0.42f), Quaternion.identity);
-                BuilderUtil.SetMaterial(body, Mat(MatBriefcase));
-                GameObject handle = BuilderUtil.EnsurePrimitiveChild(root.transform, "Handle", PrimitiveType.Cube, false);
-                BuilderUtil.SetLocal(handle, new Vector3(0f, 0.09f, 0.24f), new Vector3(0.22f, 0.06f, 0.06f), Quaternion.identity);
-                BuilderUtil.SetMaterial(handle, Mat(MatWeaponDark));
+                if (!BriefcaseModel.Apply(root))
+                {
+                    // Sin el modelo (02_Modelos/Props/Briefcase.fbx): el maletín de cubos de siempre.
+                    GameObject body = BuilderUtil.EnsurePrimitiveChild(root.transform, "Body", PrimitiveType.Cube, false);
+                    BuilderUtil.SetLocal(body, new Vector3(0f, 0.09f, 0f), new Vector3(0.6f, 0.18f, 0.42f), Quaternion.identity);
+                    BuilderUtil.SetMaterial(body, Mat(MatBriefcase));
+                    GameObject handle = BuilderUtil.EnsurePrimitiveChild(root.transform, "Handle", PrimitiveType.Cube, false);
+                    BuilderUtil.SetLocal(handle, new Vector3(0f, 0.09f, 0.24f), new Vector3(0.22f, 0.06f, 0.06f), Quaternion.identity);
+                    BuilderUtil.SetMaterial(handle, Mat(MatWeaponDark));
+                }
 
                 GameObject glow = EnsureHalo(root.transform, "Glow", Mat(MatAuraBriefcase));
                 BuilderUtil.SetLocal(glow, new Vector3(0f, 0.35f, 0f), Vector3.one, Quaternion.identity);

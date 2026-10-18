@@ -42,6 +42,8 @@ namespace Overdrive.EditorTools
         public const float CharacterScale = 0.7f;
         /// <summary>Balas del revólver con el que se empieza el nivel (el revólver normal trae 6).</summary>
         public const int StartingRevolverAmmo = 20;
+        /// <summary>Armas de los guardias que salen en el ático del Jefe (solo bate y cuchillo).</summary>
+        public static readonly WeaponType[] ArenaGuardWeapons = { WeaponType.Bat, WeaponType.Knife };
         /// <summary>Por encima de esto (sobre el suelo) se considera piso superior.</summary>
         private const float UpperFloorMinHeight = 1.6f;
         private static float floorY;
@@ -112,8 +114,9 @@ namespace Overdrive.EditorTools
             layout.Boss = arena.Boss;
             layout.Reinforcements = arena.Rage.ToList();
             layout.Exit = arena.Exit;
-            var wave = CreateBossReinforcements(player.Life, layout.Reinforcements, "Boss Reinforcements", new[] { WeaponType.Smg, WeaponType.Bat, WeaponType.Knife });
-            var finalWave = CreateBossReinforcements(player.Life, arena.Final, "Boss Final Wave", new[] { WeaponType.Shotgun, WeaponType.Smg });
+            // Los guardias del ático van solo cuerpo a cuerpo: las armas de fuego quedan para el Jefe.
+            var wave = CreateBossReinforcements(player.Life, layout.Reinforcements, "Boss Reinforcements", ArenaGuardWeapons);
+            var finalWave = CreateBossReinforcements(player.Life, arena.Final, "Boss Final Wave", new[] { ArenaGuardWeapons[1], ArenaGuardWeapons[0] });
             var boss = CreateBoss(player.Life, layout, wave);
             boss.transform.rotation = Quaternion.LookRotation(Flat(arena.Start - arena.Boss));
             ConfigureBossFight(boss, finalWave);

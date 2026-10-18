@@ -111,6 +111,15 @@ namespace Overdrive.EditorTools
             c.Check(manager.Enemies.Contains(boss.GetComponent<Enemy>()) && manager.Enemies.Length >= elevator.Guards.Length + 1 + 5,
                 $"El nivel cuenta guardias, Jefe y refuerzos ({manager.Enemies.Length})");
             c.Check(manager.NextScene == "Level04", "Al acabar pasa a la huida en coche");
+            var music = BuilderUtil.FindRoot(scene, "Music");
+            var musicSource = music != null ? music.GetComponent<AudioSource>() : null;
+            c.Check(musicSource != null && musicSource.clip != null && musicSource.clip.name == "DurantePartida_Nvl3" && musicSource.loop && musicSource.playOnAwake,
+                "Suena el techno del nivel 3 en bucle, también en el combate contra el Jefe");
+            var arenaGuards = new[] { "Boss Reinforcements", "Boss Final Wave" }
+                .Select(n => BuilderUtil.FindRoot(scene, n)).Where(r => r != null)
+                .SelectMany(r => r.GetComponentsInChildren<Enemy>(true)).ToArray();
+            c.Check(arenaGuards.Length >= 5 && arenaGuards.All(g => g.Weapon != null && g.Weapon.Definition.IsMelee),
+                $"Los guardias del ático solo llevan bate o cuchillo ({string.Join(", ", arenaGuards.Select(g => g.Weapon != null ? g.Weapon.Definition.Type.ToString() : "nada"))})");
             int arenaWeapons = scene.GetRootGameObjects().SelectMany(r => r.GetComponentsInChildren<Transform>(true)).Count(t => t.name.StartsWith("Arena_"));
             c.Check(arenaWeapons >= 5, $"Hay armas en el ático ({arenaWeapons})");
         }

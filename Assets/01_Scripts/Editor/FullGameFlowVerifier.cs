@@ -53,9 +53,13 @@ namespace Overdrive.EditorTools
             if (menuController != null)
             {
                 Check(menuController.gameScene == "Level01", "MainMenuController.gameScene inicia en 'Level01'");
-                Check(menuController.levelScenes != null && menuController.levelScenes.Length >= 2 &&
-                      menuController.levelScenes[0] == "Level01" && menuController.levelScenes[1] == "Level02",
-                      "MainMenuController permite seleccionar Level01 y Level02");
+                string[] expected = { "Level01", "Level02", "Level03", "Level04" };
+                Check(menuController.levelScenes != null && menuController.levelScenes.SequenceEqual(expected) &&
+                      menuController.levelButtons != null && menuController.levelButtons.Length == expected.Length &&
+                      menuController.levelButtons.All(b => b != null),
+                      "MainMenuController permite seleccionar los 4 niveles, cada uno con su botón");
+                foreach (string level in expected)
+                    Check(buildScenes.Any(p => p.EndsWith(level + ".unity")), $"Build Settings incluye {level}.unity (para cargarlo desde el menú)");
                 Check(menuController.playButton != null, "Botón JUGAR conectado");
                 Check(menuController.levelsButton != null, "Botón NIVELES conectado");
             }

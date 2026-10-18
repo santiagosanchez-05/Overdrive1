@@ -54,6 +54,30 @@ namespace Overdrive.EditorTools
                     pickup.Glow.GetComponent<Renderer>().sharedMaterial == AssetFactory.Mat(AssetFactory.MatAuraBriefcase) &&
                     pickup.Glow.GetComponent<Collider>() == null,
                 "El maletín tiene un halo dorado sin collider");
+
+            // Modelo 3D del maletín (si está el FBX): sustituye a los cubos, texturizado, en el suelo y a su tamaño.
+            if (BriefcaseModel.Available && briefcase != null)
+            {
+                Transform model = briefcase.transform.Find(BriefcaseModel.ModelName);
+                c.NotNull(model, "El maletín usa su modelo 3D");
+                c.Check(briefcase.transform.Find("Body") == null && briefcase.transform.Find("Handle") == null, "Ya no quedan los cubos del maletín");
+                if (model != null)
+                {
+                    // En una copia en la escena: los límites de los renderers de un prefab sin instanciar no son fiables.
+                    var copy = (GameObject)PrefabUtility.InstantiatePrefab(briefcase);
+                    copy.transform.position = Vector3.zero;
+                    var renderers = copy.transform.Find(BriefcaseModel.ModelName).GetComponentsInChildren<Renderer>(true);
+                    var bounds = renderers.Length > 0 ? renderers[0].bounds : new Bounds();
+                    foreach (Renderer r in renderers) bounds.Encapsulate(r.bounds);
+                    c.Check(renderers.Length > 0 && renderers.All(r => r.sharedMaterials.All(m => m != null && m.GetTexture("_BaseMap") != null)),
+                        "El modelo del maletín lleva su textura");
+                    Object.DestroyImmediate(copy);
+                    c.Check(Mathf.Abs(bounds.min.y) < 0.02f, $"El maletín se apoya en el suelo ({bounds.min.y:0.00})");
+                    c.Check(Mathf.Abs(bounds.size.x - BriefcaseModel.Length) < 0.02f && bounds.size.z < bounds.size.x,
+                        $"El maletín mide {bounds.size.x:0.00} m de largo, de frente a la cámara ({bounds.size.x:0.00}×{bounds.size.y:0.00}×{bounds.size.z:0.00})");
+                    c.Check(model.GetComponentsInChildren<Collider>(true).Length == 0, "El modelo del maletín no tiene colliders (se recoge por distancia)");
+                }
+            }
         }
 
         private static void VerifyDecorScene(Checker c, LevelLayout layout)

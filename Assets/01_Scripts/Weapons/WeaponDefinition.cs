@@ -94,7 +94,7 @@ namespace Overdrive.Weapons
         public static readonly WeaponDefinition Smg = new WeaponDefinition
         {
             Type = WeaponType.Smg, DisplayName = "Subfusil", IsMelee = false,
-            UseInterval = 0.08f, MaxAmmo = 30, Pellets = 1, SpreadAngle = 6f, Automatic = true,
+            UseInterval = 0.08f, MaxAmmo = 60, Pellets = 1, SpreadAngle = 6f, Automatic = true,
             Damage = 25f, HeadKills = true,
             ProjectileSpeed = 45f, ProjectileRange = 35f, NoiseRadius = 15f, Shake = 0.12f,
             EnemyAttackInterval = 0.3f, EnemyAttackRange = 11f,

@@ -34,6 +34,15 @@ namespace Overdrive.EditorTools
         private static readonly Vector2 ButtonSize = new Vector2(W, H);
         private const float Spacing = 118f;
 
+        /// <summary>Niveles del panel de selección: escena y texto del botón, en orden de juego.</summary>
+        public static readonly (string scene, string label)[] LevelEntries =
+        {
+            ("Level01", "NIVEL 01"),
+            ("Level02", "NIVEL 02 · ELYSIUM"),
+            ("Level03", "NIVEL 03 · EL LOFT"),
+            ("Level04", "NIVEL 04 · LA HUIDA"),
+        };
+
         private static readonly Color Fill = new Color32(0x08, 0x09, 0x0D, 0xC8);
 
         [MenuItem("TopDown/Construir menú principal")]
@@ -115,11 +124,12 @@ namespace Overdrive.EditorTools
             WireVertical(new Selectable[] { volume, music, sfx, fullscreen, backSettings.GetComponent<Button>() });
 
             // Panel de selección de niveles.
-            var levels = CreatePanel(canvasGo.transform, "LevelsPanel", "SELECCIÓN DE NIVELES");
-            var level01 = CreateButton(levels, "NIVEL 01", s.play, new Vector2(0f, 90f), s, audio, hover, click, true);
-            var level02 = CreateButton(levels, "NIVEL 02 · ELYSIUM", s.play, new Vector2(0f, -25f), s, audio, hover, click, true);
-            var backLevels = CreateButton(levels, "VOLVER", s.back, new Vector2(0f, -150f), s, audio, hover, click, true);
-            WireVertical(new Selectable[] { level01.GetComponent<Button>(), level02.GetComponent<Button>(), backLevels.GetComponent<Button>() });
+            var levels = CreatePanel(canvasGo.transform, "LevelsPanel", "SELECCIÓN DE NIVELES", 820f);
+            var levelButtons = new NeonMenuButton[LevelEntries.Length];
+            for (int i = 0; i < LevelEntries.Length; i++)
+                levelButtons[i] = CreateButton(levels, LevelEntries[i].label, s.play, new Vector2(0f, 210f - i * 115f), s, audio, hover, click, true);
+            var backLevels = CreateButton(levels, "VOLVER", s.back, new Vector2(0f, 210f - LevelEntries.Length * 115f - 20f), s, audio, hover, click, true);
+            WireVertical(levelButtons.Select(b => (Selectable)b.GetComponent<Button>()).Append(backLevels.GetComponent<Button>()).ToArray());
 
             var controller = canvasGo.AddComponent<MainMenuController>();
             controller.playButton = mainButtons[0];
@@ -132,8 +142,8 @@ namespace Overdrive.EditorTools
             controller.settingsPanel = settings.GetComponent<CanvasGroup>();
             controller.levelsPanel = levels.GetComponent<CanvasGroup>();
             controller.backButtons = new[] { backSettings, backLevels };
-            controller.levelButtons = new[] { level01, level02 };
-            controller.levelScenes = new[] { "Level01", "Level02" };
+            controller.levelButtons = levelButtons;
+            controller.levelScenes = LevelEntries.Select(e => e.scene).ToArray();
             controller.volumeSlider = volume;
             controller.musicSlider = music;
             controller.sfxSlider = sfx;
@@ -225,6 +235,7 @@ namespace Overdrive.EditorTools
         {
             { "Level01", "DurantePartida.mp3" },
             { "Level02", "DurantePartida_Nvl2.mp3" },
+            { "Level03", "DurantePartida_Nvl3.mp3" }, // techno duro: el loft y el combate contra el Jefe
             { "Level04", "road-to-home.mp3" }, // la huida en coche
         };
 

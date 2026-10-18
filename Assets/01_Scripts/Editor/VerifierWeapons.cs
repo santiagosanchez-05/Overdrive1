@@ -19,8 +19,8 @@ namespace Overdrive.EditorTools
             c.Check(WeaponDefinition.Bat.IsMelee && WeaponDefinition.Knife.IsMelee, "Bate y cuchillo son cuerpo a cuerpo");
             c.Check(!WeaponDefinition.Shotgun.IsMelee && WeaponDefinition.Shotgun.MaxAmmo == 6 && WeaponDefinition.Shotgun.Pellets > 1,
                 "La escopeta tiene 6 cartuchos y varios perdigones");
-            c.Check(WeaponDefinition.Smg.MaxAmmo == 30 && WeaponDefinition.Smg.Automatic && WeaponDefinition.Smg.Pellets == 1,
-                "El subfusil es automático con 30 balas");
+            c.Check(WeaponDefinition.Smg.MaxAmmo == 60 && WeaponDefinition.Smg.Automatic && WeaponDefinition.Smg.Pellets == 1,
+                "El subfusil es automático con 60 balas");
             c.Check(WeaponDefinition.Smg.UseInterval < WeaponDefinition.Shotgun.UseInterval, "El subfusil dispara más rápido que la escopeta");
             c.Check(WeaponDefinition.Shotgun.ProjectileRange < WeaponDefinition.Smg.ProjectileRange * 0.5f,
                 "Los perdigones de la escopeta llegan mucho menos lejos que las balas del subfusil");
@@ -45,7 +45,7 @@ namespace Overdrive.EditorTools
             var smg = new WeaponState(WeaponDefinition.Smg);
             c.Check(smg.TryUse() && !smg.TryUse(), "Hay enfriamiento entre disparos");
             smg.Tick(0.1f);
-            c.Check(smg.TryUse() && smg.Ammo == 28, "Cada disparo del subfusil gasta una bala");
+            c.Check(smg.TryUse() && smg.Ammo == WeaponDefinition.Smg.MaxAmmo - 2, "Cada disparo del subfusil gasta una bala");
 
             var bat = new WeaponState(WeaponDefinition.Bat);
             int swings = 0;
