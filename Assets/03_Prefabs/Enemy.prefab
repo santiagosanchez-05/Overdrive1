@@ -177,7 +177,7 @@ MonoBehaviour:
   knockdownDuration: 3
   hand: {fileID: 3820092911776237237}
   weapon: {fileID: 0}
-  maxHealth: 100
+  maxHealth: 40
 --- !u!195 &6561369749506207915
 NavMeshAgent:
   m_ObjectHideFlags: 0

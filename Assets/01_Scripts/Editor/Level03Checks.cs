@@ -111,6 +111,11 @@ namespace Overdrive.EditorTools
             c.Check(manager.Enemies.Contains(boss.GetComponent<Enemy>()) && manager.Enemies.Length >= elevator.Guards.Length + 1 + 5,
                 $"El nivel cuenta guardias, Jefe y refuerzos ({manager.Enemies.Length})");
             c.Check(manager.NextScene == "Level04", "Al acabar pasa a la huida en coche");
+            var sign = arena.GetComponentsInChildren<TMPro.TextMeshPro>(true).FirstOrDefault(t => t.text == "ÁTICO DEL JEFE");
+            c.Check(sign != null && sign.font != null && sign.font.name == "horrendo SDF", "El cartel del ático usa la fuente horrendo");
+            var pause = BuilderUtil.FindRoot(scene, "PauseMenu");
+            var pauseButtons = pause != null ? pause.GetComponentsInChildren<Overdrive.UI.NeonMenuButton>(true) : new Overdrive.UI.NeonMenuButton[0];
+            c.Check(pauseButtons.Length > 0 && pauseButtons.All(b => b.clickClip != null && b.clickClip.name == "UI_Sound"), "Los botones de pausa suenan con UI_Sound");
             var music = BuilderUtil.FindRoot(scene, "Music");
             var musicSource = music != null ? music.GetComponent<AudioSource>() : null;
             c.Check(musicSource != null && musicSource.clip != null && musicSource.clip.name == "DurantePartida_Nvl3" && musicSource.loop && musicSource.playOnAwake,

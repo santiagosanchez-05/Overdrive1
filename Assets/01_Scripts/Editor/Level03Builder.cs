@@ -42,6 +42,7 @@ namespace Overdrive.EditorTools
         public const float CharacterScale = 0.7f;
         /// <summary>Balas del revólver con el que se empieza el nivel (el revólver normal trae 6).</summary>
         public const int StartingRevolverAmmo = 20;
+        public const string PauseClickPath = "Assets/07_Audio/UI_Sound.mp3";
         /// <summary>Armas de los guardias que salen en el ático del Jefe (solo bate y cuchillo).</summary>
         public static readonly WeaponType[] ArenaGuardWeapons = { WeaponType.Bat, WeaponType.Knife };
         /// <summary>Por encima de esto (sobre el suelo) se considera piso superior.</summary>
@@ -138,6 +139,11 @@ namespace Overdrive.EditorTools
             RoofFactory.BuildLevel03(scene); // techo que solo aparece en primera persona
 
             MenuBuilder.AddPauseMenu(scene);
+            // En este nivel la pausa suena con UI_Sound (como lo dejó Mateo).
+            var pauseClick = AssetDatabase.LoadAssetAtPath<AudioClip>(PauseClickPath);
+            if (pauseClick != null)
+                foreach (var button in BuilderUtil.FindRoot(scene, "PauseMenu").GetComponentsInChildren<NeonMenuButton>(true))
+                    button.clickClip = pauseClick;
             MenuBuilder.AddLevelMusic(scene);
             StoryFactory.ApplyEnemyLooks(scene);
             ApplyBossLook(boss.gameObject);

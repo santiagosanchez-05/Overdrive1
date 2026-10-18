@@ -126,7 +126,9 @@ namespace Overdrive.EditorTools
             Light(root, "Light_Throne", (p.Boss - p.Center) + new Vector3(0f, 4f, 1f), new Color(1f, 0.1f, 0.25f), 12f, 4f);
             Light(root, "Light_Center", new Vector3(0f, 5f, 0f), new Color(0.9f, 0.8f, 1f), 18f, 1.6f);
             Light(root, "Light_Entry", (p.Start - p.Center) + Vector3.up * 3f, new Color(1f, 0.9f, 0.8f), 8f, 2f);
-            Label(root, "ÁTICO DEL JEFE", (p.Start - p.Center) + new Vector3(0f, 0.03f, 2.2f), 0.9f, new Color(1f, 0.25f, 0.45f));
+            var sign = Label(root, "ÁTICO DEL JEFE", (p.Start - p.Center) + new Vector3(0f, 0.03f, 2.2f), 0.9f, new Color(1f, 0.25f, 0.45f));
+            var horror = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(SignFontPath); // la fuente que eligió Mateo para el cartel
+            if (horror != null) sign.font = horror;
             return p;
         }
 
@@ -216,6 +218,8 @@ namespace Overdrive.EditorTools
             light.intensity = intensity;
             light.shadows = LightShadows.None;
         }
+
+        public const string SignFontPath = "Assets/TextMesh Pro/Fonts/horrendo SDF.asset";
 
         private static TextMeshPro Label(Transform parent, string text, Vector3 local, float size, Color color)
         {

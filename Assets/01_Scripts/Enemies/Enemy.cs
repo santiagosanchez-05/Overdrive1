@@ -25,7 +25,7 @@ namespace Overdrive.Enemies
         [SerializeField] private Transform hand;
         [SerializeField] private WeaponItem weapon;
         [Tooltip("Vida: las balas y golpes en el cuerpo la van quitando; en la cabeza (armas de fuego, cuchillo) mata.")]
-        [SerializeField] private float maxHealth = 100f;
+        [SerializeField] private float maxHealth = 40f;
 
         private readonly CombatState state = new CombatState();
         private Material aliveMaterial;

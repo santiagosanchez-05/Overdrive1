@@ -78406,7 +78406,7 @@ MonoBehaviour:
   sweepInterval: {x: 2.5, y: 4.5}
   audioSource: {fileID: 1243657400}
   hoverClip: {fileID: 8300000, guid: 0b9cf69e9fe528c4c9b8a0a5a958eb3a, type: 3}
-  clickClip: {fileID: 8300000, guid: 9544a7dbe16a2ec45889e8e1e450f65e, type: 3}
+  clickClip: {fileID: 8300000, guid: ee19ba0f9fd14454ab5bd6aad9564343, type: 3}
   volume: 0.6
 --- !u!1 &1627278632
 GameObject:
@@ -83557,7 +83557,7 @@ MonoBehaviour:
   sweepInterval: {x: 2.5, y: 4.5}
   audioSource: {fileID: 1243657400}
   hoverClip: {fileID: 8300000, guid: 0b9cf69e9fe528c4c9b8a0a5a958eb3a, type: 3}
-  clickClip: {fileID: 8300000, guid: 9544a7dbe16a2ec45889e8e1e450f65e, type: 3}
+  clickClip: {fileID: 8300000, guid: ee19ba0f9fd14454ab5bd6aad9564343, type: 3}
   volume: 0.6
 --- !u!1 &1714853960
 GameObject:
@@ -93163,7 +93163,7 @@ MonoBehaviour:
   sweepInterval: {x: 2.5, y: 4.5}
   audioSource: {fileID: 1243657400}
   hoverClip: {fileID: 8300000, guid: 0b9cf69e9fe528c4c9b8a0a5a958eb3a, type: 3}
-  clickClip: {fileID: 8300000, guid: 9544a7dbe16a2ec45889e8e1e450f65e, type: 3}
+  clickClip: {fileID: 8300000, guid: ee19ba0f9fd14454ab5bd6aad9564343, type: 3}
   volume: 0.6
 --- !u!1 &1902394797
 GameObject:
