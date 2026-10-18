@@ -12,7 +12,7 @@ namespace Overdrive.Player
         [SerializeField] private PlayerLife life;
         [SerializeField] private float moveSpeed = 7f;
         [Tooltip("Velocidad agachado (Ctrl), en silencio.")]
-        [SerializeField] private float sneakSpeed = 3.2f;
+        [SerializeField] private float sneakSpeed = 5f;
         [SerializeField] private float gravity = 25f;
         [Tooltip("Velocidad hacia abajo en el suelo, para pegarse a la rampa al bajar.")]
         [SerializeField] private float groundStick = 6f;
@@ -29,8 +29,8 @@ namespace Overdrive.Player
         public float MoveSpeed => moveSpeed;
         public float SneakSpeed => sneakSpeed;
 
-        /// <summary>Camina agachado (Ctrl): más lento y sin ruido de pasos.</summary>
-        public bool IsSneaking { get; private set; }
+        /// <summary>Camina agachado (Ctrl): más lento y sin ruido de pasos. Asignable para simularlo en el editor.</summary>
+        public bool IsSneaking { get; set; }
 
         /// <summary>Aterrizaje tras una caída; el parámetro es la altura caída.</summary>
         public event Action<float> Landed;

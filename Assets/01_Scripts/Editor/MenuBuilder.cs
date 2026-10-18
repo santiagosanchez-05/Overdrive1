@@ -106,12 +106,13 @@ namespace Overdrive.EditorTools
             WireVertical(mainButtons.Select(b => (Selectable)b.GetComponent<Button>()).ToArray());
 
             // Panel de ajustes.
-            var settings = CreatePanel(canvasGo.transform, "SettingsPanel", "AJUSTES", 640f);
-            var volume = CreateSlider(settings, "VOLUMEN", "VolumeSlider", new Vector2(0f, 120f));
-            var music = CreateSlider(settings, "MÚSICA", "MusicSlider", new Vector2(0f, 40f));
-            var fullscreen = CreateToggle(settings, "PANTALLA COMPLETA", new Vector2(0f, -40f));
-            var backSettings = CreateButton(settings, "VOLVER", s.back, new Vector2(0f, -190f), s, audio, hover, click, true);
-            WireVertical(new Selectable[] { volume, music, fullscreen, backSettings.GetComponent<Button>() });
+            var settings = CreatePanel(canvasGo.transform, "SettingsPanel", "AJUSTES", 700f);
+            var volume = CreateSlider(settings, "VOLUMEN", "VolumeSlider", new Vector2(0f, 150f), 1f);
+            var music = CreateSlider(settings, "MÚSICA", "MusicSlider", new Vector2(0f, 75f));
+            var sfx = CreateSlider(settings, "EFECTOS", "SfxSlider", new Vector2(0f, 0f));
+            var fullscreen = CreateToggle(settings, "PANTALLA COMPLETA", new Vector2(0f, -75f));
+            var backSettings = CreateButton(settings, "VOLVER", s.back, new Vector2(0f, -210f), s, audio, hover, click, true);
+            WireVertical(new Selectable[] { volume, music, sfx, fullscreen, backSettings.GetComponent<Button>() });
 
             // Panel de selección de niveles.
             var levels = CreatePanel(canvasGo.transform, "LevelsPanel", "SELECCIÓN DE NIVELES");
@@ -135,6 +136,7 @@ namespace Overdrive.EditorTools
             controller.levelScenes = new[] { "Level01", "Level02" };
             controller.volumeSlider = volume;
             controller.musicSlider = music;
+            controller.sfxSlider = sfx;
             controller.fullscreenToggle = fullscreen;
             controller.gameScene = "Level01";
 
@@ -181,17 +183,18 @@ namespace Overdrive.EditorTools
             audio.ignoreListenerPause = true;
             audio.transform.SetParent(canvasGo.transform, false);
 
-            var panel = CreatePanel(canvasGo.transform, "PausePanel", "PAUSA", 660f);
-            var status = SmallLabel(panel, "", new Vector2(0f, 185f));
+            var panel = CreatePanel(canvasGo.transform, "PausePanel", "PAUSA", 740f);
+            var status = SmallLabel(panel, "", new Vector2(0f, 215f));
             status.rectTransform.sizeDelta = new Vector2(820, 40);
             status.alignment = TextAlignmentOptions.Center;
             status.fontSize = 24;
             status.name = "Status";
-            var resume = CreateButton(panel, "REANUDAR", s.play, new Vector2(0f, 105f), s, audio, hover, click, true);
-            var save = CreateButton(panel, "GUARDAR PARTIDA", s.save, new Vector2(0f, -5f), s, audio, hover, click, true);
-            var music = CreateSlider(panel, "MÚSICA", "MusicSlider", new Vector2(0f, -100f));
-            var menu = CreateButton(panel, "MENÚ PRINCIPAL", s.exit, new Vector2(0f, -205f), s, audio, hover, click, true);
-            WireVertical(new Selectable[] { resume.GetComponent<Button>(), save.GetComponent<Button>(), music, menu.GetComponent<Button>() });
+            var resume = CreateButton(panel, "REANUDAR", s.play, new Vector2(0f, 135f), s, audio, hover, click, true);
+            var save = CreateButton(panel, "GUARDAR PARTIDA", s.save, new Vector2(0f, 25f), s, audio, hover, click, true);
+            var music = CreateSlider(panel, "MÚSICA", "MusicSlider", new Vector2(0f, -70f));
+            var sfx = CreateSlider(panel, "EFECTOS", "SfxSlider", new Vector2(0f, -140f));
+            var menu = CreateButton(panel, "MENÚ PRINCIPAL", s.exit, new Vector2(0f, -245f), s, audio, hover, click, true);
+            WireVertical(new Selectable[] { resume.GetComponent<Button>(), save.GetComponent<Button>(), music, sfx, menu.GetComponent<Button>() });
 
             var controller = canvasGo.AddComponent<PauseMenuController>();
             controller.panel = panel.GetComponent<CanvasGroup>();
@@ -199,6 +202,7 @@ namespace Overdrive.EditorTools
             controller.saveButton = save;
             controller.menuButton = menu;
             controller.musicSlider = music;
+            controller.sfxSlider = sfx;
             controller.status = status;
             controller.menuScene = "Menu";
             panel.gameObject.SetActive(false);
@@ -419,7 +423,8 @@ namespace Overdrive.EditorTools
             return l;
         }
 
-        private static Slider CreateSlider(RectTransform panel, string text, string name, Vector2 pos)
+        /// <param name="value">Valor inicial en el editor; al jugar, el controlador pone el guardado.</param>
+        private static Slider CreateSlider(RectTransform panel, string text, string name, Vector2 pos, float value = 0.5f)
         {
             SmallLabel(panel, text, pos + new Vector2(-230, 0));
             var res = StandardResources();
@@ -430,7 +435,7 @@ namespace Overdrive.EditorTools
             rt.sizeDelta = new Vector2(340, 24);
             rt.anchoredPosition = pos + new Vector2(170, 0);
             var slider = go.GetComponent<Slider>();
-            slider.value = 1f;
+            slider.value = value;
             foreach (Image img in go.GetComponentsInChildren<Image>())
                 img.color = img.name == "Fill" || img.name == "Handle" ? Color.white : new Color(1, 1, 1, 0.15f);
             NeonColors(slider);

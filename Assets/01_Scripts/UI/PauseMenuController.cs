@@ -21,6 +21,7 @@ namespace Overdrive.UI
         public NeonMenuButton saveButton;
         public NeonMenuButton menuButton;
         public Slider musicSlider;
+        public Slider sfxSlider;
         public TMP_Text status;
 
         [Header("Escena")]
@@ -57,6 +58,11 @@ namespace Overdrive.UI
                 musicSlider.SetValueWithoutNotify(AudioPrefs.Music);
                 musicSlider.onValueChanged.AddListener(v => AudioPrefs.Music = v);
             }
+            if (sfxSlider)
+            {
+                sfxSlider.SetValueWithoutNotify(AudioPrefs.Sfx);
+                sfxSlider.onValueChanged.AddListener(v => AudioPrefs.Sfx = v);
+            }
         }
 
         private void OnDestroy()
@@ -87,6 +93,7 @@ namespace Overdrive.UI
             GameInput.Blocked = true;
             if (status) status.text = "";
             if (musicSlider) musicSlider.SetValueWithoutNotify(AudioPrefs.Music);
+            if (sfxSlider) sfxSlider.SetValueWithoutNotify(AudioPrefs.Sfx);
             panel.gameObject.SetActive(true);
             Fade(1f);
             if (EventSystem.current) EventSystem.current.SetSelectedGameObject(resumeButton.gameObject);
