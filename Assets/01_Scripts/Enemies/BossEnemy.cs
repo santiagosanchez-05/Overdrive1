@@ -9,10 +9,27 @@ using UnityEngine.UI;
 
 namespace Overdrive.Enemies
 {
+    /// <summary>Decisiones del Jefe (lógica pura, comprobable en el editor).</summary>
+    public static class BossLogic
+    {
+        /// <summary>¿Prepara una embestida? Solo si ya pasó su espera, no está aturdido y el jugador está a media distancia.</summary>
+        public static bool ShouldCharge(float cooldownLeft, bool staggered, float distance, float minDistance, float maxDistance) =>
+            cooldownLeft <= 0f && !staggered && distance >= minDistance && distance <= maxDistance;
+
+        /// <summary>Fase según la vida: 0 normal, 1 furia (mitad), 2 desesperado (un cuarto).</summary>
+        public static int Phase(int health, int maxHealth) =>
+            health <= maxHealth / 4 ? 2 : health <= maxHealth / 2 ? 1 : 0;
+
+        /// <summary>Espera entre embestidas: más corta cuanto más herido está.</summary>
+        public static float ChargeCooldown(int phase) => phase == 2 ? 3.5f : phase == 1 ? 5f : 7f;
+    }
+
     /// <summary>
     /// El Jefe: un <see cref="Enemy"/> que aguanta varios golpes letales y no se deja derribar.
-    /// Cada golpe lo frena un instante; a mitad de vida entra en furia (más rápido) y llama a sus refuerzos.
-    /// Muestra su barra de vida cuando el jugador se acerca. Su vida también se rebobina.
+    /// Cada golpe lo frena un instante; a mitad de vida entra en furia (más rápido, luz roja) y llama a sus refuerzos,
+    /// y con un cuarto de vida llama a los últimos. Cada pocos segundos prepara una embestida: se para, se ilumina
+    /// en rojo (aviso) y carga a toda velocidad; si alcanza al jugador le quita mucha vida. Las coberturas lo paran.
+    /// Muestra su barra de vida cuando el jugador se acerca.
     /// </summary>
     [RequireComponent(typeof(Enemy))]
     public class BossEnemy : MonoBehaviour, IHitArmor, IRewindable
@@ -30,6 +47,19 @@ namespace Overdrive.Enemies
         [SerializeField] private PlayerLife player;
         [SerializeField] private float showBarDistance = 18f;
 
+        [Header("Embestida")]
+        [SerializeField] private float chargeMinDistance = 2.5f;
+        [SerializeField] private float chargeMaxDistance = 11f;
+        [SerializeField] private float telegraphTime = 0.7f;
+        [SerializeField] private float chargeTime = 0.9f;
+        [SerializeField] private float chargeSpeedMultiplier = 3f;
+        [SerializeField] private float chargeDamage = 40f;
+        [SerializeField] private float chargeHitDistance = 1.1f;
+
+        [Header("Fases")]
+        [SerializeField] private ReinforcementWave finalWave;
+        [SerializeField] private Light rageLight;
+
         private Enemy enemy;
         private EnemyAI ai;
         private int health;
@@ -37,7 +67,12 @@ namespace Overdrive.Enemies
         private float staggerUntil;
         private float baseChaseSpeed;
         private bool raging;
+        private bool desperate;
         private bool danced;
+        private float chargeCooldown = 4f;
+        private float telegraphLeft;
+        private float chargeLeft;
+        private bool chargeHit;
         private EnemyVisual visual;
 
         private CanvasGroup barGroup;
@@ -46,9 +81,25 @@ namespace Overdrive.Enemies
         public int Health => health;
         public int MaxHealth => maxHealth;
         public bool Raging => raging;
+        public bool Desperate => desperate;
+        public bool Telegraphing => telegraphLeft > 0f;
+        public bool Charging => chargeLeft > 0f;
+        public int Charges { get; private set; }
+        public float ChargeDamage => chargeDamage;
 
-        private void Awake()
+        private bool initialized;
+
+        /// <summary>Para las pruebas en el editor: adelanta el reloj del Jefe (en el editor Time.time no avanza).</summary>
+        public float ClockOffset { get; set; }
+        private float Now => Time.time + ClockOffset;
+
+        private void Awake() => Init();
+
+        /// <summary>Prepara referencias y vida (en Awake, o al usarlo desde el editor, donde Awake no se ejecuta).</summary>
+        public void Init()
         {
+            if (initialized) return;
+            initialized = true;
             enemy = GetComponent<Enemy>();
             ai = GetComponent<EnemyAI>();
             visual = GetComponent<EnemyVisual>();
@@ -60,11 +111,79 @@ namespace Overdrive.Enemies
 
         private void Update()
         {
+            TickCharge(Time.deltaTime);
             if (ai != null && ai.Agent != null && ai.Agent.isOnNavMesh)
-                ai.Agent.isStopped = Time.time < staggerUntil && !enemy.IsDead;
+                ai.Agent.isStopped = (Time.time < staggerUntil || telegraphLeft > 0f) && !enemy.IsDead;
+            if (rageLight != null)
+            {
+                rageLight.enabled = !enemy.IsDead && (raging || telegraphLeft > 0f);
+                rageLight.intensity = telegraphLeft > 0f ? 6f + Mathf.Sin(Time.time * 40f) * 3f : 2.5f;
+            }
             UpdateBar();
             Celebrate();
         }
+
+        /// <summary>Embestida: aviso (quieto y en rojo) y carga a toda velocidad. Público para simularla en el editor.</summary>
+        public void TickCharge(float dt)
+        {
+            Init();
+            if (enemy == null || enemy.IsDead || player == null || player.IsDead || ai == null) { EndCharge(); return; }
+            float distance = Vector3.Distance(player.transform.position, transform.position);
+            if (telegraphLeft > 0f)
+            {
+                telegraphLeft -= dt;
+                Vector3 to = player.transform.position - transform.position;
+                to.y = 0f;
+                if (to.sqrMagnitude > 0.01f) transform.rotation = Quaternion.LookRotation(to);
+                if (telegraphLeft <= 0f)
+                {
+                    chargeLeft = chargeTime;
+                    chargeHit = false;
+                    ai.ChaseSpeed = CurrentBaseSpeed() * chargeSpeedMultiplier;
+                    ai.Hunt(player);
+                    Charges++;
+                    GameSounds.Play(Sound.Swing);
+                }
+                return;
+            }
+            if (chargeLeft > 0f)
+            {
+                chargeLeft -= dt;
+                if (!chargeHit && distance < chargeHitDistance * Mathf.Max(transform.lossyScale.x, 0.1f))
+                {
+                    chargeHit = true;
+                    player.TakeHit(chargeDamage, false, false);
+                    CameraShake.Shake(0.5f);
+                    GameSounds.Play(Sound.Punch);
+                    chargeLeft = Mathf.Min(chargeLeft, 0.1f);
+                }
+                if (chargeLeft <= 0f) EndCharge();
+                return;
+            }
+            chargeCooldown -= dt;
+            bool staggered = Now < staggerUntil;
+            if (BossLogic.ShouldCharge(chargeCooldown, staggered, distance, chargeMinDistance, chargeMaxDistance) && ai.HuntTarget != null)
+                StartTelegraph();
+        }
+
+        /// <summary>Para las pruebas: preparar la embestida ya.</summary>
+        public void StartTelegraph()
+        {
+            Init();
+            telegraphLeft = telegraphTime;
+            chargeCooldown = BossLogic.ChargeCooldown(BossLogic.Phase(health, maxHealth));
+            GameSounds.Play(Sound.EnemyFall);
+        }
+
+        private void EndCharge()
+        {
+            if (chargeLeft <= 0f && telegraphLeft <= 0f) return;
+            chargeLeft = 0f;
+            telegraphLeft = 0f;
+            if (ai != null) ai.ChaseSpeed = CurrentBaseSpeed();
+        }
+
+        private float CurrentBaseSpeed() => raging ? baseChaseSpeed * rageSpeedMultiplier : baseChaseSpeed;
 
         /// <summary>Si el jugador muere, el Jefe baila.</summary>
         private void Celebrate()
@@ -81,17 +200,19 @@ namespace Overdrive.Enemies
 
         public bool AbsorbLethal(KillCause cause)
         {
-            if (Time.time - lastHit < hitCooldown) return true; // mismo disparo/golpe: no cuenta dos veces
-            lastHit = Time.time;
+            Init();
+            if (Now - lastHit < hitCooldown) return true; // mismo disparo/golpe: no cuenta dos veces
+            lastHit = Now;
             health = Mathf.Max(0, health - 1);
             if (health <= 0) return false; // el último golpe lo mata de verdad
 
-            staggerUntil = Time.time + staggerTime;
+            staggerUntil = Now + staggerTime;
             BloodSpawner.SpawnAt(transform.position, 0.6f);
             CameraShake.Shake(0.2f);
             GameSounds.Play(Sound.BatHit);
             if (player != null && ai != null) ai.Hunt(player);
             if (!raging && health <= maxHealth / 2) EnterRage();
+            if (!desperate && BossLogic.Phase(health, maxHealth) == 2) EnterDesperation();
             return true;
         }
 
@@ -111,6 +232,13 @@ namespace Overdrive.Enemies
             CameraShake.Shake(0.45f);
             GameSounds.Play(Sound.EnemyFall);
             if (rageWave != null && player != null) rageWave.Trigger(player);
+        }
+
+        private void EnterDesperation()
+        {
+            desperate = true;
+            CameraShake.Shake(0.5f);
+            if (finalWave != null && player != null) finalWave.Trigger(player);
         }
 
         // ---- Rebobinado ----

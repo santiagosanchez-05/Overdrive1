@@ -17,7 +17,7 @@ OK: Level01 tiene Player con PlayerAnimator y modelo 3D
 OK: Level01: cada enemigo lleva el modelo animado de su arma (14/10)
 OK: Level01 tiene a Nina con su diálogo
 OK: Level02 tiene LevelManager
-OK: Level02.LevelManager.nextScene apunta a 'Menu'
+OK: Level02.LevelManager.nextScene apunta a 'Level03'
 OK: Level02 tiene 14 enemigos iniciales
 OK: Level02 tiene GameSounds configurado
 OK: Level02 tiene Player con PlayerAnimator y modelo 3D
@@ -25,4 +25,4 @@ OK: Level02: cada enemigo lleva el modelo animado de su arma (21/14)
 OK: Level02 tiene a Nina con su diálogo
 OK: Level02 pasa validación completa (escena, navegación, colisiones)
 OK: HudText indica siguiente nivel para Level01
-OK: HudText indica volver al menú para Level02
+OK: HudText indica volver al menú al terminar el juego

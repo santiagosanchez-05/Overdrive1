@@ -24,6 +24,17 @@ namespace Overdrive.CameraRig
         public PlayerAim Aim => aim;
         public Camera Cam => cam;
 
+        /// <summary>Distancia de la cámara (p. ej. más lejos en una sala grande). Cambiarla recoloca la cámara.</summary>
+        public float Distance
+        {
+            get => distance;
+            set
+            {
+                distance = value;
+                ApplyCameraOffset();
+            }
+        }
+
         private void Awake()
         {
             // La vista en primera persona (tecla V) vive en el mismo rig.
