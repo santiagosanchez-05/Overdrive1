@@ -356,6 +356,10 @@ namespace Overdrive.EditorTools
             foreach (var component in stored.components) if (!AssetDatabase.Contains(component)) AssetDatabase.AddObjectToAsset(component, stored);
             EditorUtility.SetDirty(stored);
             volume.sharedProfile = stored;
+            // Paleta ámbar/verde del Elysium original.
+            Level02Look.ApplyAmbient();
+            Level02Look.TuneMaterials();
+            Level02Look.TuneProfile(stored);
         }
 
         private static Light AddLight(Transform parent, string name, Vector3 position, Color color, float intensity, float range)
