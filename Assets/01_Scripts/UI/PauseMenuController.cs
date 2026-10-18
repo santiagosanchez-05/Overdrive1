@@ -96,7 +96,7 @@ namespace Overdrive.UI
             if (sfxSlider) sfxSlider.SetValueWithoutNotify(AudioPrefs.Sfx);
             panel.gameObject.SetActive(true);
             Fade(1f);
-            if (EventSystem.current) EventSystem.current.SetSelectedGameObject(resumeButton.gameObject);
+            NeonMenuButton.SelectQuietly(resumeButton.gameObject);
         }
 
         public void Resume()

@@ -27,6 +27,8 @@ namespace Overdrive.Core
         EnemyFall,
         Throw,
         PlayerDeath,
+        /// <summary>El jugador recoge un arma del suelo o cambia la suya por otra (E).</summary>
+        WeaponChange,
     }
 
     /// <summary>
@@ -63,6 +65,10 @@ namespace Overdrive.Core
         [Tooltip("Cada golpe del remate (Espacio) a un enemigo en el suelo.")]
         [SerializeField] private Entry kick = new Entry();
 
+        [Header("Recoger armas")]
+        [Tooltip("Recoger un arma del suelo o cambiar la tuya por otra (E).")]
+        [SerializeField] private Entry weaponChange = new Entry { pitchVariation = 0.03f };
+
         [Header("Armas lanzadas")]
         [SerializeField] private Entry throwWeapon = new Entry { volume = 0.7f };
         [Tooltip("El arma lanzada (clic derecho) golpea a un enemigo y lo derriba.")]
@@ -98,6 +104,7 @@ namespace Overdrive.Core
                 case Sound.EnemyFall: return enemyFall;
                 case Sound.Throw: return throwWeapon;
                 case Sound.PlayerDeath: return playerDeath;
+                case Sound.WeaponChange: return weaponChange;
                 default: return null;
             }
         }

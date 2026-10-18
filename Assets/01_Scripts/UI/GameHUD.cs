@@ -230,18 +230,30 @@ namespace Overdrive.UI
                 alignment = anchor,
                 wordWrap = false,
             };
-            style.normal.textColor = color;
+            SetTextColor(style, color);
             return style;
+        }
+
+        /// <summary>
+        /// Color del texto en todos los estados. La etiqueta por defecto de IMGUI tiene su propio color
+        /// "hover": sin esto, el texto se vuelve blanco al pasar el ratón por encima.
+        /// </summary>
+        public static void SetTextColor(GUIStyle style, Color color)
+        {
+            style.normal.textColor = color;
+            style.hover.textColor = color;
+            style.active.textColor = color;
+            style.focused.textColor = color;
         }
 
         private static void DrawShadowed(Rect rect, string text, GUIStyle style, float alpha = 1f)
         {
             Color color = style.normal.textColor;
-            style.normal.textColor = new Color(0f, 0f, 0f, 0.85f * alpha);
+            SetTextColor(style, new Color(0f, 0f, 0f, 0.85f * alpha));
             GUI.Label(new Rect(rect.x + 3f, rect.y + 3f, rect.width, rect.height), text, style);
-            style.normal.textColor = new Color(color.r, color.g, color.b, color.a * alpha);
+            SetTextColor(style, new Color(color.r, color.g, color.b, color.a * alpha));
             GUI.Label(rect, text, style);
-            style.normal.textColor = color;
+            SetTextColor(style, color);
         }
     }
 }
