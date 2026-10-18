@@ -130,6 +130,9 @@ namespace Overdrive.Weapons
             transform.localPosition = s.LocalPosition;
             transform.localRotation = s.LocalRotation;
             mode = s.Mode;
+            heldByPlayer = mode == Mode.Held && s.Parent != null && s.Parent.GetComponentInParent<PlayerWeapons>() != null;
+            heldScale = -1f; // se recoloca con el tamaño de la vista en el siguiente LateUpdate
+            if (mode != Mode.Held) transform.localScale = Vector3.one;
             State.Restore(s.Ammo, s.Cooldown);
             flight.Restore(s.Flight);
             thrownBy = s.ThrownBy;
@@ -147,15 +150,43 @@ namespace Overdrive.Weapons
             mode = Mode.Held;
             flight.Stop();
             transform.SetParent(hand, false);
-            // El empty Grip queda justo en la mano y con su orientación.
-            Quaternion rotation = grip != null ? Quaternion.Inverse(grip.localRotation) : Quaternion.identity;
-            transform.localRotation = rotation;
-            transform.localPosition = grip != null ? -(rotation * grip.localPosition) : Vector3.zero;
+            heldByPlayer = hand != null && hand.GetComponentInParent<PlayerWeapons>() != null;
+            heldScale = 1f;
+            PlaceInHand();
             SetTrail(false);
+        }
+
+        private bool heldByPlayer;
+        private float heldScale = 1f;
+        private bool heldFirstPerson;
+
+        /// <summary>
+        /// El empty Grip queda justo en la mano y con su orientación, con el tamaño de la vista actual
+        /// (<see cref="WeaponViewScale"/>): en primera persona más pequeña, en tercera persona más grande.
+        /// </summary>
+        private void PlaceInHand()
+        {
+            Quaternion hold = heldFirstPerson ? Quaternion.identity : WeaponViewScale.ThirdPersonHold(type);
+            Quaternion rotation = hold * (grip != null ? Quaternion.Inverse(grip.localRotation) : Quaternion.identity);
+            transform.localRotation = rotation;
+            transform.localScale = UnityEngine.Vector3.one * heldScale;
+            transform.localPosition = grip != null ? -(rotation * (grip.localPosition * heldScale)) : UnityEngine.Vector3.zero;
+        }
+
+        private void LateUpdate()
+        {
+            if (mode != Mode.Held || transform.parent == null) return;
+            bool fps = heldByPlayer && Overdrive.Core.ViewMode.FirstPerson;
+            float wanted = fps ? WeaponViewScale.FirstPerson(type) : WeaponViewScale.ThirdPerson(type);
+            if (fps == heldFirstPerson && UnityEngine.Mathf.Approximately(wanted, heldScale) && transform.localScale.x == heldScale) return;
+            heldFirstPerson = fps;
+            heldScale = wanted;
+            PlaceInHand();
         }
 
         public void DropAt(Vector3 position, float yaw)
         {
+            transform.localScale = Vector3.one; // en el suelo, tamaño normal
             mode = Mode.Ground;
             flight.Stop();
             transform.SetParent(null, true);
@@ -165,12 +196,14 @@ namespace Overdrive.Weapons
             SetTrail(false);
         }
 
-        public void Throw(Vector3 origin, Vector3 direction, Faction thrower)
+        /// <param name="keepPitch">Primera persona: se lanza también hacia arriba o hacia abajo.</param>
+        public void Throw(Vector3 origin, Vector3 direction, Faction thrower, bool keepPitch = false)
         {
             transform.SetParent(null, true);
+            transform.localScale = Vector3.one;
             mode = Mode.Thrown;
             thrownBy = thrower;
-            flight.Launch(origin, direction, throwSpeed, throwMaxDistance);
+            flight.Launch(origin, direction, throwSpeed, throwMaxDistance, horizontal: !keepPitch);
             transform.position = origin;
             SetTrail(true);
             GameSounds.Play(Sound.Throw);
@@ -183,12 +216,15 @@ namespace Overdrive.Weapons
             float distance = flight.NextStep(deltaTime);
             if (ProjectileCast.TryCast(flight.Position, flight.Direction, distance, throwRadius, thrownBy, out ProjectileCast.Hit hit))
             {
-                // Un arma lanzada derriba, igual que un puñetazo.
+                // Un arma lanzada quita vida y derriba; el cuchillo en la cabeza mata.
+                WeaponDefinition def = Definition;
                 if (hit.Enemy != null)
                 {
                     GameSounds.Play(Sound.ThrownHit);
-                    hit.Enemy.ReceiveKnockdown(KnockdownCause.Thrown);
+                    bool killed = hit.Enemy.ReceiveDamage(def.ThrownDamage, hit.Head, def.ThrownHeadKills, KillCause.Melee);
+                    if (!killed && !hit.Enemy.IsDead) hit.Enemy.ReceiveKnockdown(KnockdownCause.Thrown);
                 }
+                if (hit.Player != null) hit.Player.TakeHit(def.ThrownDamage, hit.Head, def.ThrownHeadKills);
                 Vector3 stop = flight.Position + flight.Direction * Mathf.Max(0f, hit.Distance - throwRadius);
                 DropAt(stop, transform.eulerAngles.y);
                 return;
@@ -214,7 +250,8 @@ namespace Overdrive.Weapons
             foreach (float angle in angles)
             {
                 Projectile projectile = Instantiate(projectilePrefab);
-                projectile.Launch(origin, ShotPattern.Rotate(direction, angle), def.ProjectileSpeed, owner, def.ProjectileRange);
+                projectile.Launch(origin, ShotPattern.Rotate(direction, angle), def.ProjectileSpeed, owner, def.ProjectileRange,
+                    def.Damage, def.HeadKills);
                 spawned?.Add(projectile);
             }
             NoiseSystem.Emit(origin, def.NoiseRadius);

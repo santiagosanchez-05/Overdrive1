@@ -182,7 +182,9 @@ namespace Overdrive.EditorTools
                 StepProjectiles(spawned);
                 c.Check(!player.GetComponent<PlayerLife>().IsDead, "Tus propias balas no te dañan");
                 c.Check(thrownTarget.Posture == Posture.Down, "La bala pasa por encima del enemigo derribado");
-                c.Check(shotTarget.IsDead, "Simulación: una bala mata de un disparo");
+                c.Check(!shotTarget.IsDead && shotTarget.Health < shotTarget.MaxHealth, "Simulación: una bala en el cuerpo quita vida sin matar");
+                for (int i = 0; i < 6 && !shotTarget.IsDead; i++) shotTarget.ReceiveDamage(WeaponDefinition.Smg.Damage, false, true, KillCause.Shot);
+                c.Check(shotTarget.IsDead, "Simulación: sin vida, el enemigo muere");
                 c.Check(shotTarget.Weapon == null && targetBat.IsOnGround, "Al morir, el enemigo armado deja su arma en el suelo");
                 smg.State.Tick(1f);
                 int ammoBefore = smg.State.Ammo;
@@ -206,19 +208,25 @@ namespace Overdrive.EditorTools
                 c.Check(!behindWall.IsDead, "Simulación: las balas no atraviesan paredes");
                 c.Check(spawned.TrueForAll(p => p == null), "La bala se destruye al chocar con la pared");
 
-                // --- Cuerpo a cuerpo con arma: mata de un golpe, también a los derribados ---
+                // --- Cuerpo a cuerpo con arma: el bate quita vida (no mata de un golpe); a un derribado lo remata ---
                 weapons.Throw();
                 WeaponItem bat = SpawnWeapon(WeaponType.Bat, new Vector3(0f, 0f, 40f));
                 weapons.Equip(bat);
                 player.transform.rotation = Quaternion.Euler(0f, -90f, 0f);
                 var standing = Spawn<Enemy>(enemyPrefab, new Vector3(-1.3f, 0f, 0f), 90f);
-                c.Check(weapons.Attack(true, true, new[] { standing }) && standing.IsDead, "Simulación: el bate mata de un golpe");
+                c.Check(weapons.Attack(true, true, new[] { standing }) && !standing.IsDead &&
+                        Mathf.Approximately(standing.Health, standing.MaxHealth - WeaponDefinition.Bat.Damage),
+                    "Simulación: el bate quita vida pero no mata de un golpe");
+                c.Check(!standing.ReceiveDamage(WeaponDefinition.Bat.Damage, true, WeaponDefinition.Bat.HeadKills) && !standing.IsDead,
+                    "El bate en la cabeza tampoco mata de un golpe");
+                c.Check(standing.ReceiveDamage(WeaponDefinition.Knife.Damage, true, WeaponDefinition.Knife.HeadKills) && standing.IsDead,
+                    "El cuchillo en la cabeza mata de un golpe");
 
                 var downed = Spawn<Enemy>(enemyPrefab, new Vector3(-1.2f, 0f, 0.3f), 90f);
                 downed.ReceiveKnockdown();
                 c.Check(!weapons.Attack(true, true, new[] { downed }), "El bate tiene enfriamiento");
                 bat.State.Tick(1f);
-                c.Check(weapons.Attack(true, true, new[] { standing, downed }) && downed.IsDead,
+                c.Check(weapons.Attack(true, true, new[] { downed }) && downed.IsDead,
                     "El arma cuerpo a cuerpo también mata a un derribado");
                 c.Check(bat.State.Ready == false && !bat.State.IsEmpty, "El bate no gasta munición");
 
@@ -253,7 +261,8 @@ namespace Overdrive.EditorTools
                     pointBlankGun.State.Tick(1f);
                     c.Check(weapons.Attack(true, true, new[] { tallTarget }), "Dispara con la mano alta");
                     StepProjectiles(Object.FindObjectsByType<Projectile>(FindObjectsInactive.Include).ToList());
-                    c.Check(tallTarget.IsDead, "Simulación: con la mano alta la bala no pasa por encima del enemigo (muere de un disparo)");
+                    c.Check(tallTarget.IsDead || tallTarget.Health < tallTarget.MaxHealth,
+                        "Simulación: con la mano alta la bala no pasa por encima del enemigo (le da)");
                     weapons.Hand.position -= Vector3.up * 1.4f;
                     DestroyAllProjectiles();
                 }

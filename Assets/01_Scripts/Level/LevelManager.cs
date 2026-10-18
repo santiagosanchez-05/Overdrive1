@@ -103,6 +103,9 @@ namespace Overdrive.Level
 
         private void OnComplete()
         {
+            // Punto de guardado automático: CONTINUAR empezará el nivel siguiente (o se borra al terminar el juego).
+            SaveSystem.SaveCheckpoint(nextScene);
+
             // Nivel completado: el jugador se queda quieto y deja de atacar.
             var controller = player.GetComponent<PlayerController>();
             if (controller != null) controller.MovementLocked = true;

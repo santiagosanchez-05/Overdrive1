@@ -114,7 +114,10 @@ namespace Overdrive.Weapons
             if (current == null) return null;
             WeaponItem thrown = current;
             current = null;
-            thrown.Throw(ShotOrigin, AimDirection, Faction.Player);
+            // Sale de la mano (si no hay pared en medio) hacia la mira: en primera persona también arriba o abajo.
+            Vector3 origin = hand != null && Overdrive.Enemies.LineOfSight.IsClear(ShotOrigin, hand.position, null) ? hand.position : ShotOrigin;
+            Vector3 direction = aim != null ? aim.ShotDirection(origin) : transform.forward;
+            thrown.Throw(origin, direction, Faction.Player, ViewMode.FirstPerson);
             return thrown;
         }
 
@@ -135,7 +138,15 @@ namespace Overdrive.Weapons
                 Enemy.CollectTargets(enemies, targets);
                 int index = MeleeTargeting.FindPunchTarget(transform.position, transform.forward, targets,
                     def.MeleeRange, def.MeleeHalfAngle, includeDown: true);
-                if (index >= 0 && enemies[index].ReceiveLethalHit(KillCause.Melee)) CameraShake.Shake(def.Shake);
+                if (index >= 0)
+                {
+                    Enemy target = enemies[index];
+                    // Cabeza: en primera persona, si la mira está sobre su cabeza al golpear.
+                    bool head = ViewMode.FirstPerson && aim != null && aim.HasAim &&
+                                FlatDistance(aim.AimPoint, target.transform.position) < 1f &&
+                                HitZones.IsHead(target.transform, aim.AimPoint);
+                    if (target.ReceiveDamage(def.Damage, head, def.HeadKills, KillCause.Melee)) CameraShake.Shake(def.Shake);
+                }
                 return true;
             }
 
@@ -157,6 +168,13 @@ namespace Overdrive.Weapons
             Vector3 origin = current.ShotOriginFrom(ShotOrigin);
             if (!ViewMode.FirstPerson) origin.y = ShotOrigin.y;
             return origin;
+        }
+
+        private static float FlatDistance(Vector3 a, Vector3 b)
+        {
+            a.y = 0f;
+            b.y = 0f;
+            return Vector3.Distance(a, b);
         }
 
         private void UpdateSwingVisual(float deltaTime)

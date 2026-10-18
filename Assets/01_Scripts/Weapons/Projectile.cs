@@ -4,7 +4,10 @@ using UnityEngine;
 
 namespace Overdrive.Weapons
 {
-    /// <summary>Bala visible y rápida. Mata a quien toque del otro bando y se destruye contra las paredes.</summary>
+    /// <summary>
+    /// Bala visible y rápida. Quita vida a quien toque del otro bando (en la cabeza mata) y se destruye
+    /// contra las paredes y el suelo.
+    /// </summary>
     public class Projectile : MonoBehaviour
     {
         [SerializeField] private float maxDistance = 40f;
@@ -15,14 +18,21 @@ namespace Overdrive.Weapons
         private readonly LinearFlight flight = new LinearFlight();
 
         public Faction Owner { get; private set; }
+
+        /// <summary>Vida que quita en el cuerpo (100 = mata).</summary>
+        public float Damage { get; private set; } = 100f;
+        public bool HeadKills { get; private set; } = true;
         public bool Active => flight.Active;
         public LinearFlight Flight => flight;
         public TrailRenderer Trail => trail;
 
         /// <param name="range">Distancia hasta desaparecer; 0 usa la del prefab.</param>
-        public void Launch(Vector3 origin, Vector3 direction, float speed, Faction owner, float range = 0f)
+        public void Launch(Vector3 origin, Vector3 direction, float speed, Faction owner, float range = 0f,
+            float damage = 100f, bool headKills = true)
         {
             Owner = owner;
+            Damage = damage;
+            HeadKills = headKills;
             // Conserva la inclinación: en primera persona se puede disparar hacia arriba o al suelo.
             // Desde la vista cenital y desde los enemigos la dirección ya llega horizontal.
             flight.Launch(origin, direction, speed, range > 0f ? range : maxDistance, horizontal: false);
@@ -41,8 +51,8 @@ namespace Overdrive.Weapons
             float distance = flight.NextStep(deltaTime);
             if (ProjectileCast.TryCast(flight.Position, flight.Direction, distance, radius, Owner, out ProjectileCast.Hit hit))
             {
-                if (hit.Enemy != null && hit.Enemy.ReceiveLethalHit(KillCause.Shot)) GameSounds.Play(Sound.ShotKill);
-                if (hit.Player != null) hit.Player.Kill();
+                if (hit.Enemy != null && hit.Enemy.ReceiveDamage(Damage, hit.Head, HeadKills, KillCause.Shot)) GameSounds.Play(Sound.ShotKill);
+                if (hit.Player != null) hit.Player.TakeHit(Damage, hit.Head, HeadKills);
                 Despawn();
                 return;
             }

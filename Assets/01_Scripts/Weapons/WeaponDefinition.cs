@@ -37,6 +37,21 @@ namespace Overdrive.Weapons
         public float NoiseRadius { get; private set; }
         public float Shake { get; private set; }
 
+        /// <summary>Vida que quita un golpe o una bala (perdigón, en la escopeta) en el cuerpo. La vida es 100.</summary>
+        public float Damage { get; private set; } = 100f;
+
+        /// <summary>Un impacto en la cabeza mata de una vez (armas de fuego y cuchillo; el bate no).</summary>
+        public bool HeadKills { get; private set; } = true;
+
+        /// <summary>Vida que quita el arma al lanzarla y acertar en el cuerpo.</summary>
+        public float ThrownDamage { get; private set; } = 15f;
+
+        /// <summary>Lanzada a la cabeza, mata (solo el cuchillo).</summary>
+        public bool ThrownHeadKills { get; private set; }
+
+        /// <summary>Puñetazo de un enemigo desarmado al jugador.</summary>
+        public const float UnarmedDamage = 12f;
+
         /// <summary>Sonido del golpe cuerpo a cuerpo cuando conecta.</summary>
         public Sound HitSound { get; private set; } = Sound.Punch;
 
@@ -55,6 +70,7 @@ namespace Overdrive.Weapons
         {
             Type = WeaponType.Bat, DisplayName = "Bate", IsMelee = true, HitSound = Sound.BatHit,
             UseInterval = 0.45f, MeleeRange = 1.9f, MeleeHalfAngle = 70f, Shake = 0.3f,
+            Damage = 34f, HeadKills = false, ThrownDamage = 20f, ThrownHeadKills = false,
             EnemyAttackInterval = 0.9f, EnemyAttackRange = 1.5f,
         };
 
@@ -62,6 +78,7 @@ namespace Overdrive.Weapons
         {
             Type = WeaponType.Knife, DisplayName = "Cuchillo", IsMelee = true, HitSound = Sound.KnifeHit,
             UseInterval = 0.3f, MeleeRange = 1.6f, MeleeHalfAngle = 55f, Shake = 0.25f,
+            Damage = 40f, HeadKills = true, ThrownDamage = 40f, ThrownHeadKills = true,
             EnemyAttackInterval = 0.7f, EnemyAttackRange = 1.3f,
         };
 
@@ -69,6 +86,7 @@ namespace Overdrive.Weapons
         {
             Type = WeaponType.Shotgun, DisplayName = "Escopeta", IsMelee = false,
             UseInterval = 0.6f, MaxAmmo = 6, Pellets = 6, SpreadAngle = 30f, Automatic = false,
+            Damage = 20f, HeadKills = true,
             ProjectileSpeed = 40f, ProjectileRange = 10f, NoiseRadius = 18f, Shake = 0.4f,
             EnemyAttackInterval = 1.2f, EnemyAttackRange = 8f,
         };
@@ -77,6 +95,7 @@ namespace Overdrive.Weapons
         {
             Type = WeaponType.Smg, DisplayName = "Subfusil", IsMelee = false,
             UseInterval = 0.08f, MaxAmmo = 30, Pellets = 1, SpreadAngle = 6f, Automatic = true,
+            Damage = 25f, HeadKills = true,
             ProjectileSpeed = 45f, ProjectileRange = 35f, NoiseRadius = 15f, Shake = 0.12f,
             EnemyAttackInterval = 0.3f, EnemyAttackRange = 11f,
         };
@@ -85,6 +104,7 @@ namespace Overdrive.Weapons
         {
             Type = WeaponType.Revolver, DisplayName = "Revólver", IsMelee = false,
             UseInterval = 0.35f, MaxAmmo = 6, Pellets = 1, SpreadAngle = 2f, Automatic = false,
+            Damage = 55f, HeadKills = true,
             ProjectileSpeed = 55f, ProjectileRange = 30f, NoiseRadius = 14f, Shake = 0.22f,
             EnemyAttackInterval = 0.9f, EnemyAttackRange = 10f,
         };

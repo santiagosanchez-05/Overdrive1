@@ -177,6 +177,7 @@ MonoBehaviour:
   knockdownDuration: 3
   hand: {fileID: 3820092911776237237}
   weapon: {fileID: 0}
+  maxHealth: 100
 --- !u!195 &6561369749506207915
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -225,6 +226,7 @@ MonoBehaviour:
   turnSpeed: 540
   repathInterval: 0.2
   meleeWindup: 0.3
+  skill: -1
   aimTolerance: 15
   retrieveRadius: 10
   pickupDistance: 1

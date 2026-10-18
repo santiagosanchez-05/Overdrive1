@@ -56,8 +56,9 @@ namespace Overdrive.Player
             Ray ray = aimCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
             AimPoint = ray.GetPoint(60f);
             float best = float.MaxValue;
-            foreach (RaycastHit hit in Physics.RaycastAll(ray, 60f, ~0, QueryTriggerInteraction.Ignore))
+            foreach (RaycastHit hit in Physics.RaycastAll(ray, 60f, ~0, QueryTriggerInteraction.Collide))
             {
+                if (hit.collider.isTrigger && !Overdrive.Combat.HeadHitbox.IsHitbox(hit.collider)) continue;
                 if (hit.transform.IsChildOf(transform) || hit.distance >= best) continue;
                 best = hit.distance;
                 AimPoint = hit.point;
@@ -80,13 +81,8 @@ namespace Overdrive.Player
                 return look;
             }
 
-            Vector3 forward = transform.forward;
-            if (!HasAim) return forward;
-            Vector3 to = AimPoint - origin;
-            to.y = 0f;
-            // Solo si el punto queda por delante: evita disparar hacia atrás con el ratón pegado al jugador.
-            if (to.sqrMagnitude < 0.36f || Vector3.Dot(to, forward) <= 0f) return forward;
-            return to.normalized;
+            // Vista cenital: siempre de frente, hacia donde mira el jugador.
+            return transform.forward;
         }
     }
 }
