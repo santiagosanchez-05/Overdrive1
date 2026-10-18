@@ -66,6 +66,7 @@ namespace Overdrive.EditorTools
                 c.Check(manager.Enemies.Length == sceneEnemies.Length && manager.Enemies.Length == 10 &&
                         manager.Enemies.All(e => e != null) && manager.Enemies.Distinct().Count() == 10,
                     $"LevelManager debe conocer a los 10 enemigos (conoce {manager.Enemies.Length})");
+                c.Check(manager.NextScene == "Level02", "LevelManager debe tener nextScene = 'Level02'");
             }
 
             var hud = systems.GetComponent<GameHUD>();

@@ -43,6 +43,7 @@ namespace Overdrive.EditorTools
             AddDanceFloor(level);
             AddFloorSeams(level);
             AddSeatingRamps(level);
+            AddPerimeterWalls(level);
             AddNeonAccents(level);
             AddClubCables(level);
             return environment;
@@ -166,6 +167,114 @@ namespace Overdrive.EditorTools
                 ramp.GetComponent<Renderer>().sharedMaterial = AssetDatabase.LoadAssetAtPath<Material>(Level02Builder.GeneratedPath + "/L02_Threshold.mat");
                 AddSeam(level, ramp.name + "Landing", new Vector3(x, 1.5f, 8f), new Vector3(3f, 0.2f, 4.2f));
             }
+        }
+
+        public static void AddPerimeterWalls(Transform level)
+        {
+            var old = level.Find("PerimeterWalls");
+            if (old != null) Object.DestroyImmediate(old.gameObject);
+
+            var root = new GameObject("PerimeterWalls").transform;
+            root.SetParent(level, false);
+            var material = AssetDatabase.LoadAssetAtPath<Material>(Level02Builder.GeneratedPath + "/L02_Threshold.mat");
+            if (material == null)
+            {
+                material = new Material(Shader.Find("Universal Render Pipeline/Lit")) { name = "L02_Threshold" };
+                material.SetColor("_BaseColor", new Color(0.055f, 0.065f, 0.1f));
+                material.SetFloat("_Metallic", 0.45f);
+                material.SetFloat("_Smoothness", 0.35f);
+                AssetDatabase.CreateAsset(material, Level02Builder.GeneratedPath + "/L02_Threshold.mat");
+            }
+
+            // 1. Entrada norte: tope perimetral detrás de la salida/spawn en z = 33.3m
+            CreateBarrier(root, "EntranceBackWall", new Vector3(-2.4f, 0f, 33.3f), new Vector3(2.4f, 0f, 33.3f), 2.5f, 0.4f, material);
+
+            // 2. Fondo de camerinos: tope sur de seguridad en z = -87.2m
+            CreateBarrier(root, "DressingBackWall", new Vector3(-12.8f, -1.5f, -87.2f), new Vector3(-0.6f, -1.5f, -87.2f), 2.2f, 0.4f, material);
+
+            // 3. Tapas de las 4 escaleras exteriores retiradas en FirstLevel (y = 1.6m)
+            CreateBarrier(root, "StairWall_NW", new Vector3(-25.2f, 1.6f, 0.1f), new Vector3(-25.2f, 1.6f, 4.2f), 1.35f, 0.5f, material);
+            CreateBarrier(root, "StairWall_SW", new Vector3(-23.8f, 1.6f, -11.8f), new Vector3(-23.8f, 1.6f, -6.4f), 1.35f, 0.5f, material);
+            CreateBarrier(root, "StairWall_NE", new Vector3(25.2f, 1.6f, 0.1f), new Vector3(25.2f, 1.6f, 4.2f), 1.35f, 0.5f, material);
+            CreateBarrier(root, "StairWall_SE", new Vector3(23.8f, 1.6f, -11.8f), new Vector3(23.8f, 1.6f, -6.4f), 1.35f, 0.5f, material);
+
+            // 4. Barandillas del balcón interior de FirstLevel mirando a la pista y sobre el hall
+            float railHeight = 1.15f;
+            float railThick = 0.25f;
+
+            foreach (float side in new[] { -1f, 1f })
+            {
+                string prefix = side < 0f ? "WestBalcony_" : "EastBalcony_";
+
+                // A. Muro lateral sobre el hueco de las escaleras del hall (z de -25 a -11.5)
+                CreateBarrier(root, prefix + "HallShaft", new Vector3(side * 4.4f, 1.6f, -25.0f), new Vector3(side * 4.4f, 1.6f, -11.5f), railHeight, railThick, material);
+
+                // B. Cierre sur sobre el pasillo en z = -25
+                CreateBarrier(root, prefix + "SouthCap", new Vector3(side * 4.4f, 1.6f, -25.0f), new Vector3(side * 10.5f, 1.6f, -25.0f), railHeight, railThick, material);
+
+                // C. Balcón curvo/segmentado hacia la pista de baile (z de -25 a -6.1)
+                var dancePoints = new[]
+                {
+                    new Vector3(side * 4.4f, 1.6f, -11.5f),
+                    new Vector3(side * 9.35f, 1.6f, -7.85f),
+                    new Vector3(side * 10.6f, 1.6f, -6.1f)
+                };
+                for (int i = 0; i < dancePoints.Length - 1; i++)
+                    CreateBarrier(root, prefix + "DanceFloor_" + i, dancePoints[i], dancePoints[i + 1], railHeight, railThick, material);
+
+                // D. Barandilla a lo largo de la rampa de subida (z de 0 a 6, sube de y=0 a y=1.6)
+                CreateRampBarrier(root, prefix + "RampInner", new Vector3(side * 8.5f, 0f, 0f), new Vector3(side * 8.5f, 1.6f, 6f), 1.05f, railThick, material);
+
+                // E. Tramo interior del descansillo (z de 6 a 8 en x = ±8.5)
+                CreateBarrier(root, prefix + "LandingInner", new Vector3(side * 8.5f, 1.6f, 6.0f), new Vector3(side * 8.5f, 1.6f, 8.0f), railHeight, railThick, material);
+
+                // F. Balcón norte hacia la pista y entrada (z de 8 a 21.5)
+                var northPoints = new[]
+                {
+                    new Vector3(side * 8.5f, 1.6f, 8.0f),
+                    new Vector3(side * 7.5f, 1.6f, 11.0f),
+                    new Vector3(side * 5.8f, 1.6f, 14.0f),
+                    new Vector3(side * 4.0f, 1.6f, 17.5f),
+                    new Vector3(side * 2.4f, 1.6f, 21.5f)
+                };
+                for (int i = 0; i < northPoints.Length - 1; i++)
+                    CreateBarrier(root, prefix + "North_" + i, northPoints[i], northPoints[i + 1], railHeight, railThick, material);
+            }
+        }
+
+        private static GameObject CreateBarrier(Transform parent, string name, Vector3 start, Vector3 end, float height, float thickness, Material material)
+        {
+            var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            go.name = name;
+            go.transform.SetParent(parent, false);
+            Vector3 diff = end - start;
+            Vector3 flat = new Vector3(diff.x, 0f, diff.z);
+            float len = flat.magnitude;
+            Vector3 mid = (start + end) * 0.5f;
+            go.transform.position = mid + Vector3.up * (height * 0.5f);
+            if (len > 0.001f)
+                go.transform.rotation = Quaternion.LookRotation(flat);
+            go.transform.localScale = new Vector3(thickness, height, len);
+            go.GetComponent<Renderer>().sharedMaterial = material;
+            go.isStatic = true;
+            return go;
+        }
+
+        private static GameObject CreateRampBarrier(Transform parent, string name, Vector3 start, Vector3 end, float height, float thickness, Material material)
+        {
+            var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            go.name = name;
+            go.transform.SetParent(parent, false);
+            Vector3 diff = end - start;
+            float len = diff.magnitude;
+            Vector3 mid = (start + end) * 0.5f;
+            go.transform.position = mid + Vector3.up * (height * 0.5f);
+            if (len > 0.001f)
+                go.transform.rotation = Quaternion.LookRotation(diff);
+            go.transform.localScale = new Vector3(thickness, height, len);
+            go.GetComponent<Renderer>().sharedMaterial = material;
+            go.isStatic = true;
+            return go;
         }
 
         private static void AddNeonAccents(Transform level)

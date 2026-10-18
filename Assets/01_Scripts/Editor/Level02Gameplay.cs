@@ -216,6 +216,8 @@ namespace Overdrive.EditorTools
             BuilderUtil.SetRef(level, "exit", exit);
             BuilderUtil.SetRef(level, "reinforcements", wave);
             var serialized = new SerializedObject(level);
+            SerializedProperty nextProp = serialized.FindProperty("nextScene");
+            if (nextProp != null) nextProp.stringValue = "Menu";
             var list = serialized.FindProperty("enemies");
             list.arraySize = enemies.Length;
             for (int i = 0; i < enemies.Length; i++) list.GetArrayElementAtIndex(i).objectReferenceValue = enemies[i];
@@ -233,6 +235,7 @@ namespace Overdrive.EditorTools
             var score = systems.AddComponent<ScoreKeeper>();
             BuilderUtil.SetRef(score, "level", level);
             BuilderUtil.SetRef(score, "rewinder", rewind);
+            SoundFactory.EnsureGameSounds(systems);
             var hud = systems.AddComponent<GameHUD>();
             BuilderUtil.SetRef(hud, "weapons", player.GetComponent<PlayerWeapons>());
             BuilderUtil.SetRef(hud, "level", level);

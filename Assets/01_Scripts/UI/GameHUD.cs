@@ -193,7 +193,8 @@ namespace Overdrive.UI
             string record = score.IsNewRecord ? HudText.NewRecord : HudText.Record(score.BestTotal);
             DrawShadowed(new Rect(0f, y, Screen.width, row), record, score.IsNewRecord ? comboStyle : summaryCenter);
             y += row + 10f * scale;
-            DrawShadowed(new Rect(0f, y, Screen.width, 50f * scale), HudText.CompleteHint, sub);
+            string hint = HudText.CompleteActionHint(level != null ? level.NextScene : null);
+            DrawShadowed(new Rect(0f, y, Screen.width, 50f * scale), hint, sub);
         }
 
         private void EnsureStyles()

@@ -103,6 +103,20 @@ namespace Overdrive.EditorTools
             }
         }
 
+        /// <summary>Para las capturas del nivel 2 de Rommel: pone los modelos en su pose real (no deja objetos que limpiar).</summary>
+        public static System.Collections.Generic.List<GameObject> BakePoses(Scene scene)
+        {
+            PoseAnimators();
+            return new System.Collections.Generic.List<GameObject>();
+        }
+
+        public static void CleanupBakedPoses(System.Collections.Generic.List<GameObject> baked)
+        {
+            if (baked == null) return;
+            foreach (GameObject go in baked)
+                if (go != null) UnityEngine.Object.DestroyImmediate(go);
+        }
+
         /// <summary>Nivel 2 (escena de Rommel): Nina y un enemigo de cada arma, de cerca.</summary>
         private static void CaptureLevel02(string dir)
         {

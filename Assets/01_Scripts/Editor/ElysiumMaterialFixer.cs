@@ -322,7 +322,7 @@ public static class ElysiumMaterialFixer
         RenderSettings.fogColor = new Color(0.04f, 0.05f, 0.05f);
         RenderSettings.fogDensity = 0.002f;
 
-        foreach (var light in Object.FindObjectsByType<Light>(FindObjectsSortMode.None))
+        foreach (var light in Object.FindObjectsByType<Light>())
         {
             if (light.type != LightType.Directional) continue;
             light.color = new Color(1f, 0.72f, 0.42f);
@@ -330,7 +330,7 @@ public static class ElysiumMaterialFixer
             light.shadows = LightShadows.Soft;
         }
 
-        foreach (var cam in Object.FindObjectsByType<Camera>(FindObjectsSortMode.None))
+        foreach (var cam in Object.FindObjectsByType<Camera>())
         {
             cam.clearFlags = CameraClearFlags.SolidColor;
             cam.backgroundColor = Color.black;

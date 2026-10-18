@@ -61,6 +61,14 @@ namespace Overdrive.EditorTools
             return nina;
         }
 
+        /// <summary>Quita la chica de ambiente anterior (FemaleNPC, sin diálogo): Nina la sustituye.</summary>
+        public static void RemoveOldNpcs(Scene scene)
+        {
+            foreach (Transform t in scene.GetRootGameObjects().SelectMany(r => r.GetComponentsInChildren<Transform>(true))
+                         .Where(t => t.name.StartsWith("FemaleNPC")).ToList())
+                if (t != null) Object.DestroyImmediate(t.gameObject);
+        }
+
         /// <summary>Enciende en cada enemigo de la escena el modelo de su arma (al jugar lo hace él solo en Awake).</summary>
         public static int ApplyEnemyLooks(Scene scene)
         {
@@ -82,6 +90,7 @@ namespace Overdrive.EditorTools
         {
             if (AssetDatabase.LoadAssetAtPath<SceneAsset>(Level02Path) == null) return;
             Scene scene = EditorSceneManager.OpenScene(Level02Path, OpenSceneMode.Single);
+            RemoveOldNpcs(scene);
             ApplyEnemyLooks(scene);
             GameObject player = scene.GetRootGameObjects().FirstOrDefault(r => r.CompareTag("Player"));
             // Nina ya colocada no cuenta como obstáculo al buscar su sitio (si no, cambiaría de sitio en cada construcción).
