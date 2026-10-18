@@ -2,7 +2,9 @@ using System.Collections.Generic;
 using Overdrive.Combat;
 using Overdrive.Core;
 using Overdrive.Enemies;
+using Overdrive.Level;
 using Overdrive.Player;
+using Overdrive.Scoring;
 using Overdrive.UI;
 using UnityEditor;
 using UnityEngine;
@@ -129,7 +131,7 @@ namespace Overdrive.EditorTools
                 c.NotNull(footsteps, "Prefab Player: falta PlayerFootsteps");
                 if (footsteps == null) return;
                 c.Check(footsteps.Controller == controller, "PlayerFootsteps.controller sin asignar");
-                c.Check(controller.SneakSpeed < controller.MoveSpeed * 0.6f, "Agachado (Ctrl) se camina bastante más lento");
+                c.Check(controller.SneakSpeed < controller.MoveSpeed * 0.8f, "Agachado (Ctrl) se camina más lento");
 
                 // --- Pasos ---
                 Vector3 p = basePos;
@@ -193,6 +195,30 @@ namespace Overdrive.EditorTools
                 c.Check(nextTo.WitnessDeath(victim) && nextTo.Awareness == Awareness.Alerted,
                     "Simulación: uno pegado al que muere se entera aunque no mire");
                 c.Check(!victim.GetComponent<EnemyAI>().WitnessDeath(victim), "El que muere no se alerta a sí mismo");
+
+                // --- Bonus de sigilo en la puntuación ---
+                var scoreGo = new GameObject("StealthScoreTest");
+                created.Add(scoreGo);
+                var manager = scoreGo.AddComponent<LevelManager>();
+                BuilderUtil.SetRef(manager, "player", player.GetComponent<PlayerLife>());
+                var keeper = scoreGo.AddComponent<ScoreKeeper>();
+                BuilderUtil.SetRef(keeper, "level", manager);
+                var calm = Make(enemyPrefab, new Vector3(90f, 0f, 0f), 0f).GetComponent<Enemy>();
+                var spotted = Make(enemyPrefab, new Vector3(95f, 0f, 0f), 0f).GetComponent<Enemy>();
+                spotted.GetComponent<EnemyAI>().Brain.Alert(player.transform.position);
+
+                controller.IsSneaking = false;
+                c.Check(!keeper.IsStealthKill(calm), "Sin Ctrl no hay bonus de sigilo");
+                controller.IsSneaking = true;
+                c.Check(keeper.IsStealthKill(calm), "Agachado y sin que te haya detectado: hay bonus de sigilo");
+                c.Check(!keeper.IsStealthKill(spotted), "Si el enemigo ya te detectó (!), no hay bonus de sigilo");
+
+                ScoreGain stealthGain = keeper.AddKill(KillCause.Backstab, calm.transform.position, keeper.IsStealthKill(calm));
+                c.Check(stealthGain.Stealth && keeper.State.Points == ScoreRules.KillPoints(KillCause.Backstab) + ScoreRules.StealthBonus,
+                    $"Simulación: matar en sigilo suma {ScoreRules.StealthBonus} extra (total {keeper.State.Points})");
+                c.Check(keeper.Popups.Count == 1 && HudText.PopupLabel(keeper.Popups[0].Cause, keeper.Popups[0].Gain.Stealth) != null,
+                    "Simulación: el texto flotante muestra SIGILO");
+                controller.IsSneaking = false;
             }
             finally
             {

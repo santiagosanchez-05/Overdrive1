@@ -8,7 +8,7 @@ namespace Overdrive.Scoring
     {
         /// <summary>Segundos que tienes tras una muerte para que la siguiente sume al combo.</summary>
         public const float ComboWindow = 7f;
-        public const int MaxMultiplier = 8;
+        public const int MaxMultiplier = 20;
 
         public static int MultiplierFor(int combo) => Mathf.Clamp(combo, 1, MaxMultiplier);
 

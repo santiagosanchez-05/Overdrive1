@@ -6329,6 +6329,7 @@ MonoBehaviour:
   saveButton: {fileID: 1015911597}
   menuButton: {fileID: 56587267}
   musicSlider: {fileID: 673231125}
+  sfxSlider: {fileID: 0}
   status: {fileID: 1423495493}
   menuScene: Menu
   fade: 0.2

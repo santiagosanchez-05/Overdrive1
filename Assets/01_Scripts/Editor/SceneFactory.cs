@@ -83,6 +83,8 @@ namespace Overdrive.EditorTools
             for (int i = 1; i < layout.Floors.Length; i++)
                 BuildProps(level.transform.Find(FloorRootName(i)), layout.Floors[i]);
             AdoptDecor(scene, level);
+            // Antes de los colliders de decoración: el modelo de escalera debe quedar sobre la rampa, no bloquearla.
+            StairsModelFitter.FitAll(scene);
             EnsureDecorColliders(level.transform);
             BuildAmbience(level.transform, layout);
             BuildLedCables(level.transform, layout);
@@ -183,6 +185,9 @@ namespace Overdrive.EditorTools
                     Quaternion.identity);
                 BuilderUtil.SetMaterial(slab, mat);
             }
+
+            // Los huecos 'O' no son cuadrados: borde de suelo roto y cascotes en el piso de abajo.
+            HoleFactory.Build(root, level, map, SlabThickness, mat);
 
             BuildWalls(root, map);
         }

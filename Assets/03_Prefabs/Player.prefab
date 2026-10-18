@@ -190,7 +190,7 @@ MonoBehaviour:
   controller: {fileID: 650247359578819848}
   life: {fileID: 7982732997962180055}
   moveSpeed: 7
-  sneakSpeed: 3.2
+  sneakSpeed: 5
   gravity: 25
   groundStick: 6
 --- !u!114 &8763644904668813282
