@@ -119,6 +119,10 @@ namespace Overdrive.Story
             nameStyle = new GUIStyle(GUI.skin.label) { fontSize = 20, fontStyle = FontStyle.Bold, normal = { textColor = new Color(1f, 0.35f, 0.75f) } };
             textStyle = new GUIStyle(GUI.skin.label) { fontSize = 22, wordWrap = true, normal = { textColor = Color.white } };
             hintStyle = new GUIStyle(GUI.skin.label) { fontSize = 14, alignment = TextAnchor.MiddleRight, normal = { textColor = new Color(1f, 1f, 1f, 0.5f) } };
+            // Sin cambio de color ni de fondo al pasar el ratón por encima.
+            boxStyle.hover.background = background;
+            foreach (GUIStyle style in new[] { nameStyle, textStyle, hintStyle })
+                UI.GameHUD.SetTextColor(style, style.normal.textColor);
         }
     }
 }

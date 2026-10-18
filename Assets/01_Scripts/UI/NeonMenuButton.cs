@@ -33,6 +33,7 @@ namespace Overdrive.UI
         public Color borderNormal = new Color32(0x9A, 0x9D, 0xA3, 0xFF);
         public Color neon = Color.white;
         public Color textNormal = new Color(1f, 1f, 1f, 0.82f);
+        [Tooltip("Sin uso: el texto ya no cambia de color al pasar el ratón (se conserva para no perder el valor guardado).")]
         public Color textActive = Color.white;
         [Range(0f, 1f)] public float stripesNormalAlpha = 0.25f;
         [Range(0f, 1f)] public float highlightMaxAlpha = 0.18f;
@@ -71,6 +72,19 @@ namespace Overdrive.UI
         private float _sweepT = -1f;
         private float _nextSweep;
         private bool _clickPending;
+        private static bool _quiet;
+
+        /// <summary>
+        /// Selecciona un objeto desde código (al abrir un panel, la pausa...) sin sonido de hover:
+        /// el hover solo suena cuando el jugador se mueve por los botones.
+        /// </summary>
+        public static void SelectQuietly(GameObject go)
+        {
+            if (!EventSystem.current) return;
+            _quiet = true;
+            try { EventSystem.current.SetSelectedGameObject(go); }
+            finally { _quiet = false; }
+        }
 
         private void Awake()
         {
@@ -140,8 +154,9 @@ namespace Overdrive.UI
                 glow.color = WithAlpha(neon, target * k * breath);
             }
             if (stripes) stripes.color = WithAlpha(neon, Mathf.Lerp(stripesNormalAlpha, 1f, k));
-            if (icon) icon.color = Color.Lerp(textNormal, textActive, k);
-            if (label) label.color = Color.Lerp(textNormal, textActive, k);
+            // El texto y el icono no cambian de color con el ratón: el hover se nota en el borde y el brillo.
+            if (icon) icon.color = textNormal;
+            if (label) label.color = textNormal;
             if (flash) flash.color = WithAlpha(neon, _flashAlpha);
 
             UpdateSweep(sweepTop);
@@ -178,6 +193,7 @@ namespace Overdrive.UI
 
         public void OnPointerEnter(PointerEventData e)
         {
+            if (!_hovered && _button.IsInteractable()) Play(hoverClip);
             _hovered = true;
             if (_sweepT < 0f) StartSweep();
             // Pasar el ratón también selecciona: solo hay un botón activo a la vez.
@@ -190,6 +206,8 @@ namespace Overdrive.UI
 
         public void OnSelect(BaseEventData e)
         {
+            // Con teclado o mando también suena; con el ratón ya sonó al entrar (y _hovered está activo).
+            if (!IsSelected && !_hovered && !_quiet) Play(hoverClip);
             IsSelected = true;
             if (_sweepT < 0f) StartSweep();
         }

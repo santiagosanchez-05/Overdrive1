@@ -111,7 +111,7 @@ namespace Overdrive.UI
             if (es && !_busy && (es.currentSelectedGameObject == null || !es.currentSelectedGameObject.activeInHierarchy))
             {
                 Selectable first = _current ? _current.GetComponentInChildren<Selectable>() : null;
-                if (first) es.SetSelectedGameObject(first.gameObject);
+                if (first) NeonMenuButton.SelectQuietly(first.gameObject);
             }
         }
 
@@ -235,7 +235,7 @@ namespace Overdrive.UI
             else
             {
                 Selectable first = to.GetComponentInChildren<Selectable>();
-                if (first) EventSystem.current.SetSelectedGameObject(first.gameObject);
+                if (first) NeonMenuButton.SelectQuietly(first.gameObject);
             }
         }
 
@@ -250,7 +250,7 @@ namespace Overdrive.UI
 
         private static void Select(NeonMenuButton b)
         {
-            if (b && EventSystem.current) EventSystem.current.SetSelectedGameObject(b.gameObject);
+            if (b) NeonMenuButton.SelectQuietly(b.gameObject);
         }
 
         private void LoadScene(string scene)

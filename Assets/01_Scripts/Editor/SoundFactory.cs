@@ -28,6 +28,7 @@ namespace Overdrive.EditorTools
             (Sound.ThrownHit, "thrownHit", "GolpeTirado.mp3"),
             (Sound.EnemyFall, "enemyFall", "Caida.wav"),
             (Sound.PlayerDeath, "playerDeath", "gameOverPixel.mp3"),
+            (Sound.WeaponChange, "weaponChange", "Change_Weapon.mp3"),
         };
 
         public static AudioClip Load(string file) => AssetDatabase.LoadAssetAtPath<AudioClip>($"{AudioPath}/{file}");

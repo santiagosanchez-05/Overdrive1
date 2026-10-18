@@ -91,6 +91,7 @@ namespace Overdrive.Weapons
             WeaponItem picked = grounded[index];
             if (current != null) current.DropAt(picked.transform.position, picked.transform.eulerAngles.y);
             Equip(picked);
+            GameSounds.Play(Sound.WeaponChange);
             return picked;
         }
 

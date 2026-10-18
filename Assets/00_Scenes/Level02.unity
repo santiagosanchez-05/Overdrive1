@@ -2890,8 +2890,8 @@ MonoBehaviour:
   sweepDuration: 0.45
   sweepInterval: {x: 2.5, y: 4.5}
   audioSource: {fileID: 423688838}
-  hoverClip: {fileID: 8300000, guid: 0b9cf69e9fe528c4c9b8a0a5a958eb3a, type: 3}
-  clickClip: {fileID: 8300000, guid: 9544a7dbe16a2ec45889e8e1e450f65e, type: 3}
+  hoverClip: {fileID: 8300000, guid: 98ea64c4178e1384aa25cda5e8b2014b, type: 3}
+  clickClip: {fileID: 8300000, guid: ee19ba0f9fd14454ab5bd6aad9564343, type: 3}
   volume: 0.6
 --- !u!1 &69278543
 GameObject:
@@ -15936,7 +15936,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Overdrive.Core.GameSounds
   shotgun:
     clip: {fileID: 8300000, guid: 3750c5bd55006004f8adc7bd6d82ac68, type: 3}
-    volume: 0.8
+    volume: 0.5
     pitchVariation: 0.08
   smg:
     clip: {fileID: 8300000, guid: 226d927e9f5a6da4f9d8b51712276cb9, type: 3}
@@ -15956,16 +15956,20 @@ MonoBehaviour:
     pitchVariation: 0.08
   batHit:
     clip: {fileID: 8300000, guid: 6c4ae1365efb556418d53da162546230, type: 3}
-    volume: 0.2
+    volume: 0.4
     pitchVariation: 0.08
   knifeHit:
     clip: {fileID: 8300000, guid: ad5a161cea26b704a86864183afa333b, type: 3}
-    volume: 0.2
+    volume: 0.5
     pitchVariation: 0.08
   kick:
     clip: {fileID: 8300000, guid: e3ae0ba49ba940049a05d44a2a72ffd1, type: 3}
     volume: 0.8
     pitchVariation: 0.08
+  weaponChange:
+    clip: {fileID: 8300000, guid: ee1a48fe620237a48909c540c88e36f2, type: 3}
+    volume: 0.8
+    pitchVariation: 0.03
   throwWeapon:
     clip: {fileID: 8300000, guid: 226cca535de1745488809647e18cf3a8, type: 3}
     volume: 0.2
@@ -33826,8 +33830,8 @@ MonoBehaviour:
   sweepDuration: 0.45
   sweepInterval: {x: 2.5, y: 4.5}
   audioSource: {fileID: 423688838}
-  hoverClip: {fileID: 8300000, guid: 0b9cf69e9fe528c4c9b8a0a5a958eb3a, type: 3}
-  clickClip: {fileID: 8300000, guid: 9544a7dbe16a2ec45889e8e1e450f65e, type: 3}
+  hoverClip: {fileID: 8300000, guid: 98ea64c4178e1384aa25cda5e8b2014b, type: 3}
+  clickClip: {fileID: 8300000, guid: ee19ba0f9fd14454ab5bd6aad9564343, type: 3}
   volume: 0.6
 --- !u!1 &1020625898
 GameObject:
@@ -37193,8 +37197,8 @@ MonoBehaviour:
   sweepDuration: 0.45
   sweepInterval: {x: 2.5, y: 4.5}
   audioSource: {fileID: 423688838}
-  hoverClip: {fileID: 8300000, guid: 0b9cf69e9fe528c4c9b8a0a5a958eb3a, type: 3}
-  clickClip: {fileID: 8300000, guid: 9544a7dbe16a2ec45889e8e1e450f65e, type: 3}
+  hoverClip: {fileID: 8300000, guid: 98ea64c4178e1384aa25cda5e8b2014b, type: 3}
+  clickClip: {fileID: 8300000, guid: ee19ba0f9fd14454ab5bd6aad9564343, type: 3}
   volume: 0.6
 --- !u!114 &1155750559
 MonoBehaviour:
