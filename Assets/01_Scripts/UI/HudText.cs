@@ -28,11 +28,13 @@ namespace Overdrive.UI
         }
 
         /// <summary>Arma actual y munición: "Escopeta  4/6", "Bate", "Subfusil  0/30 (vacía)".</summary>
-        public static string Weapon(WeaponDefinition definition, int ammo)
+        /// <param name="capacity">Cargador de esta arma concreta si no es el de su tipo (0 = el de su tipo).</param>
+        public static string Weapon(WeaponDefinition definition, int ammo, int capacity = 0)
         {
             if (definition == null) return Unarmed;
             if (definition.IsMelee) return definition.DisplayName;
-            string text = $"{definition.DisplayName}  {ammo}/{definition.MaxAmmo}";
+            int max = capacity > 0 ? capacity : definition.MaxAmmo;
+            string text = $"{definition.DisplayName}  {ammo}/{max}";
             return ammo <= 0 ? text + " (vacía)" : text;
         }
 
@@ -58,6 +60,10 @@ namespace Overdrive.UI
 
         /// <summary>Esquina del HUD: rebobinados disponibles.</summary>
         public static string Rewinds(int usesLeft) => $"Rebobinados: {usesLeft}";
+
+        public const string RestartHint = "R: reiniciar el nivel";
+
+        public static string Health(float hp) => $"VIDA {Mathf.CeilToInt(Mathf.Max(0f, hp))}";
 
         /// <summary>Indicador sobre la cabeza de un enemigo: "?" si sospecha, "!" si te ha detectado.</summary>
         public static string AwarenessMark(Awareness awareness)

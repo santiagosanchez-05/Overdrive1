@@ -58,12 +58,15 @@ namespace Overdrive.Level
             Record();
         }
 
+        /// <summary>El rebobinado (tecla T) está quitado del juego. Las instantáneas se siguen usando para guardar.</summary>
+        public const bool Enabled = false;
+
         private void Update()
         {
             if (player == null || level == null) return;
             if (CanRewind)
             {
-                if (GameInput.RewindPressed) Rewind();
+                if (Enabled && GameInput.RewindPressed) Rewind();
                 return;
             }
 
@@ -89,7 +92,12 @@ namespace Overdrive.Level
         public void Record()
         {
             var frame = new object[targets.Count];
-            for (int i = 0; i < targets.Count; i++) frame[i] = targets[i].Capture();
+            for (int i = 0; i < targets.Count; i++)
+            {
+                // Un objeto destruido (por ejemplo un arma que se borró) se salta en vez de romper la grabación.
+                if (targets[i] is Object unityObject && unityObject == null) continue;
+                frame[i] = targets[i].Capture();
+            }
             Buffer.Push(frame);
         }
 

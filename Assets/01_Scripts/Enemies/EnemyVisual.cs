@@ -82,9 +82,10 @@ namespace Overdrive.Enemies
         public void Apply(WeaponType? weapon)
         {
             int index = EnemyVisualLogic.ModelIndex(weapon);
-            for (int i = 0; i < models.Length; i++)
-                if (models[i] != null) models[i].SetActive(i == index);
             active = index < models.Length ? models[index] : null;
+            // Por modelo y no por casilla: el Jefe usa el mismo modelo en todas, y si no se apagaría al final.
+            for (int i = 0; i < models.Length; i++)
+                if (models[i] != null) models[i].SetActive(models[i] == active);
             animator = active != null ? active.GetComponent<Animator>() : null;
             handBone = HandSocket.Find(animator, out handIsSocket);
             bool hasModel = active != null;

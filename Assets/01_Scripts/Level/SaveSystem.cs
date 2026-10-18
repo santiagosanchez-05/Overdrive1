@@ -91,11 +91,39 @@ namespace Overdrive.Level
             }
         }
 
+        /// <summary>
+        /// Punto de guardado automático al superar un nivel: CONTINUAR empieza el nivel siguiente desde el principio.
+        /// Si no hay nivel siguiente (fin del juego), borra la partida guardada.
+        /// </summary>
+        public static void SaveCheckpoint(string nextScene)
+        {
+            if (string.IsNullOrEmpty(nextScene) || nextScene == "Menu" || !IsInBuild(nextScene))
+            {
+                Delete();
+                return;
+            }
+            var data = new SaveData
+            {
+                scene = nextScene,
+                savedAt = DateTime.Now.ToString("dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture),
+            };
+            try { File.WriteAllText(FilePath, JsonUtility.ToJson(data)); }
+            catch (Exception e) { Debug.LogError($"[SaveSystem] No se pudo guardar: {e.Message}"); }
+        }
+
+        /// <summary>¿La escena está en Build Settings? (Funciona también fuera del modo de juego.)</summary>
+        public static bool IsInBuild(string sceneName)
+        {
+            for (int i = 0; i < SceneManager.sceneCountInBuildSettings; i++)
+                if (Path.GetFileNameWithoutExtension(SceneUtility.GetScenePathByBuildIndex(i)) == sceneName) return true;
+            return false;
+        }
+
         /// <summary>Carga la escena guardada y, cuando arranca, deja todo como estaba.</summary>
         public static bool Continue()
         {
             SaveData data = Read();
-            if (data == null || !Application.CanStreamedLevelBeLoaded(data.scene)) return false;
+            if (data == null || !IsInBuild(data.scene)) return false;
             pending = data;
             Time.timeScale = 1f;
             GameInput.Blocked = false;

@@ -16,7 +16,10 @@ namespace Overdrive.CameraRig
     [RequireComponent(typeof(TopDownCamera))]
     public class FirstPersonCamera : MonoBehaviour
     {
+        [Tooltip("Altura de los ojos si no hay otros personajes con los que compararse.")]
         [SerializeField] private float eyeHeight = 1.7f;
+        [Tooltip("Los ojos van un poco por encima del hueso de la cabeza de los demás personajes.")]
+        [SerializeField] private float eyeAboveHead = 0.08f;
         [SerializeField] private float eyeForward = 0.18f;
         [SerializeField] private Vector2 pitchLimits = new Vector2(-35f, 40f);
         [SerializeField] private float fieldOfView = 70f;
@@ -33,6 +36,9 @@ namespace Overdrive.CameraRig
         private PlayerAim aim;
         private Quaternion viewmodelRotation = Quaternion.identity;
         private float pitch;
+        private float currentEye;
+        private float eyeRefresh;
+        private float eyeTarget;
         private bool active;
         private float savedFov, savedNear;
         private readonly Dictionary<Renderer, ShadowCastingMode> hidden = new Dictionary<Renderer, ShadowCastingMode>();
@@ -69,10 +75,19 @@ namespace Overdrive.CameraRig
             }
             if (!active) return;
 
+            // Altura de los ojos igual a la de los demás personajes (se revisa de vez en cuando).
+            eyeRefresh -= Time.deltaTime;
+            if (eyeRefresh <= 0f)
+            {
+                eyeRefresh = 1f;
+                eyeTarget = MeasureEyeHeight();
+            }
+            currentEye = Mathf.MoveTowards(currentEye, eyeTarget, Time.deltaTime * 0.5f); // sin saltos
+
             pitch = Mathf.Clamp(pitch - GameInput.LookDelta.y * ViewMode.Sensitivity, pitchLimits.x, pitchLimits.y);
             Quaternion yaw = Quaternion.Euler(0f, Target.eulerAngles.y, 0f);
             Cam.transform.SetPositionAndRotation(
-                Target.position + Vector3.up * eyeHeight + yaw * Vector3.forward * eyeForward,
+                Target.position + Vector3.up * currentEye + yaw * Vector3.forward * eyeForward,
                 yaw * Quaternion.Euler(pitch, 0f, 0f));
             HideBody(); // por si el jugador cogió o soltó algo
             PlaceViewmodel();
@@ -87,6 +102,16 @@ namespace Overdrive.CameraRig
             if (hand == null) return;
 
             Transform cam = Cam.transform;
+            // Cuerpo a cuerpo (bate, cuchillo): su propia pose, no apunta a la mira.
+            WeaponItem held = weapons.Current;
+            if (held != null && WeaponViewScale.FirstPersonMeleePose(held.Type, out Vector3 meleeOffset, out Quaternion meleeRotation))
+            {
+                Quaternion meleeTarget = cam.rotation * meleeRotation;
+                viewmodelRotation = Quaternion.Slerp(viewmodelRotation, meleeTarget, 1f - Mathf.Exp(-viewmodelFollow * Time.deltaTime));
+                Quaternion meleeSwing = hand.localRotation;
+                hand.SetPositionAndRotation(cam.TransformPoint(meleeOffset), viewmodelRotation * meleeSwing);
+                return;
+            }
             Vector3 position = cam.TransformPoint(viewmodelOffset);
             Vector3 aimPoint = aim != null && aim.HasAim ? aim.AimPoint : cam.position + cam.forward * 30f;
             Vector3 toAim = aimPoint - position;
@@ -99,9 +124,29 @@ namespace Overdrive.CameraRig
             hand.SetPositionAndRotation(position, viewmodelRotation * swing);
         }
 
+        /// <summary>
+        /// Altura de los ojos: la cabeza de los enemigos de pie (su hueso Head respecto a sus pies), así el
+        /// jugador en primera persona mira a la misma altura que ellos. Sin enemigos, el valor por defecto.
+        /// </summary>
+        private float MeasureEyeHeight()
+        {
+            float best = 0f;
+            foreach (Overdrive.Enemies.Enemy enemy in Overdrive.Enemies.Enemy.All)
+            {
+                if (enemy == null || !enemy.isActiveAndEnabled || enemy.Posture != Overdrive.Combat.Posture.Standing) continue;
+                Animator anim = enemy.GetComponentInChildren<Animator>();
+                Transform head = anim != null && anim.isHuman ? anim.GetBoneTransform(HumanBodyBones.Head) : null;
+                if (head == null) continue;
+                best = Mathf.Max(best, head.position.y - enemy.transform.position.y);
+            }
+            return best > 0.5f ? best + eyeAboveHead : (currentEye > 0.5f ? currentEye : eyeHeight);
+        }
+
         private void Enter()
         {
             active = true;
+            currentEye = eyeTarget = MeasureEyeHeight();
+            eyeRefresh = 1f;
             pitch = 0f;
             topDown.enabled = false;
             viewmodelRotation = Cam.transform.rotation;

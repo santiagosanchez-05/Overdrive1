@@ -21389,7 +21389,8 @@ MonoBehaviour:
   - {fileID: 106460644}
   briefcase: {fileID: 138742893}
   reinforcements: {fileID: 1124885367}
-  nextScene: Menu
+  nextScene: Level03
+  autoAdvanceDelay: 3
 --- !u!114 &543787591
 MonoBehaviour:
   m_ObjectHideFlags: 0

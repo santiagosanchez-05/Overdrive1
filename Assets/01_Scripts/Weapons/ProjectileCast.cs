@@ -15,6 +15,8 @@ namespace Overdrive.Weapons
             public PlayerLife Player;
             public Vector3 Point;
             public float Distance;
+            /// <summary>Le dio en la cabeza (la esfera <see cref="HeadHitbox"/>).</summary>
+            public bool Head;
 
             /// <summary>Pared u otro obstáculo sin vida.</summary>
             public bool IsObstacle => Enemy == null && Player == null;
@@ -27,10 +29,12 @@ namespace Overdrive.Weapons
             hit = default;
             if (distance <= 0f) return false;
 
-            RaycastHit[] hits = Physics.SphereCastAll(origin, radius, direction, distance, ~0, QueryTriggerInteraction.Ignore);
+            // Con triggers: así entran las zonas de impacto de cabeza y cuerpo (HeadHitbox); el resto de triggers se ignoran.
+            RaycastHit[] hits = Physics.SphereCastAll(origin, radius, direction, distance, ~0, QueryTriggerInteraction.Collide);
             Array.Sort(hits, ByDistance);
             foreach (RaycastHit h in hits)
             {
+                if (h.collider.isTrigger && !HeadHitbox.IsHitbox(h.collider)) continue;
                 var enemy = h.collider.GetComponentInParent<Enemy>();
                 var player = h.collider.GetComponentInParent<PlayerLife>();
                 if (enemy != null && owner == Faction.Enemy) continue;
@@ -39,6 +43,7 @@ namespace Overdrive.Weapons
                 hit.Enemy = enemy;
                 hit.Player = player;
                 hit.Distance = h.distance;
+                hit.Head = HeadHitbox.IsHead(h.collider);
                 // Si el barrido empieza solapado, Unity devuelve punto cero: usamos el origen.
                 hit.Point = h.distance > 0f ? h.point : origin;
                 return true;

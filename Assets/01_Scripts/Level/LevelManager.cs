@@ -19,6 +19,8 @@ namespace Overdrive.Level
         [SerializeField] private BriefcasePickup briefcase;
         [SerializeField] private ReinforcementWave reinforcements;
         [SerializeField] private string nextScene;
+        [Tooltip("Segundos tras completar el nivel para pasar solo al siguiente. 0 = esperar a que el jugador pulse.")]
+        [SerializeField] private float autoAdvanceDelay;
 
         private readonly LevelProgress progress = new LevelProgress();
         private float completedTime;
@@ -48,7 +50,9 @@ namespace Overdrive.Level
             if (progress.State == LevelState.Complete)
             {
                 completedTime += Time.unscaledDeltaTime;
-                if (completedTime >= 0.5f && (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Return) || Input.GetMouseButtonDown(0)))
+                bool pressed = completedTime >= 0.5f && (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Return) || Input.GetMouseButtonDown(0));
+                bool timedOut = autoAdvanceDelay > 0f && completedTime >= autoAdvanceDelay;
+                if (pressed || timedOut)
                 {
                     string target = string.IsNullOrEmpty(nextScene) ? "Menu" : nextScene;
                     Time.timeScale = 1f;
@@ -99,6 +103,9 @@ namespace Overdrive.Level
 
         private void OnComplete()
         {
+            // Punto de guardado automático: CONTINUAR empezará el nivel siguiente (o se borra al terminar el juego).
+            SaveSystem.SaveCheckpoint(nextScene);
+
             // Nivel completado: el jugador se queda quieto y deja de atacar.
             var controller = player.GetComponent<PlayerController>();
             if (controller != null) controller.MovementLocked = true;

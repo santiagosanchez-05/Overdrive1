@@ -24,8 +24,22 @@ namespace Overdrive.CameraRig
         private float amount;
         private float deathTime;
         private bool wasDead;
+        private float hurt; // destello al recibir daño sin morir
 
-        public void Init(PlayerLife target) => life = target;
+        public void Init(PlayerLife target)
+        {
+            if (life != null) life.Damaged -= OnDamaged;
+            life = target;
+            if (life != null) life.Damaged += OnDamaged;
+        }
+
+        private void OnDestroy()
+        {
+            if (life != null) life.Damaged -= OnDamaged;
+        }
+
+        /// <summary>Herido: un destello de sangre en los bordes, más fuerte cuanto más daño.</summary>
+        private void OnDamaged(float amount, bool head) => hurt = Mathf.Max(hurt, Mathf.Clamp01(0.35f + amount / 60f));
 
         private void Awake()
         {
@@ -66,10 +80,14 @@ namespace Overdrive.CameraRig
             float since = Time.unscaledTime - deathTime;
             float hit = dead ? Mathf.Clamp01(1f - since / 0.6f) * 0.25f : 0f;
             float pulse = dead ? 0.08f * Mathf.Sin(since * pulseSpeed * Mathf.PI * 2f) : 0f;
-            float a = Mathf.Clamp01(amount * (0.92f + pulse) + hit);
+            hurt = Mathf.MoveTowards(hurt, 0f, Time.unscaledDeltaTime * 1.6f);
+            // Con poca vida la sangre se queda un poco en los bordes.
+            float lowHealth = life != null && !dead && life.MaxHealth > 0f ? Mathf.Clamp01(1f - life.CurrentHealth / life.MaxHealth) : 0f;
+            float wound = Mathf.Max(hurt * 0.75f, lowHealth * lowHealth * 0.45f);
+            float a = Mathf.Clamp01(amount * (0.92f + pulse) + hit + wound * (1f - amount));
 
             splatter.color = new Color(1f, 1f, 1f, a);
-            tint.color = new Color(0.45f, 0f, 0f, tintAlpha * amount + hit * 0.4f);
+            tint.color = new Color(0.45f, 0f, 0f, tintAlpha * amount + hit * 0.4f + hurt * 0.18f * (1f - amount));
             splatter.enabled = tint.enabled = a > 0.001f || amount > 0.001f;
         }
 

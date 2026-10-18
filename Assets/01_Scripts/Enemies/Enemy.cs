@@ -24,9 +24,16 @@ namespace Overdrive.Enemies
         [SerializeField] private float knockdownDuration = 3f;
         [SerializeField] private Transform hand;
         [SerializeField] private WeaponItem weapon;
+        [Tooltip("Vida: las balas y golpes en el cuerpo la van quitando; en la cabeza (armas de fuego, cuchillo) mata.")]
+        [SerializeField] private float maxHealth = 100f;
 
         private readonly CombatState state = new CombatState();
         private Material aliveMaterial;
+        private float health = -1f;
+        private HeadHitbox headHitbox;
+
+        public float MaxHealth => maxHealth;
+        public float Health => health < 0f ? maxHealth : health;
 
         /// <summary>Enemigos activos en la escena.</summary>
         public static IReadOnlyList<Enemy> All => all;
@@ -56,6 +63,8 @@ namespace Overdrive.Enemies
         // El arma con la que empieza se colocó en el editor sin su punto de agarre (Grip): se vuelve a sujetar bien.
         private void Start()
         {
+            headHitbox = HeadHitbox.Ensure(transform);
+            headHitbox.SetActive(state.Posture == Posture.Standing);
             if (weapon != null && weapon.CurrentMode == WeaponItem.Mode.Held && weapon.transform.parent == hand) weapon.AttachTo(hand);
         }
         private void OnDisable() => all.Remove(this);
@@ -94,6 +103,26 @@ namespace Overdrive.Enemies
             if (!state.Kill()) return false;
             OnKilled(cause);
             return true;
+        }
+
+        /// <summary>
+        /// Impacto con daño: en la cabeza con un arma que mata a la cabeza, muere al instante; si no, pierde
+        /// vida y muere al llegar a 0. Derribado en el suelo, cualquier golpe con arma lo remata.
+        /// Devuelve true si este impacto lo mató.
+        /// </summary>
+        public bool ReceiveDamage(float amount, bool head, bool headKills, KillCause cause = KillCause.Other)
+        {
+            if (state.IsDead) return false;
+            // El jefe tiene su propia armadura de golpes.
+            if (armor != null) return ReceiveLethalHit(cause) && state.IsDead;
+            if (state.Posture == Posture.Down || (head && headKills)) return ReceiveLethalHit(cause);
+            health = Health - amount;
+            if (health <= 0f) return ReceiveLethalHit(cause);
+            // Herido: se queja, sangra un poco y sigue.
+            CameraShake.Shake(0.1f);
+            GameSounds.Play(Sound.Punch);
+            BloodSpawner.SpawnAt(transform.position + transform.forward * -0.3f, 0.45f);
+            return false;
         }
 
         public bool BeginFinish() => state.BeginFinish();
@@ -152,6 +181,7 @@ namespace Overdrive.Enemies
             }
             // En el suelo no bloquea: el jugador puede ponerse encima para rematarlo.
             if (bodyCollider != null) bodyCollider.enabled = !lying;
+            if (headHitbox != null) headHitbox.SetActive(!lying);
             if (bodyRenderer != null)
             {
                 // Se recuerda el material de vivo para poder volver a él al rebobinar.
@@ -165,6 +195,7 @@ namespace Overdrive.Enemies
         public void RestoreState(CombatState.Snapshot snapshot, WeaponItem heldWeapon)
         {
             state.Restore(snapshot);
+            if (!state.IsDead) health = maxHealth;
             weapon = heldWeapon;
             ApplyPosture();
         }
