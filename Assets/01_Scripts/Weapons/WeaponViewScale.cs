@@ -17,7 +17,7 @@ namespace Overdrive.Weapons
         {
             switch (type)
             {
-                case WeaponType.Bat: return 1.0f;
+                case WeaponType.Bat: return 0.9f;
                 case WeaponType.Knife: return 1.0f;
                 case WeaponType.Shotgun: return 1.0f;
                 case WeaponType.Smg: return 1.15f;
@@ -30,7 +30,7 @@ namespace Overdrive.Weapons
         {
             switch (type)
             {
-                case WeaponType.Bat: return 0.5f;
+                case WeaponType.Bat: return 0.6f;
                 case WeaponType.Knife: return 0.55f;
                 case WeaponType.Shotgun: return 0.5f;
                 case WeaponType.Smg: return 0.55f;
