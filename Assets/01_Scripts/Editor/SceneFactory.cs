@@ -86,6 +86,7 @@ namespace Overdrive.EditorTools
             // Antes de los colliders de decoración: el modelo de escalera debe quedar sobre la rampa, no bloquearla.
             StairsModelFitter.FitAll(scene);
             EnsureDecorColliders(level.transform);
+            EnsureDecorLampLights(level.transform);
             BuildAmbience(level.transform, layout);
             BuildLedCables(level.transform, layout);
             BakeNavMesh(level);
@@ -130,6 +131,7 @@ namespace Overdrive.EditorTools
             for (int i = 1; i < layout.Floors.Length; i++)
                 BuildProps(level.transform.Find(FloorRootName(i)), layout.Floors[i]);
             EnsureDecorColliders(level.transform);
+            EnsureDecorLampLights(level.transform);
             BakeNavMesh(level);
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene);
@@ -201,7 +203,7 @@ namespace Overdrive.EditorTools
                 if (!expected.Contains(child.name)) Object.DestroyImmediate(child);
             }
 
-            Material mat = AssetFactory.Mat(AssetFactory.MatFloorUpper);
+            Material mat = AssetFactory.Mat(AssetFactory.MatFloor); // misma textura que la planta baja
             foreach (LevelMap.Block block in blocks)
             {
                 GameObject slab = BuilderUtil.EnsurePrimitiveChild(slabs, block.NameWith("Slab"), PrimitiveType.Cube, true);
@@ -720,6 +722,12 @@ namespace Overdrive.EditorTools
                     halo.transform.position = new Vector3(b.center.x, b.max.y + 0.25f, b.center.z);
                     halo.transform.rotation = Quaternion.identity;
                 }
+                else
+                {
+                    Transform oldHalo = go.transform.Find(HaloName);
+                    if (oldHalo != null) Object.DestroyImmediate(oldHalo.gameObject);
+                }
+                if (entry.Prefab == "Lamp") EnsureLampLight(go, col + row);
             }
 
             for (int i = props.childCount - 1; i >= 0; i--)
@@ -741,6 +749,35 @@ namespace Overdrive.EditorTools
                 else bounds.Encapsulate(r.bounds);
             }
             return bounds;
+        }
+
+        public const string LampLightName = "LampLight";
+        private static readonly Color LampWarmWhite = new Color(1f, 0.92f, 0.78f);
+        private static readonly Color LampYellow = new Color(1f, 0.78f, 0.38f);
+
+        /// <summary>Luz de lámpara (blanco cálido o amarillo) sobre la pantalla de la lámpara. Sin sombras.</summary>
+        public static void EnsureLampLight(GameObject lamp, int seed)
+        {
+            Transform existing = lamp.transform.Find(LampLightName);
+            GameObject go = existing != null ? existing.gameObject : new GameObject(LampLightName);
+            go.transform.SetParent(lamp.transform, false);
+            Bounds b = PropBounds(lamp);
+            go.transform.position = new Vector3(b.center.x, b.max.y - b.size.y * 0.15f, b.center.z);
+            var light = BuilderUtil.EnsureComponent<Light>(go);
+            light.type = LightType.Point;
+            light.color = seed % 2 == 0 ? LampWarmWhite : LampYellow;
+            light.intensity = 2.2f;
+            light.range = 4.5f;
+            light.shadows = LightShadows.None;
+        }
+
+        /// <summary>Lámparas de decoración (Kenney lamp*) sueltas en el nivel.</summary>
+        private static void EnsureDecorLampLights(Transform level)
+        {
+            int i = 0;
+            foreach (Transform t in level.GetComponentsInChildren<Transform>(true).ToList())
+                if (t.name.StartsWith("lamp") && PrefabUtility.IsOutermostPrefabInstanceRoot(t.gameObject))
+                    EnsureLampLight(t.gameObject, i++);
         }
 
         private static void PlaceProp(GameObject go, LevelMap map, int col, int row, PropCatalog.Entry entry)

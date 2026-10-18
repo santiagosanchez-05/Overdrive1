@@ -40,7 +40,7 @@ namespace Overdrive.Level
             new Entry('6', "Storage_Box_1", 1.0f, NoHalo),
             new Entry('7', "Storage_Box_2", 1.0f, NoHalo),
             new Entry('8', "Plant_1", 0.7f, NoHalo),
-            new Entry('9', "Lamp", 0.6f, NeonPink),
+            new Entry('9', "Lamp", 0.6f, NoHalo), // alumbra con luz de lámpara (SceneFactory.EnsureLampLight)
             // Letras: más mobiliario para ambientar las salas.
             new Entry('h', "Chair", 0.7f, NoHalo),
             new Entry('n', "Cabinet_2", 1.2f, NoHalo),
