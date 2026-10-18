@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using Overdrive.Combat;
 using Overdrive.Core;
 using Overdrive.Enemies;
@@ -10,6 +11,7 @@ namespace Overdrive.Level
     /// <summary>
     /// Con cámara cenital, los pisos de arriba taparían al jugador: se ocultan los pisos superiores
     /// al del jugador, y también los enemigos, armas y sangre que estén en ellos.
+    /// En primera persona, al pisar una escalera (rampa StairsN) se ve también el piso al que lleva.
     /// </summary>
     public class FloorVisibility : MonoBehaviour
     {
@@ -21,6 +23,8 @@ namespace Overdrive.Level
 
         private readonly List<Renderer> buffer = new List<Renderer>();
         private float timer;
+        private readonly List<Collider> stairs = new List<Collider>();
+        private static readonly Regex StairsName = new Regex(@"^Stairs\d+$");
 
         public Transform Player => player;
         public GameObject[] UpperFloors => upperFloors;
@@ -28,6 +32,25 @@ namespace Overdrive.Level
 
         /// <summary>Un objeto se ve si está en el piso del jugador o en uno inferior.</summary>
         public static bool IsVisible(float objectY, float playerY) => Floors.IndexOf(objectY) <= Floors.IndexOf(playerY);
+
+        private void Start()
+        {
+            foreach (Collider c in FindObjectsByType<Collider>(FindObjectsSortMode.None))
+                if (StairsName.IsMatch(c.gameObject.name)) stairs.Add(c);
+        }
+
+        /// <summary>El jugador está sobre (o dentro de) una rampa de escalera.</summary>
+        private bool OnStairs(Vector3 position)
+        {
+            foreach (Collider c in stairs)
+            {
+                if (c == null) continue;
+                Bounds b = c.bounds;
+                b.Expand(new Vector3(0.3f, 2f, 0.3f));
+                if (b.Contains(position)) return true;
+            }
+            return false;
+        }
 
         private void LateUpdate()
         {
@@ -42,9 +65,16 @@ namespace Overdrive.Level
         {
             if (player == null) return;
             float playerY = player.position.y;
+            int playerFloor = Floors.IndexOf(playerY);
+            // Solo en primera persona: desde la escalera ya se ve el piso de arriba. En cenital taparía al jugador.
+            if (ViewMode.FirstPerson && OnStairs(player.position))
+            {
+                playerFloor++;
+                playerY = Floors.BaseY(playerFloor);
+            }
 
             for (int i = 0; i < upperFloors.Length; i++)
-                if (upperFloors[i] != null) SetVisible(upperFloors[i].transform, i + 1 <= Floors.IndexOf(playerY));
+                if (upperFloors[i] != null) SetVisible(upperFloors[i].transform, i + 1 <= playerFloor);
 
             foreach (Enemy enemy in Enemy.All) SetVisible(enemy.transform, IsVisible(enemy.transform.position.y, playerY));
             foreach (WeaponItem item in WeaponItem.All)
