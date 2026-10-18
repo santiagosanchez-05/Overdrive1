@@ -68,9 +68,15 @@ namespace Overdrive.Enemies
             if (state.Tick(deltaTime)) ApplyPosture();
         }
 
+        /// <summary>Si lo tiene (el jefe), aguanta golpes antes de caer.</summary>
+        private IHitArmor armor;
+
+        private void Awake() => armor = GetComponent<IHitArmor>();
+
         /// <summary>Puñetazo o arma lanzada: derriba sin matar.</summary>
         public bool ReceiveKnockdown(KnockdownCause cause = KnockdownCause.Punch)
         {
+            if (armor != null && !state.IsDead && armor.ResistKnockdown(cause)) return false;
             if (!state.KnockDown(knockdownDuration)) return false;
             DropWeapon();
             ApplyPosture();
@@ -83,6 +89,8 @@ namespace Overdrive.Enemies
         /// <summary>Golpe con arma o disparo: mata.</summary>
         public bool ReceiveLethalHit(KillCause cause = KillCause.Other)
         {
+            // El golpe cuenta (la bala se gasta) pero el jefe sigue en pie mientras le quede vida.
+            if (armor != null && !state.IsDead && armor.AbsorbLethal(cause)) return true;
             if (!state.Kill()) return false;
             OnKilled(cause);
             return true;

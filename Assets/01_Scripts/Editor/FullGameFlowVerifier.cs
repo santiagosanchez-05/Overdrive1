@@ -85,7 +85,7 @@ namespace Overdrive.EditorTools
             Check(l2Manager != null, "Level02 tiene LevelManager");
             if (l2Manager != null)
             {
-                Check(l2Manager.NextScene == "Menu", "Level02.LevelManager.nextScene apunta a 'Menu'");
+                Check(l2Manager.NextScene == "Level03", "Level02.LevelManager.nextScene apunta a 'Level03'");
                 Check(l2Manager.Enemies != null && l2Manager.Enemies.Length >= 14, "Level02 tiene 14 enemigos iniciales");
             }
             var l2Sounds = l2Scene.GetRootGameObjects().SelectMany(r => r.GetComponentsInChildren<GameSounds>(true)).FirstOrDefault();
@@ -104,7 +104,7 @@ namespace Overdrive.EditorTools
 
             // 5. HudText Hints
             Check(HudText.CompleteActionHint("Level02").Contains("Siguiente nivel"), "HudText indica siguiente nivel para Level01");
-            Check(HudText.CompleteActionHint("Menu").Contains("menú"), "HudText indica volver al menú para Level02");
+            Check(HudText.CompleteActionHint("Menu").Contains("menú"), "HudText indica volver al menú al terminar el juego");
 
             // Volver a Menu
             EditorSceneManager.OpenScene("Assets/00_Scenes/Menu.unity", OpenSceneMode.Single);

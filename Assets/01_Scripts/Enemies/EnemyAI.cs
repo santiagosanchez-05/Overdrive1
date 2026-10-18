@@ -60,6 +60,13 @@ namespace Overdrive.Enemies
 
         public Enemy Enemy => enemy;
         public NavMeshAgent Agent => agent;
+
+        /// <summary>Velocidad al perseguir (el jefe la sube en su segunda fase).</summary>
+        public float ChaseSpeed
+        {
+            get => chaseSpeed;
+            set => chaseSpeed = value;
+        }
         public PlayerLife Player => player;
         public Vector3[] PatrolPoints => patrolPoints;
         public EnemyBrain Brain => brain ??= new EnemyBrain(transform.position, patrolPoints, brainSettings, Detection);
