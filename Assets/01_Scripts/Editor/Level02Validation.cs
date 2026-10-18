@@ -27,7 +27,9 @@ namespace Overdrive.EditorTools
             Require(camera != null && camera.Target != null && camera.Aim != null && camera.Cam != null, "Falta la cámara de juego conectada.");
             Require(Find<Collider>().Any(c => c.enabled && !(c is CharacterController)), "El escenario no tiene colisiones.");
             Require(level != null && level.Enemies.Length > 0, "Falta LevelManager con enemigos iniciales.");
-            Require(level != null && level.NextScene == "Menu", "LevelManager en Level02 debe tener nextScene = 'Menu'.");
+            // Sin nivel 3 vuelve al menú; con Level03Builder, el nivel 2 continúa en el nivel 3.
+            Require(level != null && (level.NextScene == "Menu" || level.NextScene == "Level03"),
+                "LevelManager en Level02 debe tener nextScene = 'Menu' o 'Level03'.");
             Require(level != null && level.Briefcase != null && level.Exit != null && level.Reinforcements != null, "Faltan maletín, refuerzos o salida.");
             Require(Find<TimeRewinder>().Length == 1 && Find<GameHUD>().Length == 1 && Find<PauseMenuController>().Length == 1, "Faltan rebobinado, HUD o pausa.");
             Require(Find<Overdrive.Core.GameSounds>().Length == 1, "Falta GameSounds en Systems.");

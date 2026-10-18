@@ -61,6 +61,10 @@ namespace Overdrive.UI
         /// <summary>Esquina del HUD: rebobinados disponibles.</summary>
         public static string Rewinds(int usesLeft) => $"Rebobinados: {usesLeft}";
 
+        public const string RestartHint = "R: reiniciar el nivel";
+
+        public static string Health(float hp) => $"VIDA {Mathf.CeilToInt(Mathf.Max(0f, hp))}";
+
         /// <summary>Indicador sobre la cabeza de un enemigo: "?" si sospecha, "!" si te ha detectado.</summary>
         public static string AwarenessMark(Awareness awareness)
         {

@@ -175,6 +175,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Overdrive.Player.PlayerLife
   body: {fileID: 5219047759903607777}
+  maxHealth: 100
 --- !u!114 &3479341078645059018
 MonoBehaviour:
   m_ObjectHideFlags: 0

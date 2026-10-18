@@ -52,9 +52,10 @@ namespace Overdrive.EditorTools
         private static readonly Dictionary<WeaponType, Spec> Weapons = new Dictionary<WeaponType, Spec>
         {
             { WeaponType.Bat, new Spec("tripo_convert_88b500fe-b66f-4f90-a6b0-3becf9f81350.fbx",
-                "tripo_convert_88b500fe-b66f-4f90-a6b0-3becf9f81350.fbm/Bate_basecolor.PNG", 0.95f, 0.12f, Kind.ThickTip) },
+                "tripo_convert_88b500fe-b66f-4f90-a6b0-3becf9f81350.fbm/Bate_basecolor.PNG", 0.75f, 0.12f, Kind.ThickTip) },
             { WeaponType.Knife, new Spec("tripo_convert_5b9e13f7-c119-4491-8ffe-740d61fec89a.fbx",
-                "tripo_convert_5b9e13f7-c119-4491-8ffe-740d61fec89a.fbm/Cuchillo_basecolor.PNG", 0.42f, 0.2f, Kind.ThinTip) },
+                "tripo_convert_5b9e13f7-c119-4491-8ffe-740d61fec89a.fbm/Cuchillo_basecolor.PNG", 0.42f, 0.2f, Kind.ThinTip,
+                new Vector3(0f, 0f, 180f)) }, // girado 180° sobre su eje: el filo hacia abajo
             { WeaponType.Shotgun, new Spec("Escopeta.fbx", "escopeta_basecolor.PNG", 0.95f, 0.3f, Kind.Gun) },
             { WeaponType.Smg, new Spec("subfusil.fbx", "subfusil_basecolor.PNG", 0.6f, 0.45f, Kind.Gun, new Vector3(0f, 180f, 0f)) },
             { WeaponType.Revolver, new Spec("Revolver.fbx", "revolver_basecolor.PNG", 0.38f, 0.25f, Kind.Gun, default, false) },

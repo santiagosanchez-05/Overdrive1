@@ -65,9 +65,7 @@ namespace Overdrive.UI
 
             DrawAwarenessMarks();
 
-            if (rewinder != null)
-                DrawShadowed(new Rect(Screen.width * 0.5f - margin, margin + lineHeight, Screen.width * 0.5f, lineHeight),
-                    HudText.Rewinds(rewinder.UsesLeft), cornerRight);
+            DrawHealthBar(margin);
 
             DrawScore(margin);
             if (level.Progress.State == LevelState.Complete && score != null && score.Summary != null)
@@ -78,7 +76,7 @@ namespace Overdrive.UI
 
             string message = HudText.CenterMessage(level.Progress.State);
             string hint = HudText.SubMessage(level.Progress.State, !level.Progress.HasObjective);
-            if (level.Progress.State == LevelState.Failed && rewinder != null) hint = HudText.RewindHint(rewinder.UsesLeft);
+            if (level.Progress.State == LevelState.Failed) hint = HudText.RestartHint;
             float middle = Screen.height * 0.5f;
             if (message != null)
                 DrawShadowed(new Rect(0f, middle - 70f * scale, Screen.width, 80f * scale), message, center);
@@ -88,6 +86,28 @@ namespace Overdrive.UI
                 float y = message != null ? middle + 10f * scale : margin + lineHeight * 3f;
                 DrawShadowed(new Rect(0f, y, Screen.width, 50f * scale), hint, sub);
             }
+        }
+
+        private static Texture2D white;
+
+        /// <summary>Barra roja de vida del jugador, abajo a la izquierda.</summary>
+        private void DrawHealthBar(float margin)
+        {
+            PlayerLife life = level.Player;
+            if (life == null) return;
+            if (white == null) white = Texture2D.whiteTexture;
+            float fraction = life.MaxHealth > 0f ? Mathf.Clamp01(life.CurrentHealth / life.MaxHealth) : 0f;
+            float w = 320f * scale, h = 22f * scale;
+            float x = margin, y = Screen.height - margin - h - 34f * scale;
+            Color old = GUI.color;
+            GUI.color = new Color(0f, 0f, 0f, 0.65f);
+            GUI.DrawTexture(new Rect(x - 3f, y - 3f, w + 6f, h + 6f), white);
+            GUI.color = new Color(0.25f, 0.02f, 0.03f, 0.9f);
+            GUI.DrawTexture(new Rect(x, y, w, h), white);
+            GUI.color = new Color(0.9f, 0.08f, 0.1f, 1f);
+            GUI.DrawTexture(new Rect(x, y, w * fraction, h), white);
+            GUI.color = old;
+            DrawShadowed(new Rect(x + 8f * scale, y - 2f * scale, w, h + 4f * scale), HudText.Health(life.CurrentHealth), sub);
         }
 
         /// <summary>Dibuja "?" o "!" sobre la cabeza de cada enemigo visible que sospecha o te ha detectado.</summary>

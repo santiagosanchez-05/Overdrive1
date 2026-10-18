@@ -51,7 +51,8 @@ namespace Overdrive.UI
         {
             level = FindAnyObjectByType<LevelManager>();
             resumeButton.Clicked += _ => Resume();
-            saveButton.Clicked += _ => SaveGame();
+            // Solo hay guardado automático al pasar de nivel: el botón de guardar se quita y el resto sube.
+            if (saveButton) HideSaveButton();
             menuButton.Clicked += _ => GoToMenu();
             if (musicSlider)
             {
@@ -65,6 +66,29 @@ namespace Overdrive.UI
             }
         }
 
+        private void HideSaveButton()
+        {
+            var saveRt = (RectTransform)saveButton.transform;
+            float gap = Mathf.Abs(((RectTransform)resumeButton.transform).anchoredPosition.y - saveRt.anchoredPosition.y);
+            foreach (RectTransform child in saveRt.parent)
+                if (child != saveRt && child.anchoredPosition.y < saveRt.anchoredPosition.y - 1f && child.name != "Box" && child.name != "Dim")
+                    child.anchoredPosition += new Vector2(0f, gap);
+            saveButton.gameObject.SetActive(false);
+
+            // Navegación con teclado o mando: de arriba abajo entre lo que queda.
+            var items = new System.Collections.Generic.List<Selectable>();
+            foreach (Selectable s in panel.GetComponentsInChildren<Selectable>(true))
+                if (s.gameObject.activeSelf) items.Add(s);
+            items.Sort((a, b) => ((RectTransform)b.transform).anchoredPosition.y.CompareTo(((RectTransform)a.transform).anchoredPosition.y));
+            for (int i = 0; i < items.Count; i++)
+                items[i].navigation = new Navigation
+                {
+                    mode = Navigation.Mode.Explicit,
+                    selectOnUp = items[(i - 1 + items.Count) % items.Count],
+                    selectOnDown = items[(i + 1) % items.Count],
+                };
+        }
+
         private void OnDestroy()
         {
             GameInput.Blocked = false;
@@ -76,8 +100,7 @@ namespace Overdrive.UI
             // Nivel superado: la partida guardada ya no tiene sentido.
             if (!completeHandled && level != null && level.Progress.State == LevelState.Complete)
             {
-                completeHandled = true;
-                SaveSystem.Delete();
+                completeHandled = true; // el LevelManager ya dejó el punto de guardado del nivel siguiente
             }
 
             if (leaving || !GameInput.PausePressed) return;

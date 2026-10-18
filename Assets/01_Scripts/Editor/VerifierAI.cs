@@ -283,7 +283,9 @@ namespace Overdrive.EditorTools
                 c.Check(!knifer.PerformMeleeHit() && !player.IsDead, "Un golpe fuera de alcance no mata");
                 knifer.transform.position = basePos + new Vector3(1.2f, 0f, 0f);
                 Physics.SyncTransforms();
-                c.Check(knifer.PerformMeleeHit() && player.IsDead, "Simulación: el golpe del enemigo mata al jugador de un golpe");
+                var life = player.GetComponent<PlayerLife>();
+                c.Check(knifer.PerformMeleeHit() && (player.IsDead || life.CurrentHealth < life.MaxHealth),
+                    "Simulación: el golpe del enemigo quita vida al jugador (o lo mata si es a la cabeza)");
 
                 // --- Disparo a distancia ---
                 var target = Spawn<PlayerLife>(playerPrefab, new Vector3(20f, 0f, 0f), 0f);
@@ -294,11 +296,13 @@ namespace Overdrive.EditorTools
                 c.Check(gunner.CurrentWeaponKind == WeaponKind.Ranged && gunner.AttackRange > 5f,
                     "Un enemigo con subfusil ataca desde lejos");
                 Random.InitState(42);
+                gunner.Skill = 1f; // puntería máxima: a 4 m siempre acierta
                 var spawned = new List<Projectile>();
                 c.Check(gunner.FireAt(target, spawned) == 1, "El enemigo dispara al jugador");
                 c.Check(gunner.Enemy.Weapon.State.Ammo == WeaponDefinition.Smg.MaxAmmo, "Los enemigos no gastan munición");
                 StepProjectiles(spawned);
-                c.Check(target.IsDead, "Simulación: el disparo del enemigo mata al jugador");
+                c.Check(target.IsDead || target.CurrentHealth < target.MaxHealth, "Simulación: el disparo del enemigo hiere al jugador");
+                target.Kill();
                 c.Check(!gunner.CanSee(target), "No sigue viendo a un jugador muerto");
             }
             finally

@@ -36,6 +36,9 @@ namespace Overdrive.Enemies
 
         [Header("Combate")]
         [SerializeField] private float meleeWindup = 0.3f;
+        [Tooltip("Puntería (0 = malo, 1 = francotirador). Negativo: se elige al azar al empezar. " +
+                 "Los buenos apuntan más a la cabeza y fallan menos.")]
+        [SerializeField, Range(-1f, 1f)] private float skill = -1f;
         [SerializeField] private float aimTolerance = 15f;
         [SerializeField] private float retrieveRadius = 10f;
         [SerializeField] private float pickupDistance = 1f;
@@ -162,8 +165,36 @@ namespace Overdrive.Enemies
 
         public float AttackRange => enemy.Weapon != null ? enemy.Weapon.Definition.EnemyAttackRange : WeaponDefinition.UnarmedRange;
 
+        private System.Random aimRandom;
+
+        /// <summary>Puntería de este enemigo (0 malo, 1 muy bueno).</summary>
+        public float Skill
+        {
+            get { EnsureAim(); return skill; }
+            set => skill = Mathf.Clamp01(value);
+        }
+
+        /// <summary>Probabilidad de apuntar a la cabeza: solo los buenos lo intentan a menudo.</summary>
+        public float HeadChance => Mathf.Clamp01(Skill * Skill * 0.45f);
+
+        /// <summary>Error de puntería en grados.</summary>
+        public float AimError => Mathf.Lerp(7f, 1.2f, Skill);
+
+        private System.Random AimRandom
+        {
+            get { EnsureAim(); return aimRandom; }
+        }
+
+        /// <summary>Cada enemigo tiene su puntería; casi todos son mediocres y pocos son buenos.</summary>
+        private void EnsureAim()
+        {
+            if (aimRandom == null) aimRandom = new System.Random(name.GetHashCode() ^ transform.position.GetHashCode());
+            if (skill < 0f) skill = Mathf.Clamp01(0.15f + (float)(aimRandom.NextDouble() * aimRandom.NextDouble()) * 0.85f);
+        }
+
         private void Awake()
         {
+            EnsureAim();
             // No se guarda en el prefab: el giro lo controla ApplyRotation.
             if (agent != null) agent.updateRotation = false;
         }
@@ -397,7 +428,12 @@ namespace Overdrive.Enemies
             if (!LineOfSight.IsClear(ShotOrigin, target + Vector3.up, player.transform)) return false;
             CameraShake.Shake(0.3f);
             if (def == null || !def.IsMelee) GameSounds.Play(Sound.Punch);
-            return player.Kill();
+            // Golpe a la cabeza según su habilidad: solo el cuchillo mata así; el bate y los puños quitan vida.
+            bool head = AimRandom.NextDouble() < HeadChance;
+            float damage = def != null && def.IsMelee ? def.Damage : WeaponDefinition.UnarmedDamage;
+            bool headKills = def != null && def.IsMelee && def.HeadKills;
+            player.TakeHit(damage, head, headKills);
+            return true;
         }
 
         /// <summary>Dispara al objetivo con su arma de fuego, sin gastar munición. Devuelve los proyectiles disparados.</summary>
@@ -405,8 +441,15 @@ namespace Overdrive.Enemies
         {
             if (target == null || CurrentWeaponKind != WeaponKind.Ranged) return 0;
             Vector3 origin = enemy.Weapon.ShotOriginFrom(ShotOrigin); // boca del arma
-            Vector3 direction = target.transform.position + Vector3.up - origin;
-            direction.y = 0f;
+            // Apunta al pecho o, si es bueno, a veces a la cabeza; y falla más o menos según su habilidad.
+            bool head = AimRandom.NextDouble() < HeadChance;
+            Vector3 aimPoint = head ? HitZones.HeadPoint(target.transform) : HitZones.ChestPoint(target.transform);
+            Vector3 direction = aimPoint - origin;
+            float error = AimError;
+            float yawError = ((float)AimRandom.NextDouble() * 2f - 1f) * error;
+            float pitchError = ((float)AimRandom.NextDouble() * 2f - 1f) * error * 0.6f;
+            Vector3 side = Vector3.Cross(Vector3.up, direction).normalized;
+            direction = Quaternion.AngleAxis(yawError, Vector3.up) * Quaternion.AngleAxis(pitchError, side) * direction;
             return enemy.Weapon.TryFire(origin, direction, Faction.Enemy, spawned, consumeAmmo: false);
         }
 

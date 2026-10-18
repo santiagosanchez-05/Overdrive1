@@ -41,6 +41,7 @@ namespace Overdrive.EditorTools
             VerifyAIScene(c, layout);
             VerifyAILogic(c, layout);
             VerifyAISimulation(c);
+            VerifyDamageAndHitZones(c);
             VerifyLevelScene(c, layout);
             VerifyLevelLogic(c);
             VerifyLevelSimulation(c);
