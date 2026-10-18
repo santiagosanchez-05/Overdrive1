@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Overdrive.Core;
 using Overdrive.Enemies;
 using Overdrive.Level;
@@ -27,9 +28,13 @@ namespace Overdrive.UI
         private GUIStyle comboStyle;
         private GUIStyle popupStyle;
         private GUIStyle popupLabelStyle;
-        private GUIStyle summaryLeft;
-        private GUIStyle summaryRight;
-        private GUIStyle summaryCenter;
+        private GUIStyle summaryTitle;
+        private GUIStyle summaryLabel;
+        private GUIStyle summaryValue;
+        private GUIStyle summaryTotalLabel;
+        private GUIStyle summaryTotalValue;
+        private GUIStyle summaryCaption;
+        private GUIStyle summaryRecordNew;
         private GUIStyle gradeStyle;
         private float scale = -1f;
         private PlayerController controller;
@@ -154,47 +159,172 @@ namespace Overdrive.UI
             }
         }
 
-        /// <summary>Pantalla final: puntos de combate, bonus, total, nota y récord.</summary>
+        // ---------- Pantalla final ----------
+
+        // Mismos tonos que los paneles del menú principal.
+        private static readonly Color PanelFill = new Color32(0x08, 0x09, 0x0D, 0xC8);
+        private static readonly Color PanelBorder = new Color32(0x9A, 0x9D, 0xA3, 0xFF);
+        private static readonly Color Pink = new Color(1f, 0.3f, 0.85f);
+
+        /// <summary>Momento en que apareció la pantalla final, para animar su entrada.</summary>
+        private float summaryStart = -1f;
+
+        /// <summary>
+        /// Pantalla final con el estilo del menú: panel oscuro con borde y neón, filas que entran una a una,
+        /// total que cuenta hacia arriba, nota en un recuadro que aparece de golpe y el récord.
+        /// </summary>
         private void DrawSummary(ScoreSummary summary)
         {
-            float width = 640f * scale;
-            float x = (Screen.width - width) * 0.5f;
-            float row = 40f * scale;
-            int rows = summary.Bonuses.Count + 2;
-            float height = 90f * scale + rows * row + 8f * scale + 130f * scale + row + 60f * scale;
-            float y = Mathf.Max(10f * scale, (Screen.height - height) * 0.5f);
+            if (summaryStart < 0f) summaryStart = Time.unscaledTime;
+            float t = Time.unscaledTime - summaryStart;
+            float s = scale;
+            Matrix4x4 baseMatrix = GUI.matrix;
 
-            Color before = GUI.color;
-            GUI.color = new Color(0f, 0f, 0f, 0.7f);
-            GUI.DrawTexture(new Rect(x - 30f * scale, y - 20f * scale, width + 60f * scale, height + 40f * scale), Texture2D.whiteTexture);
-            GUI.color = before;
-
-            DrawShadowed(new Rect(0f, y, Screen.width, 80f * scale), HudText.Complete, center);
-            y += 90f * scale;
-
-            void Line(string label, string value)
-            {
-                DrawShadowed(new Rect(x, y, width, row), label, summaryLeft);
-                DrawShadowed(new Rect(x, y, width, row), value, summaryRight);
-                y += row;
-            }
-
-            Line("Combate", HudText.Points(summary.CombatPoints));
+            var lines = new List<(string label, string value)> { ("COMBATE", HudText.Points(summary.CombatPoints)) };
             foreach (ScoreSummary.Line bonus in summary.Bonuses)
             {
                 string label = bonus.Label == ScoreSummary.LabelTime ? $"{bonus.Label} {HudText.Time(summary.Seconds)}" : bonus.Label;
-                Line(label, "+" + HudText.Points(bonus.Points));
+                lines.Add((label.ToUpperInvariant(), "+" + HudText.Points(bonus.Points)));
             }
-            y += 8f * scale;
-            Line("TOTAL", HudText.Points(summary.Total));
 
-            DrawShadowed(new Rect(0f, y, Screen.width, 130f * scale), summary.Grade, gradeStyle);
-            y += 130f * scale;
-            string record = score.IsNewRecord ? HudText.NewRecord : HudText.Record(score.BestTotal);
-            DrawShadowed(new Rect(0f, y, Screen.width, row), record, score.IsNewRecord ? comboStyle : summaryCenter);
-            y += row + 10f * scale;
+            // --- Medidas ---
+            float pad = 50f * s, rowH = 46f * s, gap = 6f * s, totalH = 62f * s, gradeSize = 230f * s;
+            float rowsH = lines.Count * (rowH + gap) + 10f * s + totalH;
+            float contentH = Mathf.Max(rowsH, gradeSize + 80f * s);
+            float panelW = Mathf.Min(960f * s, Screen.width - 20f);
+            float panelH = 130f * s + contentH + 110f * s;
+            float enter = Ease01(t / 0.35f);
+            var panel = new Rect((Screen.width - panelW) * 0.5f, (Screen.height - panelH) * 0.5f + (1f - enter) * 40f * s, panelW, panelH);
+
+            // --- Fondo y panel ---
+            FillRect(new Rect(0f, 0f, Screen.width, Screen.height), new Color(0f, 0f, 0f, 0.55f * enter));
+            FillRect(panel, WithAlpha(PanelFill, PanelFill.a * enter));
+            DrawBorder(panel, 2f * s, WithAlpha(PanelBorder, enter));
+            FillRect(new Rect(panel.x, panel.y, panel.width, 4f * s), WithAlpha(Pink, enter));
+            DrawStripes(new Rect(panel.xMax - 190f * s, panel.y + 30f * s, 150f * s, 56f * s), enter, s);
+
+            // --- Título ---
+            DrawShadowed(new Rect(panel.x + pad, panel.y + 26f * s, panel.width - pad * 2f, 70f * s),
+                HudText.Complete.ToUpperInvariant(), summaryTitle, enter);
+            FillRect(new Rect(panel.x + pad, panel.y + 108f * s, panel.width - pad * 2f, 1f * s), WithAlpha(PanelBorder, 0.5f * enter));
+
+            // --- Filas ---
+            float top = panel.y + 130f * s;
+            float rowsW = panel.width - pad * 2f - gradeSize - 40f * s;
+            float y = top;
+            for (int i = 0; i < lines.Count; i++)
+            {
+                float a = Ease01((t - 0.35f - i * 0.12f) / 0.25f);
+                if (a > 0f)
+                {
+                    var row = new Rect(panel.x + pad - (1f - a) * 30f * s, y, rowsW, rowH);
+                    FillRect(row, new Color(1f, 1f, 1f, 0.05f * a));
+                    FillRect(new Rect(row.x, row.y, 4f * s, row.height), new Color(1f, 1f, 1f, 0.6f * a));
+                    var inner = new Rect(row.x + 20f * s, row.y, row.width - 36f * s, row.height);
+                    DrawShadowed(inner, lines[i].label, summaryLabel, a);
+                    DrawShadowed(inner, lines[i].value, summaryValue, a);
+                }
+                y += rowH + gap;
+            }
+
+            // --- Total: cuenta hacia arriba ---
+            y += 10f * s;
+            float totalAt = 0.35f + lines.Count * 0.12f;
+            float ta = Ease01((t - totalAt) / 0.25f);
+            if (ta > 0f)
+            {
+                var totalRect = new Rect(panel.x + pad, y, rowsW, totalH);
+                FillRect(totalRect, new Color(1f, 1f, 1f, 0.1f * ta));
+                DrawBorder(totalRect, 2f * s, new Color(1f, 1f, 1f, 0.9f * ta));
+                float count = Ease01((t - totalAt) / 0.9f);
+                var inner = new Rect(totalRect.x + 20f * s, totalRect.y, totalRect.width - 36f * s, totalRect.height);
+                DrawShadowed(inner, "TOTAL", summaryTotalLabel, ta);
+                DrawShadowed(inner, HudText.Points(Mathf.RoundToInt(summary.Total * count)), summaryTotalValue, ta);
+            }
+
+            // --- Nota: aparece de golpe cuando termina de contar el total ---
+            float gradeAt = totalAt + 0.9f;
+            float ga = Ease01((t - gradeAt) / 0.25f);
+            var box = new Rect(panel.xMax - pad - gradeSize, top, gradeSize, gradeSize);
+            if (ga > 0f)
+            {
+                for (int g = 1; g <= 4; g++)
+                {
+                    float grow = g * 7f * s;
+                    FillRect(new Rect(box.x - grow, box.y - grow, box.width + grow * 2f, box.height + grow * 2f), WithAlpha(Pink, 0.06f * ga));
+                }
+                FillRect(box, WithAlpha(PanelFill, ga));
+                DrawBorder(box, 3f * s, WithAlpha(Pink, ga));
+                DrawShadowed(new Rect(box.x, box.y + 14f * s, box.width, 30f * s), "NOTA", summaryCaption, ga);
+
+                float stamp = Mathf.Lerp(1.8f, 1f, ga);
+                GUIUtility.ScaleAroundPivot(new Vector2(stamp, stamp), box.center);
+                DrawShadowed(new Rect(box.x, box.y + 20f * s, box.width, box.height - 20f * s), summary.Grade, gradeStyle, ga);
+                GUI.matrix = baseMatrix;
+
+                // Récord bajo la nota.
+                float ra = Ease01((t - gradeAt - 0.2f) / 0.3f);
+                var recordRect = new Rect(box.x - 40f * s, box.yMax + 16f * s, box.width + 80f * s, 40f * s);
+                if (score.IsNewRecord)
+                {
+                    float pulse = 0.75f + 0.25f * Mathf.Sin(Time.unscaledTime * 6f);
+                    DrawShadowed(recordRect, HudText.NewRecord.ToUpperInvariant(), summaryRecordNew, ra * pulse);
+                }
+                else
+                {
+                    DrawShadowed(recordRect, HudText.Record(score.BestTotal).ToUpperInvariant(), summaryCaption, ra);
+                }
+            }
+
+            // --- Instrucciones ---
+            float ha = Ease01((t - gradeAt - 0.4f) / 0.3f);
+            FillRect(new Rect(panel.x + pad, panel.yMax - 92f * s, panel.width - pad * 2f, 1f * s), WithAlpha(PanelBorder, 0.5f * enter));
             string hint = HudText.CompleteActionHint(level != null ? level.NextScene : null);
-            DrawShadowed(new Rect(0f, y, Screen.width, 50f * scale), hint, sub);
+            DrawShadowed(new Rect(panel.x, panel.yMax - 80f * s, panel.width, 56f * s), hint, sub, ha);
+        }
+
+        /// <summary>Rayas inclinadas como las de los botones del menú.</summary>
+        private static void DrawStripes(Rect area, float alpha, float s)
+        {
+            Matrix4x4 before = GUI.matrix;
+            float w = 14f * s, step = 30f * s;
+            for (int i = 0; i < 5; i++)
+            {
+                var stripe = new Rect(area.x + i * step, area.y, w, area.height);
+                GUI.matrix = before;
+                GUIUtility.RotateAroundPivot(20f, stripe.center);
+                FillRect(stripe, new Color(1f, 1f, 1f, (0.12f + i * 0.06f) * alpha));
+            }
+            GUI.matrix = before;
+        }
+
+        private static void FillRect(Rect rect, Color color)
+        {
+            Color before = GUI.color;
+            GUI.color = color;
+            GUI.DrawTexture(rect, Texture2D.whiteTexture);
+            GUI.color = before;
+        }
+
+        private static void DrawBorder(Rect r, float w, Color color)
+        {
+            FillRect(new Rect(r.x, r.y, r.width, w), color);
+            FillRect(new Rect(r.x, r.yMax - w, r.width, w), color);
+            FillRect(new Rect(r.x, r.y, w, r.height), color);
+            FillRect(new Rect(r.xMax - w, r.y, w, r.height), color);
+        }
+
+        private static Color WithAlpha(Color c, float a)
+        {
+            c.a = a;
+            return c;
+        }
+
+        /// <summary>Curva de entrada suave (rápida al principio, frena al final), de 0 a 1.</summary>
+        private static float Ease01(float x)
+        {
+            x = Mathf.Clamp01(x);
+            return 1f - (1f - x) * (1f - x) * (1f - x);
         }
 
         private void EnsureStyles()
@@ -215,18 +345,22 @@ namespace Overdrive.UI
             comboStyle = MakeStyle(32, TextAnchor.UpperCenter, new Color(1f, 0.3f, 0.85f));
             popupStyle = MakeStyle(30, TextAnchor.MiddleCenter, new Color(1f, 0.95f, 0.3f));
             popupLabelStyle = MakeStyle(22, TextAnchor.MiddleCenter, new Color(1f, 0.3f, 0.85f));
-            summaryLeft = MakeStyle(30, TextAnchor.MiddleLeft, Color.white);
-            summaryRight = MakeStyle(30, TextAnchor.MiddleRight, new Color(1f, 0.95f, 0.3f));
-            summaryCenter = MakeStyle(28, TextAnchor.MiddleCenter, Color.white);
-            gradeStyle = MakeStyle(120, TextAnchor.MiddleCenter, new Color(1f, 0.3f, 0.85f));
+            summaryTitle = MakeStyle(54, TextAnchor.MiddleLeft, Color.white, FontStyle.BoldAndItalic);
+            summaryLabel = MakeStyle(26, TextAnchor.MiddleLeft, new Color(1f, 1f, 1f, 0.82f), FontStyle.BoldAndItalic);
+            summaryValue = MakeStyle(28, TextAnchor.MiddleRight, new Color(1f, 0.95f, 0.3f));
+            summaryTotalLabel = MakeStyle(34, TextAnchor.MiddleLeft, Color.white, FontStyle.BoldAndItalic);
+            summaryTotalValue = MakeStyle(38, TextAnchor.MiddleRight, new Color(1f, 0.95f, 0.3f));
+            summaryCaption = MakeStyle(22, TextAnchor.MiddleCenter, new Color(1f, 1f, 1f, 0.7f), FontStyle.BoldAndItalic);
+            summaryRecordNew = MakeStyle(26, TextAnchor.MiddleCenter, Pink, FontStyle.BoldAndItalic);
+            gradeStyle = MakeStyle(150, TextAnchor.MiddleCenter, Pink, FontStyle.BoldAndItalic);
         }
 
-        private GUIStyle MakeStyle(int size, TextAnchor anchor, Color color)
+        private GUIStyle MakeStyle(int size, TextAnchor anchor, Color color, FontStyle fontStyle = FontStyle.Bold)
         {
             var style = new GUIStyle(GUI.skin.label)
             {
                 fontSize = Mathf.RoundToInt(size * scale),
-                fontStyle = FontStyle.Bold,
+                fontStyle = fontStyle,
                 alignment = anchor,
                 wordWrap = false,
             };

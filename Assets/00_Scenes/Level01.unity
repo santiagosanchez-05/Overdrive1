@@ -10858,7 +10858,7 @@ MonoBehaviour:
   sweepInterval: {x: 2.5, y: 4.5}
   audioSource: {fileID: 2038530181}
   hoverClip: {fileID: 8300000, guid: 0b9cf69e9fe528c4c9b8a0a5a958eb3a, type: 3}
-  clickClip: {fileID: 8300000, guid: 9544a7dbe16a2ec45889e8e1e450f65e, type: 3}
+  clickClip: {fileID: 8300000, guid: ee19ba0f9fd14454ab5bd6aad9564343, type: 3}
   volume: 0.6
 --- !u!1 &434289636
 GameObject:
@@ -22430,6 +22430,7 @@ MonoBehaviour:
   briefcase: {fileID: 1539485728}
   reinforcements: {fileID: 544737941}
   nextScene: Level02
+  autoAdvanceDelay: 0
 --- !u!114 &997003032
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -27523,7 +27524,7 @@ MonoBehaviour:
   sweepInterval: {x: 2.5, y: 4.5}
   audioSource: {fileID: 2038530181}
   hoverClip: {fileID: 8300000, guid: 0b9cf69e9fe528c4c9b8a0a5a958eb3a, type: 3}
-  clickClip: {fileID: 8300000, guid: 9544a7dbe16a2ec45889e8e1e450f65e, type: 3}
+  clickClip: {fileID: 8300000, guid: ee19ba0f9fd14454ab5bd6aad9564343, type: 3}
   volume: 0.6
 --- !u!1 &1211883463
 GameObject:
@@ -41005,6 +41006,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1859386647}
   - component: {fileID: 1859386648}
+  - component: {fileID: 1859386649}
   m_Layer: 0
   m_Name: LampLight
   m_TagString: Untagged
@@ -41092,6 +41094,35 @@ Light:
   m_LightUnit: 1
   m_LuxAtDistance: 1
   m_EnableSpotReflector: 1
+--- !u!114 &1859386649
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1859386646}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalLightData
+  m_UsePipelineSettings: 1
+  m_AdditionalLightsShadowResolutionTier: 2
+  m_CustomShadowLayers: 0
+  m_LightCookieSize: {x: 1, y: 1}
+  m_LightCookieOffset: {x: 0, y: 0}
+  m_SoftShadowQuality: 0
+  m_RenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_ShadowRenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_Version: 4
+  m_LightLayerMask: 1
+  m_ShadowLayerMask: 1
+  m_RenderingLayers: 1
+  m_ShadowRenderingLayers: 1
 --- !u!1001 &1859796703
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -42480,7 +42511,7 @@ MonoBehaviour:
   sweepInterval: {x: 2.5, y: 4.5}
   audioSource: {fileID: 2038530181}
   hoverClip: {fileID: 8300000, guid: 0b9cf69e9fe528c4c9b8a0a5a958eb3a, type: 3}
-  clickClip: {fileID: 8300000, guid: 9544a7dbe16a2ec45889e8e1e450f65e, type: 3}
+  clickClip: {fileID: 8300000, guid: ee19ba0f9fd14454ab5bd6aad9564343, type: 3}
   volume: 0.6
 --- !u!1 &1928360943
 GameObject:
