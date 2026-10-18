@@ -10,6 +10,7 @@ namespace Overdrive.Level
     public class DoorDissolve : MonoBehaviour
     {
         private static readonly int DissolveAmount = Shader.PropertyToID("_DissolveAmount");
+        private static readonly int ColorId = Shader.PropertyToID("_Color");
 
         /// <summary>
         /// Valor de disolución con la puerta cerrada. Negativo para que el borde brillante no salpique
@@ -21,6 +22,8 @@ namespace Overdrive.Level
         [SerializeField] private Collider doorCollider;
         [SerializeField] private NavMeshObstacle obstacle;
         [SerializeField] private float duration = 0.7f;
+        [Tooltip("Color de la puerta cerrada. Con alfa 0 se usa el del material (naranja brillante). El brillo naranja del borde solo se ve al disolverse.")]
+        [SerializeField] private Color restTint = new Color(0f, 0f, 0f, 0f);
 
         private MaterialPropertyBlock block;
         private float elapsed;
@@ -30,6 +33,12 @@ namespace Overdrive.Level
         public NavMeshObstacle Obstacle => obstacle;
         public float Duration => duration;
         public bool IsDissolving { get; private set; }
+
+        private void OnEnable()
+        {
+            // Cerrada, se pinta con su color de reposo ya desde el primer fotograma (si no, saldría el naranja del material).
+            if (!IsDissolving && restTint.a > 0f) SetAmount(ClosedAmount);
+        }
 
         private void Update()
         {
@@ -88,6 +97,7 @@ namespace Overdrive.Level
             block ??= new MaterialPropertyBlock();
             doorRenderer.GetPropertyBlock(block);
             block.SetFloat(DissolveAmount, amount);
+            if (restTint.a > 0f) block.SetColor(ColorId, restTint);
             doorRenderer.SetPropertyBlock(block);
         }
 

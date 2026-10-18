@@ -1,4 +1,7 @@
+using System.Collections.Generic;
+using System.Linq;
 using Overdrive.Core;
+using UnityEngine;
 
 namespace Overdrive.Level
 {
@@ -90,14 +93,75 @@ namespace Overdrive.Level
             new AmbientLight(1, 17f, 7f, AmbientKind.Ember),
         };
 
-        public static LevelLayout Create() => new LevelLayout(
-            new LevelMap(GroundRows, CellSize, 0, Floors.BaseY(0)),
-            new LevelMap(UpperRows, CellSize, 1, Floors.BaseY(1)))
+        public static LevelLayout Create()
         {
-            Ambience = Ambience,
-            LedCables = LedCables,
-            Doorways = Doorways,
-        };
+            var ground = new LevelMap(GroundRows, CellSize, 0, Floors.BaseY(0));
+            var upper = new LevelMap(UpperRows, CellSize, 1, Floors.BaseY(1));
+            return new LevelLayout(ground, upper)
+            {
+                Ambience = Ambience,
+                LedCables = LedCables.Concat(EdgeCables(ground, upper)).ToArray(),
+                Doorways = Doorways,
+            };
+        }
+
+        private const float EdgeHeight = 2.25f;
+        private const float EdgeSag = 0.18f;
+        private const float EdgeSpacing = 2.5f;
+
+        /// <summary>
+        /// Cables colgando por el borde alto de algunas paredes, pegados a ellas (se ven sobre todo en primera persona,
+        /// junto al techo). Se calculan sobre el mapa para que sus anclajes siempre toquen pared.
+        /// </summary>
+        private static LedCable[] EdgeCables(LevelMap ground, LevelMap upper)
+        {
+            return new[]
+            {
+                // Planta baja.
+                Edge(ground, LedColor.Magenta, true, 0.62f, 0.62f, 7.38f),      // sala inicial, pared norte
+                Edge(ground, LedColor.Teal, true, 0.62f, 8.62f, 18.38f),        // sala norte, pared norte
+                Edge(ground, LedColor.Violet, false, 32.38f, 0.62f, 7.38f),     // sala de las cajas, pared este
+                Edge(ground, LedColor.Crimson, true, 11.62f, 0.62f, 10.38f),    // sala oeste, pared norte
+                Edge(ground, LedColor.Magenta, false, 0.62f, 12.62f, 18.38f),   // sala oeste, pared oeste
+                Edge(ground, LedColor.ColdBlue, true, 19.38f, 23.62f, 32.38f),  // sala sureste, pared sur
+                // Piso de arriba.
+                Edge(upper, LedColor.ColdBlue, true, 0.62f, 8.62f, 17.38f),     // ala oeste, pared norte
+                Edge(upper, LedColor.Crimson, true, 7.38f, 18.62f, 32.38f),     // ala este, pared sur
+            }.Where(cable => cable.HasValue).Select(cable => cable.Value).ToArray();
+        }
+
+        /// <summary>
+        /// Un cable a lo largo de una pared (alongColumns: va de columna a columna en la fila fija; si no, de fila a fila).
+        /// Los anclajes van cada ~2,5 celdas y se saltan los huecos de puerta: sin pared no hay dónde sujetarlos.
+        /// </summary>
+        private static LedCable? Edge(LevelMap map, LedColor color, bool alongColumns, float fixedCoord, float from, float to)
+        {
+            var anchors = new List<Vector3>();
+            int steps = Mathf.Max(1, Mathf.RoundToInt(Mathf.Abs(to - from) / EdgeSpacing));
+            for (int i = 0; i <= steps; i++)
+            {
+                float along = Mathf.Lerp(from, to, (float)i / steps);
+                foreach (float shift in new[] { 0f, 0.5f, -0.5f, 1f, -1f })
+                {
+                    float a = Mathf.Clamp(along + shift, Mathf.Min(from, to), Mathf.Max(from, to));
+                    Vector3 p = alongColumns ? LedCable.P(a, EdgeHeight, fixedCoord) : LedCable.P(fixedCoord, EdgeHeight, a);
+                    if (!TouchesWall(map, p)) continue;
+                    if (anchors.Count == 0 || anchors[anchors.Count - 1] != p) anchors.Add(p);
+                    break;
+                }
+            }
+            if (anchors.Count < 2) return null;
+            // Sin curvarse hacia los lados (bow 0): pegado a la pared no hay sitio.
+            return new LedCable(map.FloorIndex, color, LedLayout.Hanging, anchors.ToArray(), sag: EdgeSag, bow: 0f);
+        }
+
+        /// <summary>El punto toca una pared (misma regla con la que el verificador comprueba los anclajes).</summary>
+        private static bool TouchesWall(LevelMap map, Vector3 p)
+        {
+            int col = Mathf.RoundToInt(p.x), row = Mathf.RoundToInt(p.z);
+            return map.IsWall(Mathf.RoundToInt(p.x + 0.4f), row) || map.IsWall(Mathf.RoundToInt(p.x - 0.4f), row) ||
+                   map.IsWall(col, Mathf.RoundToInt(p.z + 0.4f)) || map.IsWall(col, Mathf.RoundToInt(p.z - 0.4f));
+        }
 
         /// <summary>
         /// Puertas batientes en los huecos de 2 celdas (3 m) entre las salas y el pasillo, y entre salas.

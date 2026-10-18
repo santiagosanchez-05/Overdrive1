@@ -43,6 +43,8 @@ namespace Overdrive.EditorTools
         public const string SlabsName = "Slabs";
         public const string DoorsName = "Doors";
         public const string DoorName = "Door";
+        /// <summary>Color de la puerta de los refuerzos mientras está cerrada: muro oscuro, como el resto del pasillo.</summary>
+        public static readonly Color DoorRestTint = new Color(0.16f, 0.13f, 0.15f, 1f);
         public const string ObjectiveName = "Objective";
         public const string BriefcaseName = "Briefcase";
         public const string ReinforcementsName = "Reinforcements";
@@ -89,6 +91,7 @@ namespace Overdrive.EditorTools
             EnsureDecorLampLights(level.transform);
             BuildAmbience(level.transform, layout);
             BuildLedCables(level.transform, layout);
+            RoofFactory.BuildLevel01(scene, layout); // techos que solo aparecen en primera persona
             BakeNavMesh(level);
 
             GameObject door = EnsureDoor(scene, ground);
@@ -138,6 +141,29 @@ namespace Overdrive.EditorTools
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene);
             Debug.Log("[Nivel 01] Muebles actualizados y NavMesh horneado.");
+        }
+
+        /// <summary>Vuelve a colocar solo los cables LED del mapa (y sus luces) en la escena abierta.</summary>
+        internal static void RefreshLedCables(Scene scene)
+        {
+            GameObject level = scene.GetRootGameObjects().FirstOrDefault(r => r.name == LevelRoot);
+            if (level == null)
+            {
+                Debug.LogError("[Nivel 01] No hay objeto Level en la escena. Usa TopDown/Construir nivel.");
+                return;
+            }
+            BuildLedCables(level.transform, Level01Map.Create());
+        }
+
+        [MenuItem("TopDown/Nivel 01/Actualizar cables LED")]
+        public static void RefreshLedCablesMenu()
+        {
+            if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
+            Scene scene = EnsureScene();
+            RefreshLedCables(scene);
+            EditorSceneManager.MarkSceneDirty(scene);
+            EditorSceneManager.SaveScene(scene);
+            Debug.Log("[Nivel 01] Cables LED actualizados.");
         }
 
         private static void EnsureLighting(Scene scene)
@@ -310,6 +336,10 @@ namespace Overdrive.EditorTools
             BuilderUtil.SetRef(dissolve, "doorRenderer", door.GetComponent<Renderer>());
             BuilderUtil.SetRef(dissolve, "doorCollider", door.GetComponent<Collider>());
             BuilderUtil.SetRef(dissolve, "obstacle", obstacle);
+            // Cerrada se ve como el muro del fondo del pasillo (no como un bloque naranja); solo brilla al abrirse.
+            var dissolveSo = new SerializedObject(dissolve);
+            dissolveSo.FindProperty("restTint").colorValue = DoorRestTint;
+            dissolveSo.ApplyModifiedPropertiesWithoutUndo();
             return door;
         }
 

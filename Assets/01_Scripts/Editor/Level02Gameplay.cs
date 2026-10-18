@@ -33,6 +33,7 @@ namespace Overdrive.EditorTools
         {
             var player = Instantiate(AssetFactory.PlayerPrefabPath, "Player", null).GetComponent<PlayerController>();
             player.transform.position = OnNavMesh(Start);
+            player.transform.rotation = Quaternion.Euler(0f, 180f, 0f); // mira hacia el club (-Z), no hacia la puerta de salida
             SetFloat(player, "moveSpeed", 10f);
             var camera = CreateCamera(player);
             var enemies = CreateEnemies(player.Life);
