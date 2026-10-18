@@ -260,6 +260,7 @@ MonoBehaviour:
   melee: {fileID: 3209719595741885290}
   pickupRadius: 1.6
   swingTime: 0.15
+  startingWeapon: {fileID: 0}
 --- !u!114 &5646136542784917167
 MonoBehaviour:
   m_ObjectHideFlags: 0
