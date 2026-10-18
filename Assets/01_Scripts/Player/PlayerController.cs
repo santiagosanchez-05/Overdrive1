@@ -35,6 +35,15 @@ namespace Overdrive.Player
         /// <summary>Aterrizaje tras una caída; el parámetro es la altura caída.</summary>
         public event Action<float> Landed;
 
+        /// <summary>WASD en ejes del mundo (cenital) o relativo a hacia donde mira el jugador (primera persona).</summary>
+        private Vector2 MoveInput()
+        {
+            Vector2 input = GameInput.Move;
+            if (!ViewMode.FirstPerson) return input;
+            Vector3 world = transform.right * input.x + transform.forward * input.y;
+            return new Vector2(world.x, world.z);
+        }
+
         private void Update()
         {
             if (life != null && life.IsDead) return;
@@ -42,7 +51,7 @@ namespace Overdrive.Player
             IsSneaking = GameInput.Sneak;
             Vector3 velocity = MovementLocked
                 ? Vector3.zero
-                : PlayerMovementLogic.WorldVelocity(GameInput.Move, IsSneaking ? sneakSpeed : moveSpeed);
+                : PlayerMovementLogic.WorldVelocity(MoveInput(), IsSneaking ? sneakSpeed : moveSpeed);
 
             verticalSpeed = controller.isGrounded ? -groundStick : verticalSpeed - gravity * Time.deltaTime;
             velocity.y = verticalSpeed;

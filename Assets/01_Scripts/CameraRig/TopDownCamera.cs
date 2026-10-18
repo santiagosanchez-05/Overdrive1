@@ -26,6 +26,8 @@ namespace Overdrive.CameraRig
 
         private void Awake()
         {
+            // La vista en primera persona (tecla V) vive en el mismo rig.
+            if (GetComponent<FirstPersonCamera>() == null) gameObject.AddComponent<FirstPersonCamera>();
             ApplyCameraOffset();
             SnapToTarget();
         }

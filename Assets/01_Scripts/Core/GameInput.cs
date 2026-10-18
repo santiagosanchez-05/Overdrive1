@@ -31,6 +31,12 @@ namespace Overdrive.Core
 
         public static Vector3 MousePosition => Input.mousePosition;
 
+        /// <summary>Movimiento del ratón en este fotograma (primera persona). Cero en pausa.</summary>
+        public static Vector2 LookDelta => Blocked ? Vector2.zero : new Vector2(Input.GetAxisRaw("Mouse X"), Input.GetAxisRaw("Mouse Y"));
+
+        /// <summary>V: cambia entre vista cenital y primera persona.</summary>
+        public static bool ToggleViewPressed => !Blocked && Input.GetKeyDown(KeyCode.V);
+
         /// <summary>Shift: la cámara se adelanta más para mirar lejos.</summary>
         public static bool LookFar => !Blocked && (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift));
 

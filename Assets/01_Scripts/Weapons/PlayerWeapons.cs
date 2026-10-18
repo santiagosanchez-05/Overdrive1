@@ -37,8 +37,15 @@ namespace Overdrive.Weapons
         /// <summary>Se dio un golpe con un arma cuerpo a cuerpo (golpee o no a alguien).</summary>
         public event Action<WeaponType> Swung;
 
+        private PlayerAim aim;
+
+        /// <summary>Hacia la mira (vista cenital o primera persona).</summary>
+        private Vector3 AimDirection => aim != null ? aim.ShotDirection(ShotOrigin) : transform.forward;
+
         /// <summary>Los disparos y lanzamientos salen del centro del cuerpo, nunca desde dentro de una pared.</summary>
         public Vector3 ShotOrigin => transform.position + Vector3.up;
+
+        private void Awake() => aim = GetComponent<PlayerAim>();
 
         private void Update()
         {
@@ -99,7 +106,7 @@ namespace Overdrive.Weapons
             if (current == null) return null;
             WeaponItem thrown = current;
             current = null;
-            thrown.Throw(ShotOrigin, transform.forward, Faction.Player);
+            thrown.Throw(ShotOrigin, AimDirection, Faction.Player);
             return thrown;
         }
 
@@ -126,7 +133,7 @@ namespace Overdrive.Weapons
 
             bool trigger = def.Automatic ? held : pressed;
             if (!trigger) return false;
-            return current.TryFire(ShotOrigin, transform.forward, Faction.Player) > 0;
+            return current.TryFire(ShotOrigin, AimDirection, Faction.Player) > 0;
         }
 
         private void UpdateSwingVisual(float deltaTime)

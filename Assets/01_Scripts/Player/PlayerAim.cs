@@ -3,7 +3,10 @@ using UnityEngine;
 
 namespace Overdrive.Player
 {
-    /// <summary>Gira al jugador hacia el punto del suelo bajo el mouse.</summary>
+    /// <summary>
+    /// Vista cenital: gira al jugador hacia el punto del suelo bajo el mouse.
+    /// Primera persona: el ratón gira al jugador y se apunta a lo que hay en el centro de la pantalla.
+    /// </summary>
     public class PlayerAim : MonoBehaviour
     {
         [SerializeField] private Camera aimCamera;
@@ -19,6 +22,12 @@ namespace Overdrive.Player
             if (aimCamera == null) aimCamera = Camera.main;
             if (aimCamera == null) return;
 
+            if (ViewMode.FirstPerson)
+            {
+                UpdateFirstPerson();
+                return;
+            }
+
             Ray ray = aimCamera.ScreenPointToRay(GameInput.MousePosition);
             // El plano de apuntado es el suelo del piso en el que está el jugador.
             HasAim = AimMath.TryGetPointOnPlane(ray, transform.position.y, out Vector3 point);
@@ -28,6 +37,39 @@ namespace Overdrive.Player
             if (life != null && life.IsDead) return;
             if (AimMath.TryGetFlatLookRotation(transform.position, point, out Quaternion rotation))
                 transform.rotation = rotation;
+        }
+
+        private void UpdateFirstPerson()
+        {
+            if (life == null || !life.IsDead)
+                transform.Rotate(0f, GameInput.LookDelta.x * ViewMode.Sensitivity, 0f, Space.World);
+
+            // Lo primero que toca el rayo del centro de la pantalla (sin contar al propio jugador).
+            Ray ray = aimCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
+            AimPoint = ray.GetPoint(60f);
+            float best = float.MaxValue;
+            foreach (RaycastHit hit in Physics.RaycastAll(ray, 60f, ~0, QueryTriggerInteraction.Ignore))
+            {
+                if (hit.transform.IsChildOf(transform) || hit.distance >= best) continue;
+                best = hit.distance;
+                AimPoint = hit.point;
+            }
+            HasAim = true;
+        }
+
+        /// <summary>
+        /// Dirección horizontal del disparo desde <paramref name="origin"/> hacia el punto apuntado
+        /// (la mira). Si el punto está demasiado cerca, hacia donde mira el jugador.
+        /// </summary>
+        public Vector3 ShotDirection(Vector3 origin)
+        {
+            Vector3 forward = transform.forward;
+            if (!HasAim) return forward;
+            Vector3 to = AimPoint - origin;
+            to.y = 0f;
+            // Solo si el punto queda por delante: evita disparar hacia atrás con el ratón pegado al jugador.
+            if (to.sqrMagnitude < 0.36f || Vector3.Dot(to, forward) <= 0f) return forward;
+            return to.normalized;
         }
     }
 }
