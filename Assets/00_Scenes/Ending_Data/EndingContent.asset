@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9f2f4555505444544a35546d5a57306c, type: 3}
+  m_Name: EndingContent
+  m_EditorClassIdentifier: Assembly-CSharp::Overdrive.Story.EndingContent
+  epilogue:
+  - 'El motor se apaga.
+
+    La ciudad queda al otro lado de la puerta.'
+  - "<color=#27D8EB><size=28>NINA</size></color>\n\nHasta la pr\xF3xima."
+  - "Afuera empieza a amanecer.\nEsta noche termina aqu\xED."
+  cardSeconds: 6
+  credits: "<color=#27D8EB><size=26>EQUIPO DE DESARROLLO</size></color>\n\nAntonio
+    Santiago Sanchez Angulo\nJhael Elisa Guevara Silva\nJohnny Suarez Abasto\nMateo
+    Alejandro Valeriano Sanchez\nRommel Rodrigo Gutierrez Herrera\n\n\n<color=#FF2B7D><size=26>AGRADECIMIENTOS
+    ESPECIALES</size></color>\n\nA sus chatcitos, Claudes\ny Antigravity.\n\n\n<color=#27D8EB><size=26>INSPIRACI\xD3N</size></color>\n\nHotline
+    Miami\n\n\n<color=#FF2B7D><size=26>Y A TI</size></color>\n\nPor jugar hasta el
+    final.\n\nOVERDRIVE"
+  minimumCreditsSeconds: 28
+  music: {fileID: 8300000, guid: 233f70c8c5ad90b4e8dd87a1583cb8be, type: 3}

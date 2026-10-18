@@ -8,7 +8,7 @@ namespace Overdrive.Driving
     {
         public const string Controls = "· A/D girar · Ratón apuntar · Clic izquierdo disparar";
         public const string Won = "Habéis llegado al piso franco";
-        public const string WonHint = "ESPACIO · Continuar";
+        public const string WonHint = "ESPACIO / ENTER · Ver el final";
         public const string Lost = "El coche ha quedado destrozado";
         public const string LostHint = "Presiona R para reiniciar";
 

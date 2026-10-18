@@ -1,0 +1,25 @@
+PASS No se puede abrir el final durante la persecución
+PASS Llegar al piso franco gana la persecución real
+PASS Se conserva la despedida de Nina en Level04
+PASS La tecla de victoria no salta inmediatamente el cierre
+PASS El checkpoint permite continuar en el final
+PASS La victoria carga la escena de cierre
+PASS Level04 conduce a Ending en Play Mode
+PASS El epílogo aparece antes de los créditos
+PASS El final recupera tiempo, entrada y cursor
+PASS Hay un único AudioListener
+PASS La música del final está sonando
+PASS Créditos incluyen a Antonio Santiago Sanchez Angulo
+PASS Créditos incluyen a Jhael Elisa Guevara Silva
+PASS Créditos incluyen a Johnny Suarez Abasto
+PASS Créditos incluyen a Mateo Alejandro Valeriano Sanchez
+PASS Créditos incluyen a Rommel Rodrigo Gutierrez Herrera
+PASS Agradecimientos solicitados incluidos
+PASS El final avanza con tiempo no escalado
+PASS El botón permite saltar al comienzo de los créditos
+PASS Los créditos siguen visibles durante su recorrido
+PASS Al acabar el recorrido aparece el agradecimiento final
+PASS El botón de menú inicia el fundido de salida
+PASS El final devuelve al menú principal real
+PASS La campaña completada no deja un checkpoint en Level04
+PASS El menú recupera entrada y tiempo normales

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Overdrive.Core;
 using Overdrive.Story;
+using Overdrive.Level;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -70,7 +71,7 @@ namespace Overdrive.Driving
         [SerializeField] private float finishDistance = 50f;
         [Tooltip("Las que se quedan muy atrás desaparecen (no cuentan como bajas).")]
         [SerializeField] private float despawnBehind = 140f;
-        [SerializeField] private string nextScene = "Menu";
+        [SerializeField] private string nextScene = "Ending";
 
         private readonly List<Car> alive = new List<Car>();
         private readonly List<Car> spawned = new List<Car>();
@@ -121,7 +122,7 @@ namespace Overdrive.Driving
             {
                 endTime += Time.unscaledDeltaTime;
                 if (endTime > 1f && !GameInput.Blocked && (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Return)))
-                    SceneManager.LoadScene(string.IsNullOrEmpty(nextScene) ? "Menu" : nextScene);
+                    ContinueAfterWin();
                 return;
             }
             if (State == ChaseState.Lost)
@@ -130,6 +131,14 @@ namespace Overdrive.Driving
                 return;
             }
             Tick(Time.deltaTime);
+        }
+
+        public bool ContinueAfterWin()
+        {
+            if (State != ChaseState.Won || endTime <= 1f || GameInput.Blocked) return false;
+            Time.timeScale = 1f;
+            SceneManager.LoadScene(string.IsNullOrEmpty(nextScene) ? "Menu" : nextScene);
+            return true;
         }
 
         /// <summary>Avanza la persecución. Público para simularla en el editor.</summary>
@@ -252,6 +261,7 @@ namespace Overdrive.Driving
         private void Win()
         {
             State = ChaseState.Won;
+            if (Application.isPlaying) SaveSystem.SaveCheckpoint(nextScene);
             ending = true;
             Lock();
             foreach (Car c in alive.ToArray()) if (c != null && !c.Destroyed) c.Explode();
