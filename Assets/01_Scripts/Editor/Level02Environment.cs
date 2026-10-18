@@ -212,15 +212,14 @@ namespace Overdrive.EditorTools
                 // B. Cierre sur sobre el pasillo en z = -25
                 CreateBarrier(root, prefix + "SouthCap", new Vector3(side * 4.4f, 1.6f, -25.0f), new Vector3(side * 10.5f, 1.6f, -25.0f), railHeight, railThick, material);
 
-                // C. Balcón curvo/segmentado hacia la pista de baile (z de -25 a -6.1)
+                // C. Balcón curvo hacia la pista de baile (z de -7.85 a -6.1; el tramo de escaleras se mantiene abierto)
                 var dancePoints = new[]
                 {
-                    new Vector3(side * 4.4f, 1.6f, -11.5f),
                     new Vector3(side * 9.35f, 1.6f, -7.85f),
                     new Vector3(side * 10.6f, 1.6f, -6.1f)
                 };
                 for (int i = 0; i < dancePoints.Length - 1; i++)
-                    CreateBarrier(root, prefix + "DanceFloor_" + i, dancePoints[i], dancePoints[i + 1], railHeight, railThick, material);
+                    CreateBarrier(root, prefix + "DanceFloor_" + (i + 1), dancePoints[i], dancePoints[i + 1], railHeight, railThick, material);
 
                 // D. Barandilla a lo largo de la rampa de subida (z de 0 a 6, sube de y=0 a y=1.6)
                 CreateRampBarrier(root, prefix + "RampInner", new Vector3(side * 8.5f, 0f, 0f), new Vector3(side * 8.5f, 1.6f, 6f), 1.05f, railThick, material);
@@ -316,6 +315,58 @@ namespace Overdrive.EditorTools
                 NeonStrip(accents, new Vector3(x, -1.75f, -40f), new Vector3(x, -1.75f, -64f), pink);
             foreach (float x in new[] { -12.3f, -0.9f })
                 NeonStrip(accents, new Vector3(x, -0.9f, -73f), new Vector3(x, -0.9f, -86f), cyan);
+        }
+
+        internal static GameObject AddBackstageLights(Transform parent)
+        {
+            var old = parent.Find("Backstage Lighting");
+            if (old != null) Object.DestroyImmediate(old.gameObject);
+            var root = new GameObject("Backstage Lighting");
+            root.transform.SetParent(parent, false);
+
+            void CreatePointLight(string name, Vector3 pos, Color color, float intensity, float range)
+            {
+                var lightObj = new GameObject(name);
+                lightObj.transform.SetParent(root.transform, false);
+                lightObj.transform.position = pos;
+                var l = lightObj.AddComponent<Light>();
+                l.type = LightType.Point;
+                l.color = color;
+                l.intensity = intensity;
+                l.range = range;
+                l.shadows = LightShadows.None;
+            }
+
+            // 1. Bar de striptease (z = -46.5 a -50.5, x = -6.7) - Iluminacion calida/ambar
+            CreatePointLight("Backstage_Bar_North", new Vector3(-6.7f, 0.8f, -46.5f), new Color(1.0f, 0.72f, 0.35f), 3.8f, 9.5f);
+            CreatePointLight("Backstage_Bar_South", new Vector3(-6.7f, 0.8f, -50.5f), new Color(1.0f, 0.72f, 0.35f), 3.8f, 9.5f);
+
+            // 2. Plataforma / Pasarela backstage (z = -57.5 a -63.5, x = -6.7) - Tonos magenta y cian
+            CreatePointLight("Backstage_Stage_Magenta", new Vector3(-6.7f, 1.2f, -57.5f), new Color(1.0f, 0.15f, 0.55f), 4.5f, 13.0f);
+            CreatePointLight("Backstage_Stage_Cyan", new Vector3(-6.7f, 1.2f, -63.5f), new Color(0.1f, 0.75f, 1.0f), 4.5f, 13.0f);
+
+            // 3. Sofas laterales del backstage - Luz ambiental tenue violeta y cian
+            CreatePointLight("Backstage_Lounge_NW", new Vector3(-13.5f, 0.5f, -47.0f), new Color(0.55f, 0.2f, 0.95f), 3.2f, 9.0f);
+            CreatePointLight("Backstage_Lounge_SW", new Vector3(-13.5f, 0.5f, -57.0f), new Color(0.1f, 0.7f, 1.0f), 3.2f, 9.0f);
+            CreatePointLight("Backstage_Lounge_NE", new Vector3(0.5f, 0.5f, -47.0f), new Color(0.1f, 0.7f, 1.0f), 3.2f, 9.0f);
+            CreatePointLight("Backstage_Lounge_SE", new Vector3(0.5f, 0.5f, -57.0f), new Color(0.55f, 0.2f, 0.95f), 3.2f, 9.0f);
+
+            // 4. Puerta de seguridad / STAFF ONLY - Luz ambar de aviso
+            CreatePointLight("Backstage_StaffGate", new Vector3(-6.7f, 0.9f, -68.5f), new Color(1.0f, 0.6f, 0.2f), 4.2f, 11.0f);
+
+            // 5. Camerinos - Pasillo central y area del maletin
+            CreatePointLight("Backstage_Dressing_Center", new Vector3(-6.7f, 1.2f, -77.0f), new Color(0.85f, 0.5f, 1.0f), 4.8f, 14.0f);
+
+            // 6. Camerinos - Tocadores y espejos
+            CreatePointLight("Backstage_Vanity_NW", new Vector3(-11.5f, 0.8f, -76.5f), new Color(1.0f, 0.85f, 0.65f), 3.8f, 8.0f);
+            CreatePointLight("Backstage_Vanity_SW", new Vector3(-11.5f, 0.8f, -82.0f), new Color(1.0f, 0.85f, 0.65f), 3.8f, 8.0f);
+            CreatePointLight("Backstage_Vanity_NE", new Vector3(-1.8f, 0.8f, -76.5f), new Color(1.0f, 0.85f, 0.65f), 3.8f, 8.0f);
+            CreatePointLight("Backstage_Vanity_SE", new Vector3(-1.8f, 0.8f, -82.0f), new Color(1.0f, 0.85f, 0.65f), 3.8f, 8.0f);
+
+            // 7. Camerinos - Fondo sur / armarios
+            CreatePointLight("Backstage_Dressing_South", new Vector3(-6.7f, 0.9f, -84.5f), new Color(0.2f, 0.8f, 1.0f), 4.0f, 11.0f);
+
+            return root;
         }
 
         internal static void AddClubCables(Transform level)

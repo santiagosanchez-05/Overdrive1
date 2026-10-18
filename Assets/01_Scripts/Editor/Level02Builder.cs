@@ -97,6 +97,24 @@ namespace Overdrive.EditorTools
             Debug.Log("[Level02] Paredes perimetrales y barandillas instaladas correctamente.");
         }
 
+        [MenuItem("TopDown/Nivel 02/Agregar luces de backstage")]
+        public static void AddBackstageLights()
+        {
+            if (EditorApplication.isPlaying) throw new InvalidOperationException("Detén Play Mode primero.");
+            var scene = SceneManager.GetSceneByPath(ScenePath);
+            if (!scene.isLoaded) scene = EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
+            SceneManager.SetActiveScene(scene);
+            var clubLighting = scene.GetRootGameObjects().FirstOrDefault(r => r.name == "Club Lighting");
+            Transform parent = clubLighting != null ? clubLighting.transform : BuilderUtil.FindRoot(scene, "Level").transform;
+            Level02Environment.AddBackstageLights(parent);
+            EditorSceneManager.MarkSceneDirty(scene);
+            EditorSceneManager.SaveScene(scene);
+            AssetDatabase.SaveAssets();
+            Validate();
+            CaptureGameplay();
+            Debug.Log("[Level02] Luces de backstage agregadas correctamente.");
+        }
+
         [MenuItem("TopDown/Nivel 02/Ajustar anclajes de neón")]
         public static void FixHangingNeon()
         {
@@ -136,6 +154,8 @@ namespace Overdrive.EditorTools
                 serialized.ApplyModifiedPropertiesWithoutUndo();
             }
             Level02Environment.AddClubCables(BuilderUtil.FindRoot(scene, "Level").transform);
+            var clubLighting = scene.GetRootGameObjects().FirstOrDefault(r => r.name == "Club Lighting");
+            Level02Environment.AddBackstageLights(clubLighting != null ? clubLighting.transform : BuilderUtil.FindRoot(scene, "Level").transform);
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene);
             AssetDatabase.SaveAssets();
@@ -294,6 +314,7 @@ namespace Overdrive.EditorTools
             }
             foreach (float z in new[] { 27f, 19f, -18f, -28f, -40f, -52f, -64f, -77f })
                 AddLight(lighting.transform, "RouteLight_" + z, new Vector3(z < -35f ? -6.7f : 0f, z < -35f ? 0.2f : 2f, z), new Color(0.5f, 0.12f, 1f), 3f, 12f);
+            Level02Environment.AddBackstageLights(lighting.transform);
             lighting.AddComponent<ClubLights>().Setup(animated.ToArray());
             var volume = new GameObject("Elysium_GlobalVolume").AddComponent<Volume>();
             volume.isGlobal = true;
