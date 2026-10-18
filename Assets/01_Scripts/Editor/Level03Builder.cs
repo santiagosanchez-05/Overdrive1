@@ -478,7 +478,7 @@ namespace Overdrive.EditorTools
             BuilderUtil.SetRef(level, "player", player.Life);
             BuilderUtil.SetRef(level, "exit", exit);
             var so = new SerializedObject(level);
-            so.FindProperty("nextScene").stringValue = "Menu";
+            so.FindProperty("nextScene").stringValue = "Level04"; // tras el jefe, la huida en coche
             var list = so.FindProperty("enemies");
             list.arraySize = enemies.Length;
             for (int i = 0; i < enemies.Length; i++) list.GetArrayElementAtIndex(i).objectReferenceValue = enemies[i];
