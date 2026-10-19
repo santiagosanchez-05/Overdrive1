@@ -20,6 +20,9 @@ namespace Overdrive.CameraRig
         [SerializeField] private float eyeHeight = 1.7f;
         [Tooltip("Los ojos van un poco por encima del hueso de la cabeza de los demás personajes.")]
         [SerializeField] private float eyeAboveHead = 0.08f;
+        [Tooltip("Altura máxima de los ojos. Los personajes miden casi 3 m y los escenarios (puertas de ~2,5 m, techos de ~3 m) " +
+                 "están hechos para gente normal: con los ojos más altos, puertas y techos se ven a la altura de la cara.")]
+        [SerializeField] private float maxEyeHeight = 2f;
         [SerializeField] private float eyeForward = 0.18f;
         [SerializeField] private Vector2 pitchLimits = new Vector2(-35f, 40f);
         [SerializeField] private float fieldOfView = 70f;
@@ -127,6 +130,7 @@ namespace Overdrive.CameraRig
         /// <summary>
         /// Altura de los ojos: la cabeza de los enemigos de pie (su hueso Head respecto a sus pies), así el
         /// jugador en primera persona mira a la misma altura que ellos. Sin enemigos, el valor por defecto.
+        /// Nunca más de <see cref="maxEyeHeight"/>, para que el escenario no se vea enano.
         /// </summary>
         private float MeasureEyeHeight()
         {
@@ -139,7 +143,8 @@ namespace Overdrive.CameraRig
                 if (head == null) continue;
                 best = Mathf.Max(best, head.position.y - enemy.transform.position.y);
             }
-            return best > 0.5f ? best + eyeAboveHead : (currentEye > 0.5f ? currentEye : eyeHeight);
+            float eye = best > 0.5f ? best + eyeAboveHead : (currentEye > 0.5f ? currentEye : eyeHeight);
+            return Mathf.Min(eye, maxEyeHeight);
         }
 
         private void Enter()

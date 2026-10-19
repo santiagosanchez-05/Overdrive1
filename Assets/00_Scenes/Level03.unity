@@ -261,7 +261,7 @@ MonoBehaviour:
   sweepDuration: 0.45
   sweepInterval: {x: 2.5, y: 4.5}
   audioSource: {fileID: 11873910}
-  hoverClip: {fileID: 8300000, guid: 0b9cf69e9fe528c4c9b8a0a5a958eb3a, type: 3}
+  hoverClip: {fileID: 8300000, guid: 98ea64c4178e1384aa25cda5e8b2014b, type: 3}
   clickClip: {fileID: 8300000, guid: ee19ba0f9fd14454ab5bd6aad9564343, type: 3}
   volume: 0.6
 --- !u!1 &9487754
@@ -4527,7 +4527,7 @@ MonoBehaviour:
   sweepDuration: 0.45
   sweepInterval: {x: 2.5, y: 4.5}
   audioSource: {fileID: 11873910}
-  hoverClip: {fileID: 8300000, guid: 0b9cf69e9fe528c4c9b8a0a5a958eb3a, type: 3}
+  hoverClip: {fileID: 8300000, guid: 98ea64c4178e1384aa25cda5e8b2014b, type: 3}
   clickClip: {fileID: 8300000, guid: ee19ba0f9fd14454ab5bd6aad9564343, type: 3}
   volume: 0.6
 --- !u!1 &280858543
@@ -19032,7 +19032,7 @@ MonoBehaviour:
   sweepDuration: 0.45
   sweepInterval: {x: 2.5, y: 4.5}
   audioSource: {fileID: 11873910}
-  hoverClip: {fileID: 8300000, guid: 0b9cf69e9fe528c4c9b8a0a5a958eb3a, type: 3}
+  hoverClip: {fileID: 8300000, guid: 98ea64c4178e1384aa25cda5e8b2014b, type: 3}
   clickClip: {fileID: 8300000, guid: ee19ba0f9fd14454ab5bd6aad9564343, type: 3}
   volume: 0.6
 --- !u!64 &1873735176

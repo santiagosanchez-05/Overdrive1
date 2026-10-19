@@ -25,6 +25,9 @@ namespace Overdrive.Level
         private readonly LevelProgress progress = new LevelProgress();
         private float completedTime;
 
+        /// <summary>Segundos tras completar el nivel antes de aceptar ESPACIO (para no saltarlo con el último remate).</summary>
+        private const float MinTimeBeforeContinue = 1f;
+
         public LevelProgress Progress => progress;
         public string NextScene => nextScene;
         public PlayerLife Player => player;
@@ -50,7 +53,8 @@ namespace Overdrive.Level
             if (progress.State == LevelState.Complete)
             {
                 completedTime += Time.unscaledDeltaTime;
-                bool pressed = completedTime >= 0.5f && (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Return) || Input.GetMouseButtonDown(0));
+                // Solo ESPACIO o ENTER: el clic izquierdo es atacar y podía saltarse la pantalla de puntuación sin querer.
+                bool pressed = completedTime >= MinTimeBeforeContinue && (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Return));
                 bool timedOut = autoAdvanceDelay > 0f && completedTime >= autoAdvanceDelay;
                 if (pressed || timedOut)
                 {

@@ -220,7 +220,7 @@ namespace Overdrive.EditorTools
             SerializedProperty nextProp = serialized.FindProperty("nextScene");
             if (nextProp != null) nextProp.stringValue = "Level03";
             SerializedProperty autoProp = serialized.FindProperty("autoAdvanceDelay");
-            if (autoProp != null) autoProp.floatValue = 3f; // pasa solo al nivel 3
+            if (autoProp != null) autoProp.floatValue = 0f; // espera a que el jugador pulse ESPACIO para pasar al nivel 3
             var list = serialized.FindProperty("enemies");
             list.arraySize = enemies.Length;
             for (int i = 0; i < enemies.Length; i++) list.GetArrayElementAtIndex(i).objectReferenceValue = enemies[i];

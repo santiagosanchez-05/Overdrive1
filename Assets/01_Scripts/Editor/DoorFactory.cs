@@ -263,6 +263,7 @@ namespace Overdrive.EditorTools
                 if (hit.collider.GetComponentInParent<SwingDoor>() != null) continue;
                 if (hit.collider.GetComponentInParent<Overdrive.Enemies.Enemy>() != null) continue;
                 if (hit.collider is CharacterController) continue;
+                if (hit.collider.GetComponent<Overdrive.Level.BulletWall>() != null) continue;
                 best = Mathf.Min(best, hit.distance);
             }
             return best;

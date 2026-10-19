@@ -769,7 +769,7 @@ namespace Overdrive.EditorTools
             {
                 var so = new SerializedObject(manager);
                 so.FindProperty("nextScene").stringValue = "Level03";
-                so.FindProperty("autoAdvanceDelay").floatValue = 3f;
+                so.FindProperty("autoAdvanceDelay").floatValue = 0f; // espera a ESPACIO, no pasa solo
                 so.ApplyModifiedPropertiesWithoutUndo();
                 EditorSceneManager.MarkSceneDirty(level02);
                 EditorSceneManager.SaveScene(level02);

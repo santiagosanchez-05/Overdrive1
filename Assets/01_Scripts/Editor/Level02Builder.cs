@@ -181,6 +181,7 @@ namespace Overdrive.EditorTools
             Scene scene = SceneManager.GetSceneByPath(ScenePath);
             Level02Gameplay.Build(scene, BuilderUtil.FindRoot(scene, "Level"));
             RoofFactory.BuildLevel02(scene); // techos del club que solo aparecen en primera persona
+            Level02Fixes.Apply(scene); // puertas sin travesaño bajo y paredes que paran las balas
             MenuBuilder.AddPauseMenu(scene);
             MenuBuilder.AddLevelMusic(scene);
             EditorSceneManager.SaveScene(scene);
