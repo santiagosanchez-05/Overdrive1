@@ -229,8 +229,8 @@ namespace Overdrive.EditorTools
             mat.SetTexture("_BaseMap", texture);
             mat.SetTexture("_MainTex", texture);
             mat.SetColor("_BaseColor", tint);
-            mat.SetFloat("_Metallic", 0.3f);
-            mat.SetFloat("_Smoothness", 0.55f);
+            mat.SetFloat("_Metallic", 0.35f);
+            mat.SetFloat("_Smoothness", 0.7f);
             mat.EnableKeyword("_EMISSION");
             mat.SetTexture("_EmissionMap", texture);
             mat.SetColor("_EmissionColor", tint * 0.25f);

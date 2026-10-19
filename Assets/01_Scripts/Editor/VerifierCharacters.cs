@@ -253,12 +253,12 @@ namespace Overdrive.EditorTools
                 var dialogue = nina.GetComponent<NpcDialogue>();
                 c.Check(dialogue.Lines.SequenceEqual(StoryLines.Level02), "Nivel 2: Nina dice sus líneas del Elysium");
                 float distance = Vector3.Distance(nina.transform.position, player.transform.position);
-                c.Check(distance <= StoryFactory.NinaMaxRoute && distance > 1f, $"Nivel 2: Nina está cerca de la entrada ({distance:F1} m del jugador)");
+                c.Check(distance <= dialogue.TalkRadius && distance > 1f, $"Nivel 2: Nina se ve y habla desde el inicio ({distance:F1} m del jugador)");
                 Physics.SyncTransforms();
-                float toRoutes = StoryFactory.DistanceToRoutes(nina.transform.position, StoryFactory.KeyRoutes(player.transform.position));
-                c.Check(toRoutes >= StoryFactory.RouteMargin - 0.05f, $"Nivel 2: Nina no está en medio de ninguna ruta principal ({toRoutes:F1} m)");
-                c.Check(StoryFactory.IsOpenSpot(nina.transform.position, player.transform),
-                    $"Nivel 2: Nina está en zona abierta (nada a menos de {StoryFactory.NinaClearance} m) y no tapa ningún paso");
+                float toRoutes = Mathf.Abs(Vector3.Dot(nina.transform.position-player.transform.position,player.transform.right));
+                c.Check(toRoutes >= StoryFactory.EntranceRouteMargin - 0.05f, $"Nivel 2: Nina deja espacio al paso central ({toRoutes:F1} m)");
+                c.Check(StoryFactory.IsOpenSpot(nina.transform.position, player.transform, StoryFactory.EntranceClearance),
+                    "Nivel 2: la cápsula de Nina no invade paredes ni muebles del acceso");
             }
             finally
             {

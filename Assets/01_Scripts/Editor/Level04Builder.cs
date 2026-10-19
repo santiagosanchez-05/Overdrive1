@@ -88,6 +88,7 @@ namespace Overdrive.EditorTools
             MenuBuilder.AddPauseMenu(scene);
             MenuBuilder.AddLevelMusic(scene);
 
+            NeonPolishBuilder.ApplyIfInstalled(scene);
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene);
             ChainLevel03();

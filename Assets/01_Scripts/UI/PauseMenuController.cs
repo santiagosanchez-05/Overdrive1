@@ -71,7 +71,7 @@ namespace Overdrive.UI
             var saveRt = (RectTransform)saveButton.transform;
             float gap = Mathf.Abs(((RectTransform)resumeButton.transform).anchoredPosition.y - saveRt.anchoredPosition.y);
             foreach (RectTransform child in saveRt.parent)
-                if (child != saveRt && child.anchoredPosition.y < saveRt.anchoredPosition.y - 1f && child.name != "Box" && child.name != "Dim")
+                if (child != saveRt && child.anchorMin == child.anchorMax && child.anchoredPosition.y < saveRt.anchoredPosition.y - 1f && child.name != "Box" && child.name != "Dim")
                     child.anchoredPosition += new Vector2(0f, gap);
             saveButton.gameObject.SetActive(false);
 

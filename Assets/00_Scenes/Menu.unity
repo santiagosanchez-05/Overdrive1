@@ -468,17 +468,17 @@ MonoBehaviour:
   sweepTop: {fileID: 1415210637}
   sweepBottom: {fileID: 391778730}
   flash: {fileID: 1529400749}
-  fillColor: {r: 0.03137255, g: 0.03529412, b: 0.050980393, a: 0.78431374}
-  borderNormal: {r: 0.6039216, g: 0.6156863, b: 0.6392157, a: 1}
-  neon: {r: 1, g: 1, b: 1, a: 1}
-  textNormal: {r: 1, g: 1, b: 1, a: 0.82}
+  fillColor: {r: 0.025, g: 0.022, b: 0.065, a: 0.94}
+  borderNormal: {r: 0.08921569, g: 0.55058825, b: 0.6092157, a: 0.95}
+  neon: {r: 0.13725491, g: 0.84705883, b: 0.9372549, a: 1}
+  textNormal: {r: 0.94, g: 0.97, b: 1, a: 1}
   textActive: {r: 1, g: 1, b: 1, a: 1}
-  stripesNormalAlpha: 0.25
-  highlightMaxAlpha: 0.18
+  stripesNormalAlpha: 0.55
+  highlightMaxAlpha: 0.14
   glowHoverAlpha: 0.7
   glowSelectedAlpha: 1
-  breathAmount: 0.15
-  breathSpeed: 1.6
+  breathAmount: 0.07
+  breathSpeed: 0.65
   transitionTime: 0.25
   hoverScale: 1.03
   pressScale: 0.97
@@ -487,7 +487,7 @@ MonoBehaviour:
   sweepInterval: {x: 2.5, y: 4.5}
   audioSource: {fileID: 1312082703}
   hoverClip: {fileID: 8300000, guid: 0b9cf69e9fe528c4c9b8a0a5a958eb3a, type: 3}
-  clickClip: {fileID: 8300000, guid: 9544a7dbe16a2ec45889e8e1e450f65e, type: 3}
+  clickClip: {fileID: 8300000, guid: ee19ba0f9fd14454ab5bd6aad9564343, type: 3}
   volume: 0.6
 --- !u!1 &35217871
 GameObject:
@@ -555,8 +555,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
-  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+    rgba: 4294965232
+  m_fontColor: {r: 0.94, g: 0.97, b: 1, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -592,7 +592,7 @@ MonoBehaviour:
   m_charWidthMaxAdj: 0
   m_TextWrappingMode: 0
   m_wordWrappingRatios: 0.4
-  m_overflowMode: 1
+  m_overflowMode: 3
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
   m_enableKerning: 0
@@ -692,8 +692,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
-  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+    rgba: 4286523135
+  m_fontColor: {r: 1, g: 0.14901961, b: 0.49803922, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -1112,17 +1112,17 @@ MonoBehaviour:
   sweepTop: {fileID: 1664979708}
   sweepBottom: {fileID: 719554930}
   flash: {fileID: 797298321}
-  fillColor: {r: 0.03137255, g: 0.03529412, b: 0.050980393, a: 0.78431374}
-  borderNormal: {r: 0.6039216, g: 0.6156863, b: 0.6392157, a: 1}
-  neon: {r: 1, g: 1, b: 1, a: 1}
-  textNormal: {r: 1, g: 1, b: 1, a: 0.82}
+  fillColor: {r: 0.025, g: 0.022, b: 0.065, a: 0.94}
+  borderNormal: {r: 0.08921569, g: 0.55058825, b: 0.6092157, a: 0.95}
+  neon: {r: 0.13725491, g: 0.84705883, b: 0.9372549, a: 1}
+  textNormal: {r: 0.94, g: 0.97, b: 1, a: 1}
   textActive: {r: 1, g: 1, b: 1, a: 1}
-  stripesNormalAlpha: 0.25
-  highlightMaxAlpha: 0.18
+  stripesNormalAlpha: 0.55
+  highlightMaxAlpha: 0.14
   glowHoverAlpha: 0.7
   glowSelectedAlpha: 1
-  breathAmount: 0.15
-  breathSpeed: 1.6
+  breathAmount: 0.07
+  breathSpeed: 0.65
   transitionTime: 0.25
   hoverScale: 1.03
   pressScale: 0.97
@@ -1131,7 +1131,7 @@ MonoBehaviour:
   sweepInterval: {x: 2.5, y: 4.5}
   audioSource: {fileID: 1312082703}
   hoverClip: {fileID: 8300000, guid: 0b9cf69e9fe528c4c9b8a0a5a958eb3a, type: 3}
-  clickClip: {fileID: 8300000, guid: 9544a7dbe16a2ec45889e8e1e450f65e, type: 3}
+  clickClip: {fileID: 8300000, guid: ee19ba0f9fd14454ab5bd6aad9564343, type: 3}
   volume: 0.6
 --- !u!1 &85412609
 GameObject:
@@ -1183,7 +1183,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0, b: 0, a: 0.55}
+  m_Color: {r: 0.008, g: 0.005, b: 0.025, a: 0.74}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -1272,7 +1272,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.6039216, g: 0.6156863, b: 0.6392157, a: 1}
+  m_Color: {r: 0.3772549, g: 0.262549, b: 0.65, a: 0.95}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -1363,8 +1363,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
-  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+    rgba: 4286523135
+  m_fontColor: {r: 1, g: 0.14901961, b: 0.49803922, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -1376,7 +1376,7 @@ MonoBehaviour:
   m_spriteAsset: {fileID: 0}
   m_tintAllSprites: 0
   m_StyleSheet: {fileID: 0}
-  m_TextStyleHashCode: 0
+  m_TextStyleHashCode: -1183493901
   m_overrideHtmlColors: 0
   m_faceColor:
     serializedVersion: 2
@@ -1484,7 +1484,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.03137255, g: 0.03529412, b: 0.050980393, a: 0.78431374}
+  m_Color: {r: 0.025, g: 0.022, b: 0.065, a: 0.94}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -1898,7 +1898,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0, b: 0, a: 0.55}
+  m_Color: {r: 0.008, g: 0.005, b: 0.025, a: 0.74}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -2238,7 +2238,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 0.14901961, b: 0.49803922, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -2554,7 +2554,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.94, g: 0.97, b: 1, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -2629,7 +2629,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.94, g: 0.97, b: 1, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -2728,8 +2728,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
-  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+    rgba: 4294965232
+  m_fontColor: {r: 0.94, g: 0.97, b: 1, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -2741,7 +2741,7 @@ MonoBehaviour:
   m_spriteAsset: {fileID: 0}
   m_tintAllSprites: 0
   m_StyleSheet: {fileID: 0}
-  m_TextStyleHashCode: 0
+  m_TextStyleHashCode: -1183493901
   m_overrideHtmlColors: 0
   m_faceColor:
     serializedVersion: 2
@@ -2765,7 +2765,7 @@ MonoBehaviour:
   m_charWidthMaxAdj: 0
   m_TextWrappingMode: 0
   m_wordWrappingRatios: 0.4
-  m_overflowMode: 1
+  m_overflowMode: 3
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
   m_enableKerning: 0
@@ -2949,7 +2949,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.03137255, g: 0.03529412, b: 0.050980393, a: 0.78431374}
+  m_Color: {r: 0.025, g: 0.022, b: 0.065, a: 0.94}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -3043,7 +3043,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.94, g: 0.97, b: 1, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -3118,7 +3118,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.6039216, g: 0.6156863, b: 0.6392157, a: 1}
+  m_Color: {r: 0.08921569, g: 0.55058825, b: 0.6092157, a: 0.95}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -3193,7 +3193,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 0.14901961, b: 0.49803922, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -3268,7 +3268,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.6039216, g: 0.6156863, b: 0.6392157, a: 1}
+  m_Color: {r: 0.08921569, g: 0.55058825, b: 0.6092157, a: 0.95}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -3434,8 +3434,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
-  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+    rgba: 4294965232
+  m_fontColor: {r: 0.94, g: 0.97, b: 1, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -3471,7 +3471,7 @@ MonoBehaviour:
   m_charWidthMaxAdj: 0
   m_TextWrappingMode: 0
   m_wordWrappingRatios: 0.4
-  m_overflowMode: 1
+  m_overflowMode: 3
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
   m_enableKerning: 0
@@ -3555,7 +3555,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.6039216, g: 0.6156863, b: 0.6392157, a: 1}
+  m_Color: {r: 0.08921569, g: 0.55058825, b: 0.6092157, a: 0.95}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -3704,17 +3704,17 @@ MonoBehaviour:
   sweepTop: {fileID: 245413651}
   sweepBottom: {fileID: 859014038}
   flash: {fileID: 537497758}
-  fillColor: {r: 0.03137255, g: 0.03529412, b: 0.050980393, a: 0.78431374}
-  borderNormal: {r: 0.6039216, g: 0.6156863, b: 0.6392157, a: 1}
-  neon: {r: 1, g: 1, b: 1, a: 1}
-  textNormal: {r: 1, g: 1, b: 1, a: 0.82}
+  fillColor: {r: 0.025, g: 0.022, b: 0.065, a: 0.94}
+  borderNormal: {r: 0.3772549, g: 0.262549, b: 0.65, a: 0.95}
+  neon: {r: 0.5803922, g: 0.40392157, b: 1, a: 1}
+  textNormal: {r: 0.94, g: 0.97, b: 1, a: 1}
   textActive: {r: 1, g: 1, b: 1, a: 1}
-  stripesNormalAlpha: 0.25
-  highlightMaxAlpha: 0.18
+  stripesNormalAlpha: 0.55
+  highlightMaxAlpha: 0.14
   glowHoverAlpha: 0.7
   glowSelectedAlpha: 1
-  breathAmount: 0.15
-  breathSpeed: 1.6
+  breathAmount: 0.07
+  breathSpeed: 0.65
   transitionTime: 0.25
   hoverScale: 1.03
   pressScale: 0.97
@@ -3723,7 +3723,7 @@ MonoBehaviour:
   sweepInterval: {x: 2.5, y: 4.5}
   audioSource: {fileID: 1312082703}
   hoverClip: {fileID: 8300000, guid: 0b9cf69e9fe528c4c9b8a0a5a958eb3a, type: 3}
-  clickClip: {fileID: 8300000, guid: 9544a7dbe16a2ec45889e8e1e450f65e, type: 3}
+  clickClip: {fileID: 8300000, guid: ee19ba0f9fd14454ab5bd6aad9564343, type: 3}
   volume: 0.6
 --- !u!1 &511367006
 GameObject:
@@ -4154,7 +4154,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.03137255, g: 0.03529412, b: 0.050980393, a: 0.78431374}
+  m_Color: {r: 0.025, g: 0.022, b: 0.065, a: 0.94}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -4339,8 +4339,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
-  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+    rgba: 4294965232
+  m_fontColor: {r: 0.94, g: 0.97, b: 1, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -4352,7 +4352,7 @@ MonoBehaviour:
   m_spriteAsset: {fileID: 0}
   m_tintAllSprites: 0
   m_StyleSheet: {fileID: 0}
-  m_TextStyleHashCode: 0
+  m_TextStyleHashCode: -1183493901
   m_overrideHtmlColors: 0
   m_faceColor:
     serializedVersion: 2
@@ -4376,7 +4376,7 @@ MonoBehaviour:
   m_charWidthMaxAdj: 0
   m_TextWrappingMode: 0
   m_wordWrappingRatios: 0.4
-  m_overflowMode: 1
+  m_overflowMode: 3
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
   m_enableKerning: 0
@@ -4534,17 +4534,17 @@ MonoBehaviour:
   sweepTop: {fileID: 1301274962}
   sweepBottom: {fileID: 1105837546}
   flash: {fileID: 872894006}
-  fillColor: {r: 0.03137255, g: 0.03529412, b: 0.050980393, a: 0.78431374}
-  borderNormal: {r: 0.6039216, g: 0.6156863, b: 0.6392157, a: 1}
-  neon: {r: 1, g: 1, b: 1, a: 1}
-  textNormal: {r: 1, g: 1, b: 1, a: 0.82}
+  fillColor: {r: 0.025, g: 0.022, b: 0.065, a: 0.94}
+  borderNormal: {r: 0.65, g: 0.09686275, b: 0.3237255, a: 0.95}
+  neon: {r: 1, g: 0.14901961, b: 0.49803922, a: 1}
+  textNormal: {r: 0.94, g: 0.97, b: 1, a: 1}
   textActive: {r: 1, g: 1, b: 1, a: 1}
-  stripesNormalAlpha: 0.25
-  highlightMaxAlpha: 0.18
+  stripesNormalAlpha: 0.55
+  highlightMaxAlpha: 0.14
   glowHoverAlpha: 0.7
   glowSelectedAlpha: 1
-  breathAmount: 0.15
-  breathSpeed: 1.6
+  breathAmount: 0.07
+  breathSpeed: 0.65
   transitionTime: 0.25
   hoverScale: 1.03
   pressScale: 0.97
@@ -4553,7 +4553,7 @@ MonoBehaviour:
   sweepInterval: {x: 2.5, y: 4.5}
   audioSource: {fileID: 1312082703}
   hoverClip: {fileID: 8300000, guid: 0b9cf69e9fe528c4c9b8a0a5a958eb3a, type: 3}
-  clickClip: {fileID: 8300000, guid: 9544a7dbe16a2ec45889e8e1e450f65e, type: 3}
+  clickClip: {fileID: 8300000, guid: ee19ba0f9fd14454ab5bd6aad9564343, type: 3}
   volume: 0.6
 --- !u!1 &667859533
 GameObject:
@@ -4755,7 +4755,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.94, g: 0.97, b: 1, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -4886,7 +4886,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.03137255, g: 0.03529412, b: 0.050980393, a: 0.78431374}
+  m_Color: {r: 0.025, g: 0.022, b: 0.065, a: 0.94}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -5130,8 +5130,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e19747de3f5aca642ab2be37e372fb86, type: 3}
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Outline
-  m_EffectColor: {r: 0.6039216, g: 0.6156863, b: 0.6392157, a: 1}
-  m_EffectDistance: {x: 2, y: -2}
+  m_EffectColor: {r: 0.13725491, g: 0.84705883, b: 0.9372549, a: 0.72}
+  m_EffectDistance: {x: 1.5, y: -1.5}
   m_UseGraphicAlpha: 1
 --- !u!114 &728575102
 MonoBehaviour:
@@ -5146,7 +5146,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.03137255, g: 0.03529412, b: 0.050980393, a: 0.78431374}
+  m_Color: {r: 0.025, g: 0.015, b: 0.065, a: 0.96}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -5303,6 +5303,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 167820217}
+  - {fileID: 898104991}
   - {fileID: 728575100}
   - {fileID: 127399176}
   - {fileID: 1394394660}
@@ -5379,7 +5380,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.94, g: 0.97, b: 1, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -5416,6 +5417,7 @@ GameObject:
   - component: {fileID: 784328791}
   - component: {fileID: 784328790}
   - component: {fileID: 784328789}
+  - component: {fileID: 784328792}
   m_Layer: 5
   m_Name: Background
   m_TagString: Untagged
@@ -5468,7 +5470,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 2100000, guid: d2db8085da443d249a899e43cda423a5, type: 2}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
@@ -5494,6 +5496,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 784328787}
   m_CullTransparentMesh: 1
+--- !u!114 &784328792
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 784328787}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 95dbe151d254e2c4c94ffda0f91db654, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Overdrive.UI.NeonMenuAtmosphere
 --- !u!1 &797298319
 GameObject:
   m_ObjectHideFlags: 0
@@ -5805,7 +5819,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.94, g: 0.97, b: 1, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -6069,6 +6083,94 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 882596471}
   m_CullTransparentMesh: 1
+--- !u!1 &898104990
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 898104991}
+  - component: {fileID: 898104994}
+  - component: {fileID: 898104993}
+  - component: {fileID: 898104992}
+  m_Layer: 0
+  m_Name: Neon Ambience
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &898104991
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 898104990}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 774317202}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &898104992
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 898104990}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 95dbe151d254e2c4c94ffda0f91db654, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Overdrive.UI.NeonMenuAtmosphere
+--- !u!114 &898104993
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 898104990}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 2100000, guid: 1ec26d39730351f47a142602f3fef3f8, type: 2}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 0
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 0}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &898104994
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 898104990}
+  m_CullTransparentMesh: 1
 --- !u!1 &918420647
 GameObject:
   m_ObjectHideFlags: 0
@@ -6246,7 +6348,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.94, g: 0.97, b: 1, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -6270,6 +6372,159 @@ CanvasRenderer:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 968049813}
+  m_CullTransparentMesh: 1
+--- !u!1 &977236725
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 977236726}
+  - component: {fileID: 977236729}
+  - component: {fileID: 977236728}
+  - component: {fileID: 977236727}
+  m_Layer: 0
+  m_Name: Neon Title
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &977236726
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 977236725}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1932450225}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 72, y: -50}
+  m_SizeDelta: {x: 690, y: 110}
+  m_Pivot: {x: 0, y: 1}
+--- !u!114 &977236727
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 977236725}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cfabb0440166ab443bba8876756fdfa9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Shadow
+  m_EffectColor: {r: 0.13725491, g: 0.84705883, b: 0.9372549, a: 0.8}
+  m_EffectDistance: {x: 3, y: -2}
+  m_UseGraphicAlpha: 1
+--- !u!114 &977236728
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 977236725}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 0
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_text: OVERDRIVE
+  m_isRightToLeft: 0
+  m_fontAsset: {fileID: 11400000, guid: 7da7cebb0fa555f49bb954f2c63f104d, type: 2}
+  m_sharedMaterial: {fileID: -4524362523076036408, guid: 7da7cebb0fa555f49bb954f2c63f104d, type: 2}
+  m_fontSharedMaterials: []
+  m_fontMaterial: {fileID: 0}
+  m_fontMaterials: []
+  m_fontColor32:
+    serializedVersion: 2
+    rgba: 4286523135
+  m_fontColor: {r: 1, g: 0.14901961, b: 0.49803922, a: 1}
+  m_enableVertexGradient: 0
+  m_colorMode: 3
+  m_fontColorGradient:
+    topLeft: {r: 1, g: 1, b: 1, a: 1}
+    topRight: {r: 1, g: 1, b: 1, a: 1}
+    bottomLeft: {r: 1, g: 1, b: 1, a: 1}
+    bottomRight: {r: 1, g: 1, b: 1, a: 1}
+  m_fontColorGradientPreset: {fileID: 0}
+  m_spriteAsset: {fileID: 0}
+  m_tintAllSprites: 0
+  m_StyleSheet: {fileID: 0}
+  m_TextStyleHashCode: -1183493901
+  m_overrideHtmlColors: 0
+  m_faceColor:
+    serializedVersion: 2
+    rgba: 4294967295
+  m_fontSize: 88
+  m_fontSizeBase: 88
+  m_fontWeight: 400
+  m_enableAutoSizing: 0
+  m_fontSizeMin: 18
+  m_fontSizeMax: 72
+  m_fontStyle: 0
+  m_HorizontalAlignment: 1
+  m_VerticalAlignment: 256
+  m_textAlignment: 65535
+  m_characterSpacing: 0
+  m_characterHorizontalScale: 1
+  m_wordSpacing: 0
+  m_lineSpacing: 0
+  m_lineSpacingMax: 0
+  m_paragraphSpacing: 0
+  m_charWidthMaxAdj: 0
+  m_TextWrappingMode: 1
+  m_wordWrappingRatios: 0.4
+  m_overflowMode: 0
+  m_linkedTextComponent: {fileID: 0}
+  parentLinkedComponent: {fileID: 0}
+  m_enableKerning: 0
+  m_ActiveFontFeatures: 6e72656b
+  m_enableExtraPadding: 0
+  checkPaddingRequired: 0
+  m_isRichText: 1
+  m_EmojiFallbackSupport: 1
+  m_parseCtrlCharacters: 1
+  m_isOrthographic: 1
+  m_isCullingEnabled: 0
+  m_horizontalMapping: 0
+  m_verticalMapping: 0
+  m_uvLineOffset: 0
+  m_geometrySortingOrder: 0
+  m_IsTextObjectScaleStatic: 0
+  m_VertexBufferAutoSizeReduction: 0
+  m_useMaxVisibleDescender: 1
+  m_pageToDisplay: 1
+  m_margin: {x: 0, y: 0, z: 0, w: 0}
+  m_isUsingLegacyAnimationComponent: 0
+  m_isVolumetricText: 0
+  m_hasFontAssetChanged: 0
+  m_baseMaterial: {fileID: 0}
+  m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!222 &977236729
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 977236725}
   m_CullTransparentMesh: 1
 --- !u!1 &980145555
 GameObject:
@@ -6486,7 +6741,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.94, g: 0.97, b: 1, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -6561,7 +6816,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.6039216, g: 0.6156863, b: 0.6392157, a: 1}
+  m_Color: {r: 0.08921569, g: 0.55058825, b: 0.6092157, a: 0.95}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -6837,17 +7092,17 @@ MonoBehaviour:
   sweepTop: {fileID: 52344088}
   sweepBottom: {fileID: 179648294}
   flash: {fileID: 58909775}
-  fillColor: {r: 0.03137255, g: 0.03529412, b: 0.050980393, a: 0.78431374}
-  borderNormal: {r: 0.6039216, g: 0.6156863, b: 0.6392157, a: 1}
-  neon: {r: 1, g: 1, b: 1, a: 1}
-  textNormal: {r: 1, g: 1, b: 1, a: 0.82}
+  fillColor: {r: 0.025, g: 0.022, b: 0.065, a: 0.94}
+  borderNormal: {r: 0.65, g: 0.09686275, b: 0.3237255, a: 0.95}
+  neon: {r: 1, g: 0.14901961, b: 0.49803922, a: 1}
+  textNormal: {r: 0.94, g: 0.97, b: 1, a: 1}
   textActive: {r: 1, g: 1, b: 1, a: 1}
-  stripesNormalAlpha: 0.25
-  highlightMaxAlpha: 0.18
+  stripesNormalAlpha: 0.55
+  highlightMaxAlpha: 0.14
   glowHoverAlpha: 0.7
   glowSelectedAlpha: 1
-  breathAmount: 0.15
-  breathSpeed: 1.6
+  breathAmount: 0.07
+  breathSpeed: 0.65
   transitionTime: 0.25
   hoverScale: 1.03
   pressScale: 0.97
@@ -6856,7 +7111,7 @@ MonoBehaviour:
   sweepInterval: {x: 2.5, y: 4.5}
   audioSource: {fileID: 1312082703}
   hoverClip: {fileID: 8300000, guid: 0b9cf69e9fe528c4c9b8a0a5a958eb3a, type: 3}
-  clickClip: {fileID: 8300000, guid: 9544a7dbe16a2ec45889e8e1e450f65e, type: 3}
+  clickClip: {fileID: 8300000, guid: ee19ba0f9fd14454ab5bd6aad9564343, type: 3}
   volume: 0.6
 --- !u!1 &1177306963
 GameObject:
@@ -6964,7 +7219,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.03137255, g: 0.03529412, b: 0.050980393, a: 0.78431374}
+  m_Color: {r: 0.025, g: 0.022, b: 0.065, a: 0.94}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -7135,6 +7390,94 @@ MonoBehaviour:
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.RectMask2D
   m_Padding: {x: 0, y: 0, z: 0, w: 0}
   m_Softness: {x: 0, y: 0}
+--- !u!1 &1210505593
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1210505594}
+  - component: {fileID: 1210505597}
+  - component: {fileID: 1210505596}
+  - component: {fileID: 1210505595}
+  m_Layer: 0
+  m_Name: Neon Ambience
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &1210505594
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1210505593}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1766582266}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1210505595
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1210505593}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 95dbe151d254e2c4c94ffda0f91db654, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Overdrive.UI.NeonMenuAtmosphere
+--- !u!114 &1210505596
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1210505593}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 2100000, guid: 1ec26d39730351f47a142602f3fef3f8, type: 2}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 0
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 0}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &1210505597
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1210505593}
+  m_CullTransparentMesh: 1
 --- !u!1 &1213454531
 GameObject:
   m_ObjectHideFlags: 0
@@ -7501,7 +7844,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.13725491, g: 0.84705883, b: 0.9372549, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -7584,7 +7927,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.6039216, g: 0.6156863, b: 0.6392157, a: 1}
+  m_Color: {r: 0.65, g: 0.09686275, b: 0.3237255, a: 0.95}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -7721,7 +8064,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.03137255, g: 0.03529412, b: 0.050980393, a: 0.78431374}
+  m_Color: {r: 0.025, g: 0.022, b: 0.065, a: 0.94}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -7944,7 +8287,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.6039216, g: 0.6156863, b: 0.6392157, a: 1}
+  m_Color: {r: 0.65, g: 0.09686275, b: 0.3237255, a: 0.95}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -8019,7 +8362,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.6039216, g: 0.6156863, b: 0.6392157, a: 1}
+  m_Color: {r: 0.3772549, g: 0.262549, b: 0.65, a: 0.95}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -8168,17 +8511,17 @@ MonoBehaviour:
   sweepTop: {fileID: 882596472}
   sweepBottom: {fileID: 1022997351}
   flash: {fileID: 1345025404}
-  fillColor: {r: 0.03137255, g: 0.03529412, b: 0.050980393, a: 0.78431374}
-  borderNormal: {r: 0.6039216, g: 0.6156863, b: 0.6392157, a: 1}
-  neon: {r: 1, g: 1, b: 1, a: 1}
-  textNormal: {r: 1, g: 1, b: 1, a: 0.82}
+  fillColor: {r: 0.025, g: 0.022, b: 0.065, a: 0.94}
+  borderNormal: {r: 0.08921569, g: 0.55058825, b: 0.6092157, a: 0.95}
+  neon: {r: 0.13725491, g: 0.84705883, b: 0.9372549, a: 1}
+  textNormal: {r: 0.94, g: 0.97, b: 1, a: 1}
   textActive: {r: 1, g: 1, b: 1, a: 1}
-  stripesNormalAlpha: 0.25
-  highlightMaxAlpha: 0.18
+  stripesNormalAlpha: 0.55
+  highlightMaxAlpha: 0.14
   glowHoverAlpha: 0.7
   glowSelectedAlpha: 1
-  breathAmount: 0.15
-  breathSpeed: 1.6
+  breathAmount: 0.07
+  breathSpeed: 0.65
   transitionTime: 0.25
   hoverScale: 1.03
   pressScale: 0.97
@@ -8187,7 +8530,7 @@ MonoBehaviour:
   sweepInterval: {x: 2.5, y: 4.5}
   audioSource: {fileID: 1312082703}
   hoverClip: {fileID: 8300000, guid: 0b9cf69e9fe528c4c9b8a0a5a958eb3a, type: 3}
-  clickClip: {fileID: 8300000, guid: 9544a7dbe16a2ec45889e8e1e450f65e, type: 3}
+  clickClip: {fileID: 8300000, guid: ee19ba0f9fd14454ab5bd6aad9564343, type: 3}
   volume: 0.6
 --- !u!1 &1345025402
 GameObject:
@@ -9022,7 +9365,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.94, g: 0.97, b: 1, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -9171,17 +9514,17 @@ MonoBehaviour:
   sweepTop: {fileID: 689047376}
   sweepBottom: {fileID: 1786440408}
   flash: {fileID: 1608651462}
-  fillColor: {r: 0.03137255, g: 0.03529412, b: 0.050980393, a: 0.78431374}
-  borderNormal: {r: 0.6039216, g: 0.6156863, b: 0.6392157, a: 1}
-  neon: {r: 1, g: 1, b: 1, a: 1}
-  textNormal: {r: 1, g: 1, b: 1, a: 0.82}
+  fillColor: {r: 0.025, g: 0.022, b: 0.065, a: 0.94}
+  borderNormal: {r: 0.3772549, g: 0.262549, b: 0.65, a: 0.95}
+  neon: {r: 0.5803922, g: 0.40392157, b: 1, a: 1}
+  textNormal: {r: 0.94, g: 0.97, b: 1, a: 1}
   textActive: {r: 1, g: 1, b: 1, a: 1}
-  stripesNormalAlpha: 0.25
-  highlightMaxAlpha: 0.18
+  stripesNormalAlpha: 0.55
+  highlightMaxAlpha: 0.14
   glowHoverAlpha: 0.7
   glowSelectedAlpha: 1
-  breathAmount: 0.15
-  breathSpeed: 1.6
+  breathAmount: 0.07
+  breathSpeed: 0.65
   transitionTime: 0.25
   hoverScale: 1.03
   pressScale: 0.97
@@ -9190,7 +9533,7 @@ MonoBehaviour:
   sweepInterval: {x: 2.5, y: 4.5}
   audioSource: {fileID: 1312082703}
   hoverClip: {fileID: 8300000, guid: 0b9cf69e9fe528c4c9b8a0a5a958eb3a, type: 3}
-  clickClip: {fileID: 8300000, guid: 9544a7dbe16a2ec45889e8e1e450f65e, type: 3}
+  clickClip: {fileID: 8300000, guid: ee19ba0f9fd14454ab5bd6aad9564343, type: 3}
   volume: 0.6
 --- !u!1 &1387056071
 GameObject:
@@ -9595,17 +9938,17 @@ MonoBehaviour:
   sweepTop: {fileID: 197535079}
   sweepBottom: {fileID: 13952201}
   flash: {fileID: 1842294806}
-  fillColor: {r: 0.03137255, g: 0.03529412, b: 0.050980393, a: 0.78431374}
-  borderNormal: {r: 0.6039216, g: 0.6156863, b: 0.6392157, a: 1}
-  neon: {r: 1, g: 1, b: 1, a: 1}
-  textNormal: {r: 1, g: 1, b: 1, a: 0.82}
+  fillColor: {r: 0.025, g: 0.022, b: 0.065, a: 0.94}
+  borderNormal: {r: 0.65, g: 0.09686275, b: 0.3237255, a: 0.95}
+  neon: {r: 1, g: 0.14901961, b: 0.49803922, a: 1}
+  textNormal: {r: 0.94, g: 0.97, b: 1, a: 1}
   textActive: {r: 1, g: 1, b: 1, a: 1}
-  stripesNormalAlpha: 0.25
-  highlightMaxAlpha: 0.18
+  stripesNormalAlpha: 0.55
+  highlightMaxAlpha: 0.14
   glowHoverAlpha: 0.7
   glowSelectedAlpha: 1
-  breathAmount: 0.15
-  breathSpeed: 1.6
+  breathAmount: 0.07
+  breathSpeed: 0.65
   transitionTime: 0.25
   hoverScale: 1.03
   pressScale: 0.97
@@ -9614,7 +9957,7 @@ MonoBehaviour:
   sweepInterval: {x: 2.5, y: 4.5}
   audioSource: {fileID: 1312082703}
   hoverClip: {fileID: 8300000, guid: 0b9cf69e9fe528c4c9b8a0a5a958eb3a, type: 3}
-  clickClip: {fileID: 8300000, guid: 9544a7dbe16a2ec45889e8e1e450f65e, type: 3}
+  clickClip: {fileID: 8300000, guid: ee19ba0f9fd14454ab5bd6aad9564343, type: 3}
   volume: 0.6
 --- !u!1 &1404416293
 GameObject:
@@ -9702,7 +10045,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.13725491, g: 0.84705883, b: 0.9372549, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -9860,7 +10203,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.94, g: 0.97, b: 1, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -9993,17 +10336,17 @@ MonoBehaviour:
   sweepTop: {fileID: 839196610}
   sweepBottom: {fileID: 1535461478}
   flash: {fileID: 2029422879}
-  fillColor: {r: 0.03137255, g: 0.03529412, b: 0.050980393, a: 0.78431374}
-  borderNormal: {r: 0.6039216, g: 0.6156863, b: 0.6392157, a: 1}
-  neon: {r: 1, g: 1, b: 1, a: 1}
-  textNormal: {r: 1, g: 1, b: 1, a: 0.82}
+  fillColor: {r: 0.025, g: 0.022, b: 0.065, a: 0.94}
+  borderNormal: {r: 0.65, g: 0.09686275, b: 0.3237255, a: 0.95}
+  neon: {r: 1, g: 0.14901961, b: 0.49803922, a: 1}
+  textNormal: {r: 0.94, g: 0.97, b: 1, a: 1}
   textActive: {r: 1, g: 1, b: 1, a: 1}
-  stripesNormalAlpha: 0.25
-  highlightMaxAlpha: 0.18
+  stripesNormalAlpha: 0.55
+  highlightMaxAlpha: 0.14
   glowHoverAlpha: 0.7
   glowSelectedAlpha: 1
-  breathAmount: 0.15
-  breathSpeed: 1.6
+  breathAmount: 0.07
+  breathSpeed: 0.65
   transitionTime: 0.25
   hoverScale: 1.03
   pressScale: 0.97
@@ -10012,7 +10355,7 @@ MonoBehaviour:
   sweepInterval: {x: 2.5, y: 4.5}
   audioSource: {fileID: 1312082703}
   hoverClip: {fileID: 8300000, guid: 0b9cf69e9fe528c4c9b8a0a5a958eb3a, type: 3}
-  clickClip: {fileID: 8300000, guid: 9544a7dbe16a2ec45889e8e1e450f65e, type: 3}
+  clickClip: {fileID: 8300000, guid: ee19ba0f9fd14454ab5bd6aad9564343, type: 3}
   volume: 0.6
 --- !u!224 &1461455554
 RectTransform:
@@ -10128,7 +10471,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 0.14901961, b: 0.49803922, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -10236,7 +10579,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.6039216, g: 0.6156863, b: 0.6392157, a: 1}
+  m_Color: {r: 0.3772549, g: 0.262549, b: 0.65, a: 0.95}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -10363,7 +10706,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.03137255, g: 0.03529412, b: 0.050980393, a: 0.78431374}
+  m_Color: {r: 0.025, g: 0.022, b: 0.065, a: 0.94}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -10419,7 +10762,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.03137255, g: 0.03529412, b: 0.050980393, a: 0.78431374}
+  m_Color: {r: 0.025, g: 0.022, b: 0.065, a: 0.94}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -11030,7 +11373,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.6039216, g: 0.6156863, b: 0.6392157, a: 1}
+  m_Color: {r: 0.65, g: 0.09686275, b: 0.3237255, a: 0.95}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -11391,7 +11734,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: NIVEL 01
+  m_text: "NIVEL 01 \xB7 LA CASA"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
@@ -11400,8 +11743,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
-  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+    rgba: 4294965232
+  m_fontColor: {r: 0.94, g: 0.97, b: 1, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -11413,7 +11756,7 @@ MonoBehaviour:
   m_spriteAsset: {fileID: 0}
   m_tintAllSprites: 0
   m_StyleSheet: {fileID: 0}
-  m_TextStyleHashCode: 0
+  m_TextStyleHashCode: -1183493901
   m_overrideHtmlColors: 0
   m_faceColor:
     serializedVersion: 2
@@ -11437,7 +11780,7 @@ MonoBehaviour:
   m_charWidthMaxAdj: 0
   m_TextWrappingMode: 0
   m_wordWrappingRatios: 0.4
-  m_overflowMode: 1
+  m_overflowMode: 3
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
   m_enableKerning: 0
@@ -11685,7 +12028,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.13725491, g: 0.84705883, b: 0.9372549, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -11741,7 +12084,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.03137255, g: 0.03529412, b: 0.050980393, a: 0.78431374}
+  m_Color: {r: 0.025, g: 0.022, b: 0.065, a: 0.94}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -12001,8 +12344,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
-  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+    rgba: 4294965232
+  m_fontColor: {r: 0.94, g: 0.97, b: 1, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -12014,7 +12357,7 @@ MonoBehaviour:
   m_spriteAsset: {fileID: 0}
   m_tintAllSprites: 0
   m_StyleSheet: {fileID: 0}
-  m_TextStyleHashCode: 0
+  m_TextStyleHashCode: -1183493901
   m_overrideHtmlColors: 0
   m_faceColor:
     serializedVersion: 2
@@ -12038,7 +12381,7 @@ MonoBehaviour:
   m_charWidthMaxAdj: 0
   m_TextWrappingMode: 0
   m_wordWrappingRatios: 0.4
-  m_overflowMode: 1
+  m_overflowMode: 3
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
   m_enableKerning: 0
@@ -12196,7 +12539,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.03137255, g: 0.03529412, b: 0.050980393, a: 0.78431374}
+  m_Color: {r: 0.025, g: 0.022, b: 0.065, a: 0.94}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -12243,6 +12586,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 85412610}
+  - {fileID: 1210505594}
   - {fileID: 1993162513}
   - {fileID: 51414593}
   - {fileID: 2110925895}
@@ -12547,17 +12891,17 @@ MonoBehaviour:
   sweepTop: {fileID: 2096884607}
   sweepBottom: {fileID: 668376632}
   flash: {fileID: 278505382}
-  fillColor: {r: 0.03137255, g: 0.03529412, b: 0.050980393, a: 0.78431374}
-  borderNormal: {r: 0.6039216, g: 0.6156863, b: 0.6392157, a: 1}
-  neon: {r: 1, g: 1, b: 1, a: 1}
-  textNormal: {r: 1, g: 1, b: 1, a: 0.82}
+  fillColor: {r: 0.025, g: 0.022, b: 0.065, a: 0.94}
+  borderNormal: {r: 0.08921569, g: 0.55058825, b: 0.6092157, a: 0.95}
+  neon: {r: 0.13725491, g: 0.84705883, b: 0.9372549, a: 1}
+  textNormal: {r: 0.94, g: 0.97, b: 1, a: 1}
   textActive: {r: 1, g: 1, b: 1, a: 1}
-  stripesNormalAlpha: 0.25
-  highlightMaxAlpha: 0.18
+  stripesNormalAlpha: 0.55
+  highlightMaxAlpha: 0.14
   glowHoverAlpha: 0.7
   glowSelectedAlpha: 1
-  breathAmount: 0.15
-  breathSpeed: 1.6
+  breathAmount: 0.07
+  breathSpeed: 0.65
   transitionTime: 0.25
   hoverScale: 1.03
   pressScale: 0.97
@@ -12566,7 +12910,7 @@ MonoBehaviour:
   sweepInterval: {x: 2.5, y: 4.5}
   audioSource: {fileID: 1312082703}
   hoverClip: {fileID: 8300000, guid: 0b9cf69e9fe528c4c9b8a0a5a958eb3a, type: 3}
-  clickClip: {fileID: 8300000, guid: 9544a7dbe16a2ec45889e8e1e450f65e, type: 3}
+  clickClip: {fileID: 8300000, guid: ee19ba0f9fd14454ab5bd6aad9564343, type: 3}
   volume: 0.6
 --- !u!114 &1825420839
 MonoBehaviour:
@@ -12648,8 +12992,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
-  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+    rgba: 4294965232
+  m_fontColor: {r: 0.94, g: 0.97, b: 1, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -12685,7 +13029,7 @@ MonoBehaviour:
   m_charWidthMaxAdj: 0
   m_TextWrappingMode: 0
   m_wordWrappingRatios: 0.4
-  m_overflowMode: 1
+  m_overflowMode: 3
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
   m_enableKerning: 0
@@ -13070,7 +13414,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.94, g: 0.97, b: 1, a: 1}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -13246,8 +13590,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
-  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+    rgba: 4294965232
+  m_fontColor: {r: 0.94, g: 0.97, b: 1, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -13259,7 +13603,7 @@ MonoBehaviour:
   m_spriteAsset: {fileID: 0}
   m_tintAllSprites: 0
   m_StyleSheet: {fileID: 0}
-  m_TextStyleHashCode: 0
+  m_TextStyleHashCode: -1183493901
   m_overrideHtmlColors: 0
   m_faceColor:
     serializedVersion: 2
@@ -13283,7 +13627,7 @@ MonoBehaviour:
   m_charWidthMaxAdj: 0
   m_TextWrappingMode: 0
   m_wordWrappingRatios: 0.4
-  m_overflowMode: 1
+  m_overflowMode: 3
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
   m_enableKerning: 0
@@ -13367,7 +13711,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 0.14901961, b: 0.49803922, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -13434,6 +13778,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 230461586}
+  - {fileID: 977236726}
   m_Father: {fileID: 302534925}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
@@ -13566,8 +13911,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e19747de3f5aca642ab2be37e372fb86, type: 3}
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Outline
-  m_EffectColor: {r: 0.6039216, g: 0.6156863, b: 0.6392157, a: 1}
-  m_EffectDistance: {x: 2, y: -2}
+  m_EffectColor: {r: 0.13725491, g: 0.84705883, b: 0.9372549, a: 0.72}
+  m_EffectDistance: {x: 1.5, y: -1.5}
   m_UseGraphicAlpha: 1
 --- !u!114 &1993162515
 MonoBehaviour:
@@ -13582,7 +13927,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.03137255, g: 0.03529412, b: 0.050980393, a: 0.78431374}
+  m_Color: {r: 0.025, g: 0.015, b: 0.065, a: 0.96}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -13673,8 +14018,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
-  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+    rgba: 4294965232
+  m_fontColor: {r: 0.94, g: 0.97, b: 1, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -13710,7 +14055,7 @@ MonoBehaviour:
   m_charWidthMaxAdj: 0
   m_TextWrappingMode: 0
   m_wordWrappingRatios: 0.4
-  m_overflowMode: 1
+  m_overflowMode: 3
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
   m_enableKerning: 0
@@ -13980,7 +14325,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.6039216, g: 0.6156863, b: 0.6392157, a: 1}
+  m_Color: {r: 0.65, g: 0.09686275, b: 0.3237255, a: 0.95}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -14204,17 +14549,17 @@ MonoBehaviour:
   sweepTop: {fileID: 818034933}
   sweepBottom: {fileID: 635265527}
   flash: {fileID: 1193586489}
-  fillColor: {r: 0.03137255, g: 0.03529412, b: 0.050980393, a: 0.78431374}
-  borderNormal: {r: 0.6039216, g: 0.6156863, b: 0.6392157, a: 1}
-  neon: {r: 1, g: 1, b: 1, a: 1}
-  textNormal: {r: 1, g: 1, b: 1, a: 0.82}
+  fillColor: {r: 0.025, g: 0.022, b: 0.065, a: 0.94}
+  borderNormal: {r: 0.3772549, g: 0.262549, b: 0.65, a: 0.95}
+  neon: {r: 0.5803922, g: 0.40392157, b: 1, a: 1}
+  textNormal: {r: 0.94, g: 0.97, b: 1, a: 1}
   textActive: {r: 1, g: 1, b: 1, a: 1}
-  stripesNormalAlpha: 0.25
-  highlightMaxAlpha: 0.18
+  stripesNormalAlpha: 0.55
+  highlightMaxAlpha: 0.14
   glowHoverAlpha: 0.7
   glowSelectedAlpha: 1
-  breathAmount: 0.15
-  breathSpeed: 1.6
+  breathAmount: 0.07
+  breathSpeed: 0.65
   transitionTime: 0.25
   hoverScale: 1.03
   pressScale: 0.97
@@ -14223,7 +14568,7 @@ MonoBehaviour:
   sweepInterval: {x: 2.5, y: 4.5}
   audioSource: {fileID: 1312082703}
   hoverClip: {fileID: 8300000, guid: 0b9cf69e9fe528c4c9b8a0a5a958eb3a, type: 3}
-  clickClip: {fileID: 8300000, guid: 9544a7dbe16a2ec45889e8e1e450f65e, type: 3}
+  clickClip: {fileID: 8300000, guid: ee19ba0f9fd14454ab5bd6aad9564343, type: 3}
   volume: 0.6
 --- !u!1 &2110925894
 GameObject:
@@ -14412,7 +14757,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.03137255, g: 0.03529412, b: 0.050980393, a: 0.78431374}
+  m_Color: {r: 0.025, g: 0.022, b: 0.065, a: 0.94}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -14503,8 +14848,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
-  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+    rgba: 4294965232
+  m_fontColor: {r: 0.94, g: 0.97, b: 1, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -14540,7 +14885,7 @@ MonoBehaviour:
   m_charWidthMaxAdj: 0
   m_TextWrappingMode: 0
   m_wordWrappingRatios: 0.4
-  m_overflowMode: 1
+  m_overflowMode: 3
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
   m_enableKerning: 0
@@ -14640,8 +14985,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
-  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+    rgba: 4294965232
+  m_fontColor: {r: 0.94, g: 0.97, b: 1, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -14653,7 +14998,7 @@ MonoBehaviour:
   m_spriteAsset: {fileID: 0}
   m_tintAllSprites: 0
   m_StyleSheet: {fileID: 0}
-  m_TextStyleHashCode: 0
+  m_TextStyleHashCode: -1183493901
   m_overrideHtmlColors: 0
   m_faceColor:
     serializedVersion: 2
@@ -14677,7 +15022,7 @@ MonoBehaviour:
   m_charWidthMaxAdj: 0
   m_TextWrappingMode: 0
   m_wordWrappingRatios: 0.4
-  m_overflowMode: 1
+  m_overflowMode: 3
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
   m_enableKerning: 0

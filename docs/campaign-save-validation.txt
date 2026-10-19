@@ -1,0 +1,59 @@
+PASS Sin partida no aparece CONTINUAR
+PASS Sin archivo no se intenta cargar una escena
+PASS Carga real de Level01
+PASS Checkpoint guardado apunta a Level01
+PASS JUGAR reemplaza el checkpoint anterior por una campaña nueva
+PASS Serialización del estado de Level01 en disco
+PASS Carga diferida del guardado de Level01
+PASS El guardado restaura la posición real
+PASS El guardado restaura los rebobinados
+PASS Recogida del objetivo de Level01
+PASS Enemigos y refuerzos abren la salida de Level01
+PASS La salida completa Level01
+PASS Checkpoint guardado apunta a Level02
+PASS Regreso al menú con checkpoint de Level02
+PASS CONTINUAR visible para Level02
+PASS CONTINUAR carga Level02 desde el archivo
+PASS La carga recupera tiempo y controles
+PASS El checkpoint inicia al jugador con vida completa
+PASS El siguiente nivel no hereda el maletín anterior
+PASS Carga real de Level02
+PASS Nina está visible junto al inicio de Level02
+PASS El diálogo de Nina se activa desde el inicio
+PASS El CharacterController atraviesa el pasillo junto a Nina sin atascarse
+PASS Recogida del objetivo de Level02
+PASS Enemigos y refuerzos abren la salida de Level02
+PASS La salida completa Level02
+PASS Checkpoint guardado apunta a Level03
+PASS Regreso al menú con checkpoint de Level03
+PASS CONTINUAR visible para Level03
+PASS CONTINUAR carga Level03 desde el archivo
+PASS La carga recupera tiempo y controles
+PASS El checkpoint inicia al jugador con vida completa
+PASS El siguiente nivel no hereda el maletín anterior
+PASS Carga real de Level03
+PASS Los guardias del loft abren el ascensor
+PASS El ascensor transporta al jugador al ático
+PASS El Jefe cae pasando por sus fases y refuerzos
+PASS Enemigos y refuerzos abren la salida de Level03
+PASS La salida completa Level03
+PASS Checkpoint guardado apunta a Level04
+PASS Regreso al menú con checkpoint de Level04
+PASS CONTINUAR visible para Level04
+PASS CONTINUAR carga Level04 desde el archivo
+PASS La carga recupera tiempo y controles
+PASS Carga real de Level04
+PASS El checkpoint de Level04 restaura el coche completo
+PASS Llegar al refugio gana Level04
+PASS Checkpoint guardado apunta a Ending
+PASS La victoria de Level04 abre el final
+PASS Level04 conecta con Ending
+PASS Regreso al menú con checkpoint de Ending
+PASS CONTINUAR visible para Ending
+PASS CONTINUAR carga Ending desde el archivo
+PASS La carga recupera tiempo y controles
+PASS El checkpoint final abre el epílogo
+PASS El epílogo conduce a los créditos
+PASS Los créditos llegan al agradecimiento
+PASS Finalizar la campaña limpia su checkpoint
+PASS CONTINUAR se oculta al terminar la campaña

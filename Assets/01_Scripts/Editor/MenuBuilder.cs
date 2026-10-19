@@ -37,7 +37,7 @@ namespace Overdrive.EditorTools
         /// <summary>Niveles del panel de selección: escena y texto del botón, en orden de juego.</summary>
         public static readonly (string scene, string label)[] LevelEntries =
         {
-            ("Level01", "NIVEL 01"),
+            ("Level01", "NIVEL 01 · LA CASA"),
             ("Level02", "NIVEL 02 · ELYSIUM"),
             ("Level03", "NIVEL 03 · EL LOFT"),
             ("Level04", "NIVEL 04 · LA HUIDA"),
@@ -58,7 +58,8 @@ namespace Overdrive.EditorTools
 
             Sprites s = EnsureSprites();
             AudioClip hover = EnsureHoverClip();
-            AudioClip click = EnsureClip("UI_Click.wav", 1250f, 0.09f, 0.5f);
+            AudioClip click = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/07_Audio/UI_Sound.mp3");
+            if (click == null) throw new FileNotFoundException("Falta el sonido de clic del menú: Assets/07_Audio/UI_Sound.mp3");
             Sprite background = EnsureBackground();
 
             var scene = EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
@@ -150,6 +151,7 @@ namespace Overdrive.EditorTools
             controller.fullscreenToggle = fullscreen;
             controller.gameScene = "Level01";
 
+            NeonPolishBuilder.ApplyMenusIfInstalled(scene);
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene);
             EnsureBuildSettings();
@@ -216,6 +218,7 @@ namespace Overdrive.EditorTools
             controller.status = status;
             controller.menuScene = "Menu";
             panel.gameObject.SetActive(false);
+            NeonPolishBuilder.ApplyMenusIfInstalled(scene);
             EditorSceneManager.MarkSceneDirty(scene);
         }
 

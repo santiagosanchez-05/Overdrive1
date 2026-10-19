@@ -262,6 +262,9 @@ namespace Overdrive.UI
                 return;
             }
             _busy = true;
+            // JUGAR and level selection start a fresh level checkpoint. Otherwise
+            // CONTINUAR could reopen an older campaign after returning to the menu.
+            SaveSystem.SaveCheckpoint(scene);
             SceneManager.LoadScene(scene);
         }
 

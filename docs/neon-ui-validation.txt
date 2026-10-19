@@ -1,0 +1,25 @@
+PASS Selección contiene cuatro niveles
+PASS Selección se abre con el botón real
+PASS Ajustes se abre con el botón real
+PASS Level01 inicia con acabado y pausa
+PASS Level01 HUD recibe vida real al 20%
+PASS Level01 bloquea controles al pausar
+PASS Level01 anima el neón con tiempo detenido
+PASS Level01 reanuda correctamente
+PASS Level02 inicia con acabado y pausa
+PERF editor Level02 acabado · mediana=4.19 ms, p95=4.55 ms · 1536x672
+PERF editor Level02 base · mediana=4.10 ms, p95=4.45 ms · 1536x672
+PASS Level02 HUD recibe vida real al 20%
+PASS Level02 bloquea controles al pausar
+PASS Level02 anima el neón con tiempo detenido
+PASS Level02 reanuda correctamente
+PASS Level03 inicia con acabado y pausa
+PASS Level03 HUD recibe vida real al 20%
+PASS Level03 bloquea controles al pausar
+PASS Level03 anima el neón con tiempo detenido
+PASS Level03 reanuda correctamente
+PASS Level04 inicia con acabado y pausa
+PASS HUD del coche recibe daño real al 20%
+PASS Level04 bloquea controles al pausar
+PASS Level04 anima el neón con tiempo detenido
+PASS Level04 reanuda correctamente

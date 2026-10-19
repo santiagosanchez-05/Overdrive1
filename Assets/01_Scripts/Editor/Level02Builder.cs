@@ -186,6 +186,8 @@ namespace Overdrive.EditorTools
             EditorSceneManager.SaveScene(scene);
             StoryFactory.EnsureLevel02(); // modelos de los enemigos según su arma y Nina en la entrada
             scene = SceneManager.GetSceneByPath(ScenePath);
+            NeonPolishBuilder.ApplyIfInstalled(scene);
+            EditorSceneManager.SaveScene(scene);
             AddBuildSettings();
             ConnectMenu();
             SceneManager.SetActiveScene(scene);

@@ -148,6 +148,7 @@ namespace Overdrive.EditorTools
             StoryFactory.ApplyEnemyLooks(scene);
             ApplyBossLook(boss.gameObject);
 
+            NeonPolishBuilder.ApplyIfInstalled(scene);
             EditorSceneManager.MarkSceneDirty(scene);
             EditorSceneManager.SaveScene(scene);
             AddBuildSettings();

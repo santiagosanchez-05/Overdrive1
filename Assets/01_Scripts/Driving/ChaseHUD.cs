@@ -22,13 +22,14 @@ namespace Overdrive.Driving
     public class ChaseHUD : MonoBehaviour
     {
         [SerializeField] private ChaseLevel level;
+        [SerializeField] private Font hudFont;
+        private GUIStyle controlsStyle;
+        private float previousScale = -1f;
         private GUIStyle label, big, sub;
         private Texture2D white;
-        private float time;
 
         private void Update()
         {
-            time += Time.deltaTime;
             // Mientras se conduce, la mira del HUD sustituye al cursor (en pausa o al acabar vuelve el normal).
             Cursor.visible = level == null || GameInput.Blocked || level.State != ChaseState.Driving;
         }
@@ -39,20 +40,20 @@ namespace Overdrive.Driving
         {
             if (level == null || level.Player == null || GameInput.Blocked) return;
             Ensure();
-            float s = Screen.height / 1080f;
+            float s = UI.NeonHudGraphics.Scale;
             Car car = level.Player;
 
             // Barra del coche.
             var bar = new Rect(30f * s, 30f * s, 360f * s, 22f * s);
-            Fill(bar, new Color(0f, 0f, 0f, 0.6f));
-            Fill(new Rect(bar.x, bar.y, bar.width * car.Health01, bar.height),
-                Color.Lerp(new Color(1f, 0.15f, 0.25f), new Color(0.2f, 1f, 0.75f), car.Health01));
+            UI.NeonHudGraphics.Panel(new Rect(20f * s, 20f * s, 410f * s, 175f * s), UI.NeonHudGraphics.Cyan, s);
+            UI.NeonHudGraphics.Meter(bar, car.Health01, car.Health01 < .25f ? UI.NeonHudGraphics.Pink : UI.NeonHudGraphics.Cyan);
             GUI.Label(new Rect(bar.x, bar.yMax + 4f * s, 500f * s, 34f * s), ChaseText.Health(car.Health01), label);
             GUI.Label(new Rect(bar.x, bar.yMax + 38f * s, 500f * s, 34f * s), ChaseText.Wave(level.WaveStarted, level.Waves.Length), label);
             GUI.Label(new Rect(bar.x, bar.yMax + 72f * s, 500f * s, 34f * s), ChaseText.Kills(level.Kills), label);
 
             // Progreso hasta el piso franco.
             var road = new Rect(Screen.width - 420f * s, 30f * s, 390f * s, 14f * s);
+            UI.NeonHudGraphics.Panel(new Rect(road.x - 12f * s, road.y - 10f * s, road.width + 24f * s, 94f * s), UI.NeonHudGraphics.Pink, s);
             Fill(road, new Color(0f, 0f, 0f, 0.6f));
             Fill(new Rect(road.x, road.y, road.width * level.Progress01, road.height), new Color(1f, 0.35f, 0.75f));
             GUI.Label(new Rect(road.x, road.yMax + 4f * s, road.width, 34f * s),
@@ -68,10 +69,7 @@ namespace Overdrive.Driving
                 GUI.Label(new Rect(0f, Screen.height * 0.35f, Screen.width, 80f * s), ChaseText.Lost, big);
                 GUI.Label(new Rect(0f, Screen.height * 0.35f + 90f * s, Screen.width, 40f * s), ChaseText.LostHint, sub);
             }
-            else if (time < 12f)
-            {
-                GUI.Label(new Rect(0f, 110f * s, Screen.width, 40f * s), ChaseText.Controls, sub);
-            }
+            UI.NeonHudGraphics.Controls(s, controlsStyle, true);
 
             // Mira bajo el ratón.
             if (level.State == ChaseState.Driving)
@@ -96,10 +94,13 @@ namespace Overdrive.Driving
 
         private void Ensure()
         {
-            if (label != null) return;
+            float s = UI.NeonHudGraphics.Scale;
+            if (label != null && Mathf.Approximately(s, previousScale)) return;
+            previousScale = s;
             white = Texture2D.whiteTexture;
-            float s = Screen.height / 1080f;
-            label = new GUIStyle(GUI.skin.label) { fontSize = Mathf.RoundToInt(26 * s), fontStyle = FontStyle.Bold };
+            label = new GUIStyle(GUI.skin.label) { font = hudFont, fontSize = Mathf.RoundToInt(26 * s), fontStyle = FontStyle.Bold };
+            controlsStyle = new GUIStyle(label) { fontSize = Mathf.RoundToInt(22 * s), alignment = TextAnchor.MiddleCenter };
+            controlsStyle.font = GUI.skin.font;
             big = new GUIStyle(label) { fontSize = Mathf.RoundToInt(56 * s), alignment = TextAnchor.MiddleCenter };
             sub = new GUIStyle(label) { fontSize = Mathf.RoundToInt(26 * s), alignment = TextAnchor.MiddleCenter };
             UI.GameHUD.SetTextColor(label, Color.white);

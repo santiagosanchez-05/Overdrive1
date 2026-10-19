@@ -59,8 +59,7 @@ namespace Overdrive.Story
             if (current == null || GameInput.Blocked) return;
             EnsureStyles();
             string shown = current.Substring(0, DialogueLogic.VisibleChars(current, elapsed, charsPerSecond));
-            float width = Mathf.Min(Screen.width - 40f, 900f);
-            var rect = new Rect((Screen.width - width) * 0.5f, Screen.height - 160f, width, 120f);
+            var rect = UI.NeonHudGraphics.DialogueRect(120f, true);
             GUI.Box(rect, GUIContent.none, boxStyle);
             GUI.Label(new Rect(rect.x + 22f, rect.y + 12f, rect.width - 44f, 30f), speaker.ToUpperInvariant(), nameStyle);
             GUI.Label(new Rect(rect.x + 22f, rect.y + 44f, rect.width - 44f, 70f), shown, textStyle);

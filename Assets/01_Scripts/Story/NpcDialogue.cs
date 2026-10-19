@@ -101,8 +101,7 @@ namespace Overdrive.Story
             string line = lines[index];
             string shown = line.Substring(0, DialogueLogic.VisibleChars(line, elapsed, charsPerSecond));
 
-            float width = Mathf.Min(Screen.width - 40f, 900f);
-            var rect = new Rect((Screen.width - width) * 0.5f, Screen.height - 170f, width, 130f);
+            var rect = UI.NeonHudGraphics.DialogueRect(130f, false);
             GUI.Box(rect, GUIContent.none, boxStyle);
             GUI.Label(new Rect(rect.x + 22f, rect.y + 12f, rect.width - 44f, 30f), speaker.ToUpperInvariant(), nameStyle);
             GUI.Label(new Rect(rect.x + 22f, rect.y + 44f, rect.width - 44f, 70f), shown, textStyle);

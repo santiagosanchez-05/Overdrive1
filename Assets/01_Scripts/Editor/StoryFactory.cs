@@ -74,6 +74,7 @@ namespace Overdrive.EditorTools
             Vector3 to = lookAt - position;
             to.y = 0f;
             nina.transform.SetPositionAndRotation(position, to.sqrMagnitude > 0.01f ? Quaternion.LookRotation(to) : Quaternion.identity);
+            PrefabUtility.RecordPrefabInstancePropertyModifications(nina.transform);
 
             var dialogue = nina.GetComponent<NpcDialogue>();
             var so = new SerializedObject(dialogue);
@@ -108,7 +109,7 @@ namespace Overdrive.EditorTools
 
         /// <summary>
         /// Nivel 2 (escena de Rommel): no se reconstruye; solo se ponen los modelos de los enemigos y a Nina
-        /// junto a la entrada, en un punto libre del NavMesh a ~2.5 m del jugador.
+        /// junto a la entrada, a un lado del pasillo y dentro del alcance de diálogo del jugador.
         /// </summary>
         public static void EnsureLevel02()
         {
@@ -141,13 +142,13 @@ namespace Overdrive.EditorTools
         /// Nada sólido (pared, mueble, personaje) a menos de <see cref="NinaClearance"/> m: rayos horizontales a la altura
         /// de las rodillas y del pecho en 16 direcciones (sirve también con las paredes de malla del nivel 2).
         /// </summary>
-        public static bool IsOpenSpot(Vector3 point, Transform ignore)
+        public static bool IsOpenSpot(Vector3 point, Transform ignore, float clearance = NinaClearance)
         {
             foreach (float height in new[] { 0.4f, 1.2f })
             for (int i = 0; i < 16; i++)
             {
                 Vector3 dir = Quaternion.Euler(0f, i * 22.5f, 0f) * Vector3.forward;
-                foreach (RaycastHit hit in Physics.RaycastAll(point + Vector3.up * height, dir, NinaClearance, ~0, QueryTriggerInteraction.Ignore))
+                foreach (RaycastHit hit in Physics.RaycastAll(point + Vector3.up * height, dir, clearance, ~0, QueryTriggerInteraction.Ignore))
                 {
                     Transform root = hit.collider.transform.root;
                     if ((ignore != null && root == ignore.root) || root.name == NinaName) continue;
@@ -167,6 +168,7 @@ namespace Overdrive.EditorTools
         /// </summary>
         public static bool FindNinaSpot(Transform player, out Vector3 spot)
         {
+            if (TryFindEntranceSpot(player, out spot)) return true;
             Vector3 origin = player.position;
             float best = float.MaxValue;
             spot = origin;
@@ -187,6 +189,59 @@ namespace Overdrive.EditorTools
                 spot = hit.position;
             }
             return best < float.MaxValue;
+        }
+
+        // A side of the four-metre entrance leaves more than two metres of corridor free.
+        // These margins include Nina's .35 m capsule and the player's .3 m controller.
+        public const float EntranceClearance = .7f;
+        public const float EntranceRouteMargin = .8f;
+
+        public static bool TryFindEntranceSpot(Transform player, out Vector3 spot)
+        {
+            var path = new NavMeshPath();
+            foreach (float side in new[] { -1f, 1f })
+            foreach (float along in new[] { -.75f, .6f })
+            {
+                Vector3 candidate = player.position + player.right * (side * 1.05f) + player.forward * along;
+                if (!NavMesh.SamplePosition(candidate, out var hit, .3f, NavMesh.AllAreas)) continue;
+                if (Mathf.Abs(hit.position.y - player.position.y) > .3f) continue;
+                if (!IsOpenSpot(hit.position, player, EntranceClearance)) continue;
+                // Exit reinforcements fan out across this hall; reserve the actual centre
+                // passage instead of excluding every future guard's straight route.
+                if (Mathf.Abs(Vector3.Dot(hit.position - player.position, player.right)) < EntranceRouteMargin) continue;
+                if (!NavMesh.CalculatePath(player.position, hit.position, NavMesh.AllAreas, path) || path.status != NavMeshPathStatus.PathComplete) continue;
+                if (RouteLength(path.corners) > 3f) continue;
+                spot = hit.position; return true;
+            }
+            spot = default; return false;
+        }
+
+        [MenuItem("TopDown/Nivel 02/Acercar a Nina al pasillo de entrada")]
+        public static void UpdateNinaEntrance()
+        {
+            if (EditorApplication.isPlaying) throw new System.InvalidOperationException("Detén Play Mode antes de mover a Nina.");
+            for (int i = 0; i < SceneManager.sceneCount; i++)
+                if (SceneManager.GetSceneAt(i).isDirty) throw new System.InvalidOperationException("Guarda las escenas antes de actualizar a Nina.");
+            var setup = EditorSceneManager.GetSceneManagerSetup();
+            try
+            {
+                var scene = EditorSceneManager.OpenScene(Level02Path, OpenSceneMode.Single);
+                var player = scene.GetRootGameObjects().First(r => r.CompareTag("Player"));
+                var previous = BuilderUtil.FindRoot(scene, NinaName);
+                bool active = previous != null && previous.activeSelf;
+                if (previous != null) previous.SetActive(false);
+                Vector3 spot;
+                bool found;
+                try { Physics.SyncTransforms(); found = TryFindEntranceSpot(player.transform, out spot); }
+                finally { if (previous != null) previous.SetActive(active); }
+                if (!found) throw new System.InvalidOperationException("No hay espacio seguro junto al jugador para Nina.");
+                var nina = EnsureNina(scene, spot, player.transform.position, StoryLines.Level02);
+                PrefabUtility.RecordPrefabInstancePropertyModifications(nina.transform);
+                EditorSceneManager.MarkSceneDirty(scene); EditorSceneManager.SaveScene(scene);
+                AssetDatabase.SaveAssets();
+                Debug.Log("Nina junto a la entrada, a " + Vector3.Distance(spot, player.transform.position).ToString("F1") + " m del jugador.");
+            }
+            finally { EditorSceneManager.RestoreSceneManagerSetup(setup); }
         }
 
         /// <summary>Distancia mínima a las rutas principales: Nina no se pone en medio del camino.</summary>

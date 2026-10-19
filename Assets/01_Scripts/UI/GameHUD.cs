@@ -16,6 +16,9 @@ namespace Overdrive.UI
         [SerializeField] private LevelManager level;
         [SerializeField] private TimeRewinder rewinder;
         [SerializeField] private ScoreKeeper score;
+        [SerializeField] private Font hudFont;
+        [SerializeField] private string objectiveHint;
+        private GUIStyle controlsStyle;
 
         private GUIStyle cornerLeft;
         private GUIStyle cornerRight;
@@ -54,6 +57,9 @@ namespace Overdrive.UI
             float margin = 20f * scale;
             float lineHeight = 44f * scale;
 
+            NeonHudGraphics.Panel(new Rect(margin - 8f * scale, margin - 5f * scale, 410f * scale, 100f * scale), NeonHudGraphics.Cyan, scale);
+            NeonHudGraphics.Panel(new Rect(Screen.width - margin - 350f * scale, margin - 5f * scale, 358f * scale, 58f * scale), NeonHudGraphics.Pink, scale);
+
             DrawShadowed(new Rect(margin, margin, Screen.width * 0.5f, lineHeight), weaponText, cornerLeft);
             DrawShadowed(new Rect(Screen.width * 0.5f - margin, margin, Screen.width * 0.5f, lineHeight),
                 HudText.Enemies(level.Progress.Remaining), cornerRight);
@@ -65,12 +71,13 @@ namespace Overdrive.UI
 
             if (controller == null && weapons != null) controller = weapons.GetComponent<PlayerController>();
             if (controller != null && controller.IsSneaking)
-                DrawShadowed(new Rect(margin, Screen.height - margin - lineHeight, Screen.width * 0.5f, lineHeight),
+                DrawShadowed(new Rect(margin + 350f * scale, Screen.height - 160f * scale, 220f * scale, lineHeight),
                     HudText.Sneaking, sneak);
 
             DrawAwarenessMarks();
 
             DrawHealthBar(margin);
+            NeonHudGraphics.Controls(scale, controlsStyle, false);
 
             DrawScore(margin);
             if (level.Progress.State == LevelState.Complete && score != null && score.Summary != null)
@@ -81,6 +88,8 @@ namespace Overdrive.UI
 
             string message = HudText.CenterMessage(level.Progress.State);
             string hint = HudText.SubMessage(level.Progress.State, !level.Progress.HasObjective);
+            if (level.Progress.State == LevelState.Playing && !string.IsNullOrEmpty(objectiveHint))
+                hint = level.Briefcase != null && level.Progress.HasObjective ? "DESPEJA LA ZONA Y ALCANZA LA SALIDA" : objectiveHint;
             if (level.Progress.State == LevelState.Failed) hint = HudText.RestartHint;
             float middle = Screen.height * 0.5f;
             if (message != null)
@@ -102,17 +111,12 @@ namespace Overdrive.UI
             if (life == null) return;
             if (white == null) white = Texture2D.whiteTexture;
             float fraction = life.MaxHealth > 0f ? Mathf.Clamp01(life.CurrentHealth / life.MaxHealth) : 0f;
-            float w = 320f * scale, h = 22f * scale;
-            float x = margin, y = Screen.height - margin - h - 34f * scale;
-            Color old = GUI.color;
-            GUI.color = new Color(0f, 0f, 0f, 0.65f);
-            GUI.DrawTexture(new Rect(x - 3f, y - 3f, w + 6f, h + 6f), white);
-            GUI.color = new Color(0.25f, 0.02f, 0.03f, 0.9f);
-            GUI.DrawTexture(new Rect(x, y, w, h), white);
-            GUI.color = new Color(0.9f, 0.08f, 0.1f, 1f);
-            GUI.DrawTexture(new Rect(x, y, w * fraction, h), white);
-            GUI.color = old;
-            DrawShadowed(new Rect(x + 8f * scale, y - 2f * scale, w, h + 4f * scale), HudText.Health(life.CurrentHealth), sub);
+            float w = 300f * scale, h = 16f * scale;
+            float x = margin, y = Screen.height - 132f * scale;
+            Color accent = fraction <= .25f ? NeonHudGraphics.Pink : NeonHudGraphics.Cyan;
+            NeonHudGraphics.Panel(new Rect(x - 8f * scale, y - 38f * scale, w + 24f * scale, 67f * scale), accent, scale);
+            DrawShadowed(new Rect(x + 5f * scale, y - 34f * scale, w, 32f * scale), HudText.Health(life.CurrentHealth), cornerLeft);
+            NeonHudGraphics.Meter(new Rect(x + 5f * scale, y + 3f * scale, w, h), fraction, accent);
         }
 
         /// <summary>Dibuja "?" o "!" sobre la cabeza de cada enemigo visible que sospecha o te ha detectado.</summary>
@@ -183,7 +187,7 @@ namespace Overdrive.UI
 
         // Mismos tonos que los paneles del menú principal.
         private static readonly Color PanelFill = new Color32(0x08, 0x09, 0x0D, 0xC8);
-        private static readonly Color PanelBorder = new Color32(0x9A, 0x9D, 0xA3, 0xFF);
+        private static readonly Color PanelBorder = new Color32(35, 216, 239, 255);
         private static readonly Color Pink = new Color(1f, 0.3f, 0.85f);
 
         /// <summary>Momento en que apareció la pantalla final, para animar su entrada.</summary>
@@ -350,17 +354,19 @@ namespace Overdrive.UI
         private void EnsureStyles()
         {
             // Escala el texto según la altura de la pantalla (referencia 1080p).
-            float newScale = Mathf.Max(0.5f, Screen.height / 1080f);
+            float newScale = NeonHudGraphics.Scale;
             if (cornerLeft != null && Mathf.Approximately(newScale, scale)) return;
             scale = newScale;
 
-            cornerLeft = MakeStyle(30, TextAnchor.UpperLeft, new Color(1f, 0.95f, 0.3f));
+            controlsStyle = MakeStyle(21, TextAnchor.MiddleCenter, new Color(.88f, .94f, 1f));
+            controlsStyle.font = GUI.skin.font;
+            cornerLeft = MakeStyle(28, TextAnchor.UpperLeft, NeonHudGraphics.Cyan);
             sneak = MakeStyle(26, TextAnchor.LowerLeft, new Color(0.5f, 0.8f, 1f));
             suspicious = MakeStyle(48, TextAnchor.MiddleCenter, new Color(1f, 0.85f, 0.1f));
             alerted = MakeStyle(48, TextAnchor.MiddleCenter, new Color(1f, 0.15f, 0.2f));
             cornerRight = MakeStyle(30, TextAnchor.UpperRight, new Color(1f, 0.3f, 0.5f));
             center = MakeStyle(64, TextAnchor.MiddleCenter, Color.white);
-            sub = MakeStyle(30, TextAnchor.MiddleCenter, new Color(0.3f, 1f, 0.6f));
+            sub = MakeStyle(28, TextAnchor.MiddleCenter, NeonHudGraphics.Cyan);
             scoreStyle = MakeStyle(46, TextAnchor.UpperCenter, Color.white);
             comboStyle = MakeStyle(32, TextAnchor.UpperCenter, new Color(1f, 0.3f, 0.85f));
             popupStyle = MakeStyle(30, TextAnchor.MiddleCenter, new Color(1f, 0.95f, 0.3f));
@@ -380,6 +386,7 @@ namespace Overdrive.UI
             var style = new GUIStyle(GUI.skin.label)
             {
                 fontSize = Mathf.RoundToInt(size * scale),
+                font = hudFont,
                 fontStyle = fontStyle,
                 alignment = anchor,
                 wordWrap = false,
